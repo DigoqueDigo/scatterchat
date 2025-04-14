@@ -1,0 +1,8 @@
+{
+    "java.compile.nullAnalysis.mode": "automatic",
+    "java.project.sourcePaths": [
+        "src/main/java",
+        "target/classes/scatterchat"
+    ],
+    "java.configuration.updateBuildConfiguration": "interactive",
+}
