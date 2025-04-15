@@ -40,7 +40,7 @@ public class LogServer extends Rx3LogServiceGrpc.LogServiceImplBase implements R
                     .build()
                     .start();
 
-            System.out.println("[gRPC] Server started on: " + logServerAddress + ":" + logServerPort);
+            System.out.println("[gRPC] LogServer started on: " + logServerAddress + ":" + logServerPort);
             logServer.awaitTermination();
         }
 
