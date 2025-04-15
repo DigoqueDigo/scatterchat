@@ -1,17 +1,13 @@
 package scatterchat.client;
-
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import io.reactivex.rxjava3.core.Flowable;
-import org.zeromq.SocketType;
-import org.zeromq.ZContext;
-import org.zeromq.ZMQ;
-import scatterchat.LogMessage;
+import io.reactivex.rxjava3.core.Single;
+import scatterchat.LogMessageRequest;
 import scatterchat.Rx3LogServiceGrpc;
 import scatterchat.Rx3LogServiceGrpc.RxLogServiceStub;
 
 
-public class Client {
+public class Client{
 
     public static void main(String[] args) throws Exception{
 
@@ -21,31 +17,13 @@ public class Client {
                 .build();
 
         RxLogServiceStub logStub = Rx3LogServiceGrpc.newRxStub(channel);
+        Single<LogMessageRequest> logRequest = Single.just(1).map(x -> LogMessageRequest.newBuilder().setHistory(x).build());
 
-        logStub.getLogs(Flowable.just("hello",  "world").map(m -> LogMessage.newBuilder().setMessage(m).build()))
+        logStub.getLogs(logRequest)
+            .doOnComplete(() -> channel.shutdown())
             .subscribe(
-                log -> {
-                    System.out.println("[gRPC LOG] " + log.getMessage());
-                    channel.shutdownNow();
-                },
-                Throwable::printStackTrace,
-                () -> System.out.println("[gRPC LOG] Stream closed")
-            );
-
-        ZContext context = new ZContext(1);
-        ZMQ.Socket socket = context.createSocket(SocketType.REQ);
-        socket.connect("tcp://localhost:5555");
-
-
-        String request = "Hello via ZeroMQ!";
-        System.out.println("[ZeroMQ] Sending: " + request);
-
-        socket.send(request);
-
-        byte[] reply = socket.recv();
-        System.out.println("[ZeroMQ] Received: " + new String(reply));
-
-        socket.close();
-        context.close();
+                log -> System.out.println("[gRPC LOG] " + log.getMessage()),
+                error -> error.printStackTrace(),
+                () -> System.out.println("[gRPC LOG] Stream closed"));
     }
 }

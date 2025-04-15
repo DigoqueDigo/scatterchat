@@ -4,10 +4,15 @@ option java_multiple_files = true;
 
 
 service LogService {
-    rpc getLogs (stream LogMessage) returns (stream LogMessage);
+    rpc getLogs (LogMessageRequest) returns (stream LogMessageReply);
 }
 
 
-message LogMessage {
+message LogMessageRequest {
+    int32 history = 1;
+}
+
+
+message LogMessageReply {
     string message = 1;
 }

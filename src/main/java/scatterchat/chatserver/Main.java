@@ -8,6 +8,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import org.json.JSONObject;
+import scatterchat.chatserver.log.LogServer;
 import scatterchat.protocol.messages.Message;
 
 
@@ -33,6 +34,11 @@ public class Main{
         ChatServerInterSub chatServerInterSub = new ChatServerInterSub(nodeId, interPubAddress, delivered);
         ChatServerExtPub chatServerExtPub = new ChatServerExtPub(extPubAddress, delivered);
 
+        final int logServerPort = nodeConfig.getInt("logServerPort");
+        final String logServerAddress = nodeConfig.getString("logServerAddress");
+
+        LogServer logServer = new LogServer(logServerAddress, logServerPort); 
+
         List<Thread> workers = new ArrayList<>();
         ThreadFactory threadFactory = Thread.ofVirtual().factory();
 
@@ -40,6 +46,7 @@ public class Main{
         workers.add(threadFactory.newThread(chatServerInterPub));
         workers.add(threadFactory.newThread(chatServerInterSub));
         workers.add(threadFactory.newThread(chatServerExtPub));
+        workers.add(threadFactory.newThread(logServer));
 
         for (Thread worker : workers){
             worker.start();
@@ -48,7 +55,5 @@ public class Main{
         for (Thread worker : workers){
             worker.join();
         }
-
-        // TODO :: FALTA UMA THREAD PARA CORRER O GRPC
     }
 }
