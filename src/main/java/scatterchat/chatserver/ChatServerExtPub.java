@@ -26,12 +26,16 @@ public class ChatServerExtPub implements Runnable{
         try{
             ZContext context = new ZContext();
             ZMQ.Socket pubSocket = context.createSocket(SocketType.PUB);
-            pubSocket.bind(extPubAddress);
+            pubSocket.bind(this.extPubAddress);
 
             Message message = null;
             Carrier pubCarrier = new Carrier(pubSocket);
 
+            System.out.println("[SC extPub] started on: " + this.extPubAddress);
+
             while ((message = this.delivered.take()) != null){
+
+                System.out.println("[SC extPub] Received: " + message.toString());
 
                 if (message.getType() == MESSAGE_TYPE.CHAT_MESSAGE){
                     pubCarrier.sendWithTopic(message);

@@ -31,7 +31,11 @@ public class ChatServerInterPub implements Runnable{
             Message message = null;
             Carrier pubCarrier = new Carrier(pubSocket);
 
+            System.out.println("[SC interPuB] started on: " + this.interPubAddress);
+
             while ((message = broadcast.take()) != null){
+
+                System.out.println("[SC interPuB] Reveived: " + message.toString());
 
                 if (message.getType() == MESSAGE_TYPE.CHAT_MESSAGE){
                     pubCarrier.sendWithTopic(message);

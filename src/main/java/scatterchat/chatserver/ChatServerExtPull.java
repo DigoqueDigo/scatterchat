@@ -40,7 +40,11 @@ public class ChatServerExtPull implements Runnable{
             pullCarrier.on(MESSAGE_TYPE.GROUP_JOIN_WARNING, x -> GroupJoinMessage.deserialize(x));
             pullCarrier.on(MESSAGE_TYPE.LOGGED_USERS_REQUEST, x -> LoggedUsersMessage.deserialize(x));
 
+            System.out.println("[SC extPull] started on: " + this.extPullAddress);
+
             while ((message = pullCarrier.receive()) != null){
+
+                System.out.println("[SC extPull] Received: " + message.toString());
 
                 if (message.getType() == MESSAGE_TYPE.CHAT_MESSAGE){
                     this.broadcast.put(message);

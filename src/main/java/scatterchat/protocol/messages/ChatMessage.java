@@ -4,21 +4,36 @@ import java.io.ByteArrayOutputStream;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import scatterchat.protocol.clock.VectorClock;
 
 
 public class ChatMessage extends Message{
 
     private String message;
+    private VectorClock vectorClock;
 
 
     public ChatMessage(String topic, String message){
         super(MESSAGE_TYPE.CHAT_MESSAGE, topic);
         this.message = message;
+        this.vectorClock = null;
+    }
+
+
+    public ChatMessage(String topic, String sender, String message, VectorClock vectorClock){
+        super(MESSAGE_TYPE.CHAT_MESSAGE, topic, sender);
+        this.message = message;
+        this.vectorClock = vectorClock;
     }
 
 
     public String getMessage(){
         return this.message;
+    }
+
+
+    public VectorClock getVectorClock(){
+        return this.vectorClock;
     }
 
 
@@ -59,6 +74,7 @@ public class ChatMessage extends Message{
         StringBuilder buffer = new StringBuilder();
         buffer.append(super.toString());
         buffer.append("\t message: " + message);
+        buffer.append("\t clock: " + vectorClock);
         return buffer.toString();
     }
 }

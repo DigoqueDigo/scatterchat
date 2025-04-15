@@ -11,11 +11,18 @@ public abstract class Message{
 
     private MESSAGE_TYPE type;
     private String topic;
+    private String sender;
 
 
     public Message(MESSAGE_TYPE type, String topic){
         this.type = type;
         this.topic = topic;
+    }
+
+    public Message(MESSAGE_TYPE type, String topic, String sender){
+        this.type = type;
+        this.topic = topic;
+        this.sender = sender;
     }
 
 
@@ -26,6 +33,11 @@ public abstract class Message{
 
     public String getTopic(){
         return this.topic;
+    }
+
+
+    public String getSender(){
+        return this.sender;
     }
 
 
@@ -41,6 +53,7 @@ public abstract class Message{
         StringBuilder buffer = new StringBuilder();
         buffer.append("type: " + type.name());
         buffer.append("\t topic: " + topic);
+        buffer.append("\t sender: " + this.sender);
         return buffer.toString();
     }
 }

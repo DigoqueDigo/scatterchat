@@ -1,4 +1,4 @@
-package scatterchat.chatserver;
+package scatterchat.chatserver.state;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

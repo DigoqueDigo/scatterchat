@@ -3,6 +3,7 @@ import java.util.concurrent.BlockingQueue;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
+import scatterchat.chatserver.deliver.Deliver;
 import scatterchat.protocol.carrier.Carrier;
 import scatterchat.protocol.messages.ChatMessage;
 import scatterchat.protocol.messages.GroupJoinMessage;
@@ -14,13 +15,33 @@ public class ChatServerInterSub implements Runnable{
 
     private String nodeId;
     private String interPubAddress;
-    private BlockingQueue<Message> delivered;
+    private Deliver deliver;
 
 
     public ChatServerInterSub(String nodeId, String interPubAddress, BlockingQueue<Message> delivered){
         this.nodeId = nodeId;
         this.interPubAddress = interPubAddress;
-        this.delivered = delivered;
+        this.deliver = new Deliver(delivered);
+    }
+
+
+    private void handleChatMessage(ChatMessage message){
+        String topic = message.getTopic();
+        this.deliver.addPendingMessage(topic, message);
+    }
+
+
+    private void handleGroupJoinMessage(GroupJoinMessage message, ZMQ.Socket subSocket){
+
+        String topic = message.getTopic().replace("[internal]", "");
+        GroupJoinMessage groupJoinWarning = (GroupJoinMessage) message;
+        subSocket.subscribe(topic);
+
+        for (String nodeInterPubAddres : groupJoinWarning.getNodes()){
+            if (!nodeInterPubAddres.equals(nodeId)){
+                subSocket.connect(nodeInterPubAddres);
+            }
+        }
     }
 
 
@@ -40,24 +61,16 @@ public class ChatServerInterSub implements Runnable{
             carrier.on(MESSAGE_TYPE.CHAT_MESSAGE, x -> ChatMessage.deserialize(x));
             carrier.on(MESSAGE_TYPE.GROUP_JOIN_WARNING, x -> GroupJoinMessage.deserialize(x));
 
+            System.out.println("[SC interSub] started");
+
             while ((message = carrier.receiveWithTopic()) != null){
 
-                if (message.getType() == MESSAGE_TYPE.CHAT_MESSAGE){
-                    // TODO :: TENHO DE GARANTIR A ORDEM CAUSAL
-                    this.delivered.put(message);
-                }
+                System.out.println("[SC interSub] Received: " + message);
 
-                else if (message.getType() == MESSAGE_TYPE.GROUP_JOIN_WARNING){
-
-                    String topic = message.getTopic().replace("[internal]", "");
-                    GroupJoinMessage groupJoinWarning = (GroupJoinMessage) message;
-                    subSocket.subscribe(topic);
-
-                    for (String nodeInterPubAddres : groupJoinWarning.getNodes()){
-                        if (!nodeInterPubAddres.equals(nodeId)){
-                            subSocket.connect(nodeInterPubAddres);
-                        }
-                    }
+                switch (message.getType()){
+                    case CHAT_MESSAGE -> handleChatMessage((ChatMessage) message);
+                    case GROUP_JOIN_WARNING -> handleGroupJoinMessage((GroupJoinMessage) message, subSocket);
+                    default -> System.out.println("[SC interSub] Unknown: " + message);
                 }
             }
 

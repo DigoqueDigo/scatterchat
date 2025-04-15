@@ -28,16 +28,14 @@ public class Main{
         final String extPullAddress = nodeConfig.getString("extPullAddress");
         final String interPubAddress = nodeConfig.getString("interPubAddress");
         final String extPubAddress = nodeConfig.getString("extPubAddress");
-
-        ChatServerExtPull chatServerExtPull = new ChatServerExtPull(extPullAddress, delivered, broadcast);
-        ChatServerInterPub chatServerInterPub = new ChatServerInterPub(interPubAddress, broadcast);
-        ChatServerInterSub chatServerInterSub = new ChatServerInterSub(nodeId, interPubAddress, delivered);
-        ChatServerExtPub chatServerExtPub = new ChatServerExtPub(extPubAddress, delivered);
-
         final int logServerPort = nodeConfig.getInt("logServerPort");
         final String logServerAddress = nodeConfig.getString("logServerAddress");
 
-        LogServer logServer = new LogServer(logServerAddress, logServerPort); 
+        Runnable chatServerExtPull = new ChatServerExtPull(extPullAddress, delivered, broadcast);
+        Runnable chatServerInterPub = new ChatServerInterPub(interPubAddress, broadcast);
+        Runnable chatServerInterSub = new ChatServerInterSub(nodeId, interPubAddress, delivered);
+        Runnable chatServerExtPub = new ChatServerExtPub(extPubAddress, delivered);
+        Runnable logServer = new LogServer(logServerAddress, logServerPort); 
 
         List<Thread> workers = new ArrayList<>();
         ThreadFactory threadFactory = Thread.ofVirtual().factory();
