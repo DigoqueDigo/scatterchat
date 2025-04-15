@@ -3,13 +3,15 @@ import java.util.concurrent.BlockingQueue;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
+import scatterchat.protocol.messages.ChatMessage;
+import scatterchat.protocol.messages.GroupJoinMessage;
+import scatterchat.protocol.messages.LoggedUsersMessage;
 import scatterchat.protocol.messages.Message;
 import scatterchat.protocol.messages.Message.MESSAGE_TYPE;
 import scatterchat.protocol.carrier.Carrier;
 
 
 public class ChatServerExtPull implements Runnable{
-
 
     private String extPullAddress; 
     private BlockingQueue<Message> delivered;
@@ -26,25 +28,40 @@ public class ChatServerExtPull implements Runnable{
     @Override
     public void run(){
 
-        ZContext context = new ZContext();
-        ZMQ.Socket socket = context.createSocket(SocketType.PULL);
-        socket.bind(this.extPullAddress);
+        try{
+            ZContext context = new ZContext();
+            ZMQ.Socket pullSocket = context.createSocket(SocketType.PULL);
+            pullSocket.bind(this.extPullAddress);
 
-        Message message = null;
-        Carrier carrier = new Carrier(socket);
+            Message message = null;
+            Carrier pullCarrier = new Carrier(pullSocket);
 
-        while ((message = carrier.receive()) != null){
+            pullCarrier.on(MESSAGE_TYPE.CHAT_MESSAGE, x -> ChatMessage.deserialize(x));
+            pullCarrier.on(MESSAGE_TYPE.GROUP_JOIN_WARNING, x -> GroupJoinMessage.deserialize(x));
+            pullCarrier.on(MESSAGE_TYPE.LOGGED_USERS_REQUEST, x -> LoggedUsersMessage.deserialize(x));
 
-            if (message.getType() == MESSAGE_TYPE.CHAT_MESSAGE){
-                this.broadcast.add(message);
+            while ((message = pullCarrier.receive()) != null){
+
+                if (message.getType() == MESSAGE_TYPE.CHAT_MESSAGE){
+                    this.broadcast.put(message);
+                }
+
+                else if (message.getType() == MESSAGE_TYPE.GROUP_JOIN_WARNING){
+                    this.broadcast.put(message);
+                    this.delivered.put(message);
+                }
+
+                else if (message.getType() == MESSAGE_TYPE.LOGGED_USERS_REQUEST){
+                    this.delivered.put(message);
+                }
             }
 
-            else if (message.getType() == MESSAGE_TYPE.LOGGED_USERS_REQUEST){
-                this.delivered.add(message);
-            }
+            pullSocket.close();
+            context.close();
         }
 
-        socket.close();
-        context.close();
+        catch (Exception e){
+            e.printStackTrace();
+        }
     }
 }

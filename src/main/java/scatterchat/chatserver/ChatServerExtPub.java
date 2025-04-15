@@ -1,11 +1,53 @@
 package scatterchat.chatserver;
+import java.util.concurrent.BlockingQueue;
+import org.zeromq.SocketType;
+import org.zeromq.ZContext;
+import org.zeromq.ZMQ;
+import scatterchat.protocol.carrier.Carrier;
+import scatterchat.protocol.messages.Message;
+import scatterchat.protocol.messages.Message.MESSAGE_TYPE;
 
 
 public class ChatServerExtPub implements Runnable{
 
+    private String extPubAddress;
+    private BlockingQueue<Message> delivered;
+
+
+    public ChatServerExtPub(String extPubAddress, BlockingQueue<Message> delivered){
+        this.extPubAddress = extPubAddress;
+        this.delivered = delivered;
+    }
+
+
     @Override
-    public void run() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'run'");
-    }   
+    public void run(){
+
+        try{
+            ZContext context = new ZContext();
+            ZMQ.Socket pubSocket = context.createSocket(SocketType.PUB);
+            pubSocket.bind(extPubAddress);
+
+            Message message = null;
+            Carrier pubCarrier = new Carrier(pubSocket);
+
+            while ((message = this.delivered.take()) != null){
+
+                if (message.getType() == MESSAGE_TYPE.CHAT_MESSAGE){
+                    pubCarrier.sendWithTopic(message);
+                }
+
+                else if (message.getType() == MESSAGE_TYPE.LOGGED_USERS_REQUEST){
+                    // TODO :: SACAR OS UTILIZADORES QUE ESTAO LOGIN E ENVIAR
+                }
+            }
+
+            pubSocket.close();
+            context.close();
+        }
+
+        catch (Exception e){
+            e.printStackTrace();
+        }
+    }
 }

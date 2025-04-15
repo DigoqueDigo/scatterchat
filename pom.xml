@@ -4,10 +4,10 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>project</groupId>
-    <artifactId>chat</artifactId>
+    <artifactId>scatterchat</artifactId>
     <version>1.0</version>
     <packaging>jar</packaging>
-    <name>chat</name>
+    <name>scatterchat</name>
     <description>It's time for web servers to handle ten thousand clients simultaneously</description>
 
     <properties>
@@ -20,6 +20,7 @@
         <protoc.version>3.25.3</protoc.version>
         <zeromq.version>0.5.4</zeromq.version>
         <kryo.version>5.3.0</kryo.version>
+        <json.version>20240303</json.version>
     </properties>
 
     <dependencies>
@@ -57,6 +58,11 @@
             <groupId>com.esotericsoftware</groupId>
             <artifactId>kryo</artifactId>
             <version>${kryo.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>${json.version}</version>
         </dependency>
     </dependencies>
 

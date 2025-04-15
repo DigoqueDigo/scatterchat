@@ -6,6 +6,7 @@ public abstract class Message{
     public enum MESSAGE_TYPE{
         CHAT_MESSAGE,
         LOGGED_USERS_REQUEST,
+        GROUP_JOIN_WARNING,
     }
 
     private MESSAGE_TYPE type;
@@ -25,6 +26,11 @@ public abstract class Message{
 
     public String getTopic(){
         return this.topic;
+    }
+
+
+    public void setTopic(String topic){
+        this.topic = topic;
     }
 
 

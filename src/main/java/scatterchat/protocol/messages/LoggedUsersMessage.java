@@ -6,10 +6,10 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 
 
-public class LoggedUsersRequest extends Message{
+public class LoggedUsersMessage extends Message{
 
 
-    public LoggedUsersRequest(String topic){
+    public LoggedUsersMessage(String topic){
         super(MESSAGE_TYPE.LOGGED_USERS_REQUEST, topic);
     }
 
@@ -21,7 +21,7 @@ public class LoggedUsersRequest extends Message{
         Output output = new Output(byteArrayOutputStream);
 
         kryo.register(Message.MESSAGE_TYPE.class);
-        kryo.register(LoggedUsersRequest.class);
+        kryo.register(LoggedUsersMessage.class);
         kryo.writeObject(output, this);
 
         output.flush();
@@ -31,18 +31,18 @@ public class LoggedUsersRequest extends Message{
     }
 
 
-    public LoggedUsersRequest deserialize(byte[] data){
+    public static LoggedUsersMessage deserialize(byte[] data){
 
         Kryo kryo = new Kryo();
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
         Input input = new Input(byteArrayInputStream);
 
         kryo.register(Message.MESSAGE_TYPE.class);
-        kryo.register(LoggedUsersRequest.class);
+        kryo.register(LoggedUsersMessage.class);
 
-        LoggedUsersRequest loggedUsersRequest = kryo.readObject(input, LoggedUsersRequest.class);
+        LoggedUsersMessage loggedUsersMessage = kryo.readObject(input, LoggedUsersMessage.class);
         input.close();
 
-        return loggedUsersRequest;
+        return loggedUsersMessage;
     }
 }
