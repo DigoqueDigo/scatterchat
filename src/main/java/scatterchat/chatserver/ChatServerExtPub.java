@@ -35,7 +35,7 @@ public class ChatServerExtPub implements Runnable{
 
             while ((message = this.delivered.take()) != null){
 
-                System.out.println("[SC extPub] Received: " + message.toString());
+                System.out.println("[SC extPub] Received: " + message);
 
                 if (message.getType() == MESSAGE_TYPE.CHAT_MESSAGE){
                     pubCarrier.sendWithTopic(message);

@@ -1,16 +1,17 @@
-package scatterchat.protocol.messages;
+package scatterchat.protocol.messages.info;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import scatterchat.protocol.messages.Message;
 
 
-public class LoggedUsersMessage extends Message{
+public class ServerStateRequest extends Message{
 
 
-    public LoggedUsersMessage(String topic){
-        super(MESSAGE_TYPE.LOGGED_USERS_REQUEST, topic);
+    public ServerStateRequest(){
+        super(MESSAGE_TYPE.SERVER_STATE_REQUEST);
     }
 
 
@@ -21,7 +22,7 @@ public class LoggedUsersMessage extends Message{
         Output output = new Output(byteArrayOutputStream);
 
         kryo.register(Message.MESSAGE_TYPE.class);
-        kryo.register(LoggedUsersMessage.class);
+        kryo.register(ServerStateRequest.class);
         kryo.writeObject(output, this);
 
         output.flush();
@@ -31,18 +32,18 @@ public class LoggedUsersMessage extends Message{
     }
 
 
-    public static LoggedUsersMessage deserialize(byte[] data){
+    public static ServerStateRequest deserialize(byte[] data){
 
         Kryo kryo = new Kryo();
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
         Input input = new Input(byteArrayInputStream);
 
         kryo.register(Message.MESSAGE_TYPE.class);
-        kryo.register(LoggedUsersMessage.class);
+        kryo.register(ServerStateRequest.class);
 
-        LoggedUsersMessage loggedUsersMessage = kryo.readObject(input, LoggedUsersMessage.class);
+        ServerStateRequest serverStateRequest = kryo.readObject(input, ServerStateRequest.class);
         input.close();
 
-        return loggedUsersMessage;
+        return serverStateRequest;
     }
 }

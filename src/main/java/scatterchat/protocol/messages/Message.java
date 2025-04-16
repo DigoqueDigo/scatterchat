@@ -5,8 +5,11 @@ public abstract class Message{
 
     public enum MESSAGE_TYPE{
         CHAT_MESSAGE,
-        LOGGED_USERS_REQUEST,
-        GROUP_JOIN_WARNING,
+        EXIT_ROOM_REQUEST,
+        SERVER_STATE_REQUEST,
+        SERVER_STATE_RESPONSE,
+        SERVE_TOPIC_REQUEST,
+        SERVE_TOPIC_RESPONSE,
     }
 
     private MESSAGE_TYPE type;
@@ -14,9 +17,17 @@ public abstract class Message{
     private String sender;
 
 
+    public Message(MESSAGE_TYPE type){
+        this.type = type;
+        this.topic = null;
+        this.sender = null;
+    }
+
+
     public Message(MESSAGE_TYPE type, String topic){
         this.type = type;
         this.topic = topic;
+        this.sender = null;
     }
 
     public Message(MESSAGE_TYPE type, String topic, String sender){

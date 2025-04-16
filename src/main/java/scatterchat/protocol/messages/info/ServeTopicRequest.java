@@ -1,4 +1,4 @@
-package scatterchat.protocol.messages;
+package scatterchat.protocol.messages.info;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
@@ -6,15 +6,16 @@ import java.util.List;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import scatterchat.protocol.messages.Message;
 
 
-public class GroupJoinMessage extends Message{
+public class ServeTopicRequest extends Message{
 
     private List<String> nodes;
 
 
-    public GroupJoinMessage(String topic, List<String> nodes){
-        super(MESSAGE_TYPE.GROUP_JOIN_WARNING, topic);
+    public ServeTopicRequest(String topic, List<String> nodes){
+        super(MESSAGE_TYPE.SERVE_TOPIC_REQUEST, topic);
         this.nodes = new ArrayList<>(nodes);
     }
 
@@ -31,7 +32,7 @@ public class GroupJoinMessage extends Message{
         Output output = new Output(byteArrayOutputStream);
 
         kryo.register(Message.MESSAGE_TYPE.class);
-        kryo.register(GroupJoinMessage.class);
+        kryo.register(ServeTopicRequest.class);
         kryo.register(ArrayList.class);
         kryo.writeObject(output, this);
 
@@ -42,20 +43,20 @@ public class GroupJoinMessage extends Message{
     }
 
 
-    public static GroupJoinMessage deserialize(byte[] data){
+    public static ServeTopicRequest deserialize(byte[] data){
 
         Kryo kryo = new Kryo();
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
         Input input = new Input(byteArrayInputStream);
 
         kryo.register(Message.MESSAGE_TYPE.class);
-        kryo.register(GroupJoinMessage.class);
+        kryo.register(ServeTopicRequest.class);
         kryo.reference(ArrayList.class);
 
-        GroupJoinMessage groupJoinMessage = kryo.readObject(input, GroupJoinMessage.class);
+        ServeTopicRequest serveTopicRequest = kryo.readObject(input, ServeTopicRequest.class);
         input.close();
 
-        return groupJoinMessage;
+        return serveTopicRequest;
     }
 
 

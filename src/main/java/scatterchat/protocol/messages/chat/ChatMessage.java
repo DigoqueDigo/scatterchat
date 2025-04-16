@@ -1,10 +1,12 @@
-package scatterchat.protocol.messages;
+package scatterchat.protocol.messages.chat;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.HashMap;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import scatterchat.protocol.clock.VectorClock;
+import scatterchat.protocol.messages.Message;
 
 
 public class ChatMessage extends Message{
@@ -45,6 +47,7 @@ public class ChatMessage extends Message{
 
         kryo.register(Message.MESSAGE_TYPE.class);
         kryo.register(ChatMessage.class);
+        kryo.register(HashMap.class);
         kryo.writeObject(output, this);
 
         output.flush();
@@ -62,6 +65,7 @@ public class ChatMessage extends Message{
 
         kryo.register(Message.MESSAGE_TYPE.class);
         kryo.register(ChatMessage.class);
+        kryo.register(HashMap.class);
 
         ChatMessage chatMessage = kryo.readObject(input, ChatMessage.class);
         input.close();

@@ -3,11 +3,12 @@ import java.util.concurrent.BlockingQueue;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
-import scatterchat.protocol.messages.ChatMessage;
-import scatterchat.protocol.messages.GroupJoinMessage;
-import scatterchat.protocol.messages.LoggedUsersMessage;
+
+import scatterchat.protocol.messages.UsersLoggedMessage;
 import scatterchat.protocol.messages.Message;
 import scatterchat.protocol.messages.Message.MESSAGE_TYPE;
+import scatterchat.protocol.messages.chat.ChatMessage;
+import scatterchat.protocol.messages.info.ServeTopicRequest;
 import scatterchat.protocol.carrier.Carrier;
 
 
@@ -37,8 +38,8 @@ public class ChatServerExtPull implements Runnable{
             Carrier pullCarrier = new Carrier(pullSocket);
 
             pullCarrier.on(MESSAGE_TYPE.CHAT_MESSAGE, x -> ChatMessage.deserialize(x));
-            pullCarrier.on(MESSAGE_TYPE.GROUP_JOIN_WARNING, x -> GroupJoinMessage.deserialize(x));
-            pullCarrier.on(MESSAGE_TYPE.LOGGED_USERS_REQUEST, x -> LoggedUsersMessage.deserialize(x));
+            pullCarrier.on(MESSAGE_TYPE.GROUP_JOIN_WARNING, x -> ServeTopicRequest.deserialize(x));
+            pullCarrier.on(MESSAGE_TYPE.LOGGED_USERS_REQUEST, x -> UsersLoggedMessage.deserialize(x));
 
             System.out.println("[SC extPull] started on: " + this.extPullAddress);
 

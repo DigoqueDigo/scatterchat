@@ -5,10 +5,10 @@ import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 import scatterchat.chatserver.deliver.Deliver;
 import scatterchat.protocol.carrier.Carrier;
-import scatterchat.protocol.messages.ChatMessage;
-import scatterchat.protocol.messages.GroupJoinMessage;
 import scatterchat.protocol.messages.Message;
 import scatterchat.protocol.messages.Message.MESSAGE_TYPE;
+import scatterchat.protocol.messages.chat.ChatMessage;
+import scatterchat.protocol.messages.info.ServeTopicRequest;
 
 
 public class ChatServerInterSub implements Runnable{
@@ -31,10 +31,10 @@ public class ChatServerInterSub implements Runnable{
     }
 
 
-    private void handleGroupJoinMessage(GroupJoinMessage message, ZMQ.Socket subSocket){
+    private void handleGroupJoinMessage(ServeTopicRequest message, ZMQ.Socket subSocket){
 
         String topic = message.getTopic().replace("[internal]", "");
-        GroupJoinMessage groupJoinWarning = (GroupJoinMessage) message;
+        ServeTopicRequest groupJoinWarning = (ServeTopicRequest) message;
         subSocket.subscribe(topic);
 
         for (String nodeInterPubAddres : groupJoinWarning.getNodes()){
@@ -59,7 +59,7 @@ public class ChatServerInterSub implements Runnable{
             Carrier carrier = new Carrier(subSocket);
 
             carrier.on(MESSAGE_TYPE.CHAT_MESSAGE, x -> ChatMessage.deserialize(x));
-            carrier.on(MESSAGE_TYPE.GROUP_JOIN_WARNING, x -> GroupJoinMessage.deserialize(x));
+            carrier.on(MESSAGE_TYPE.GROUP_JOIN_WARNING, x -> ServeTopicRequest.deserialize(x));
 
             System.out.println("[SC interSub] started");
 
@@ -67,9 +67,9 @@ public class ChatServerInterSub implements Runnable{
 
                 System.out.println("[SC interSub] Received: " + message);
 
-                switch (message.getType()){
-                    case CHAT_MESSAGE -> handleChatMessage((ChatMessage) message);
-                    case GROUP_JOIN_WARNING -> handleGroupJoinMessage((GroupJoinMessage) message, subSocket);
+                switch (message){
+                    case ChatMessage m -> handleChatMessage(m);
+                    case ServeTopicRequest m -> handleGroupJoinMessage(m, subSocket);
                     default -> System.out.println("[SC interSub] Unknown: " + message);
                 }
             }

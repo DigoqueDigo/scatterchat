@@ -6,8 +6,8 @@ import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 
 import scatterchat.protocol.clock.VectorClock;
-import scatterchat.protocol.messages.ChatMessage;
 import scatterchat.protocol.messages.Message;
+import scatterchat.protocol.messages.chat.ChatMessage;
 
 
 public class Deliver{
