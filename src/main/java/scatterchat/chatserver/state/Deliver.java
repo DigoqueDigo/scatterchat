@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
-
 import scatterchat.clock.VectorClock;
 import scatterchat.protocol.messages.CausalMessage;
 import scatterchat.protocol.messages.Message;
@@ -27,7 +26,7 @@ public class Deliver implements Runnable{
 
 
     private void addCausalMessage(CausalMessage message){
-        String topic = message.getTopic();
+        String topic = message.getMessage().getTopic();
         this.pending.putIfAbsent(topic, new ArrayList<>());
         this.pending.get(topic).add(message);
     }
@@ -38,20 +37,20 @@ public class Deliver implements Runnable{
         synchronized (state){
 
             int index = 0;
-            VectorClock clock = state.getClockOf(topic);
-            List<CausalMessage> pendingBuffer = pending.get(topic);
+            final VectorClock clock = state.getVectorClockOf(topic);
+            final List<CausalMessage> pendingBuffer = pending.get(topic);
 
             while (index < pendingBuffer.size()){
 
                 boolean deliverable = true;
-                CausalMessage pendingMessage = pendingBuffer.get(index);
+                final CausalMessage pendingMessage = pendingBuffer.get(index);
 
-                String sender = pendingMessage.getSender();
-                VectorClock messageClock = pendingMessage.getVectorClock();
+                final String sender = pendingMessage.getMessage().getSender();
+                final VectorClock messageClock = pendingMessage.getVectorClock();
 
                 if (clock.getTimeOf(sender) + 1 == messageClock.getTimeOf(sender)){
 
-                    for (String node : state.getMembersOf(topic)){
+                    for (String node : state.getNodesOfTopic(topic)){
                         if (!node.equals(sender) && clock.getTimeOf(node) < messageClock.getTimeOf(node)){
                             deliverable = false;
                             break;
@@ -60,7 +59,7 @@ public class Deliver implements Runnable{
 
                     if (deliverable){
                         pendingBuffer.remove(index);
-                        delivered.put(pendingMessage);
+                        delivered.put(pendingMessage.getMessage());
                         clock.putTimeOf(sender, messageClock.getTimeOf(sender));
                         index = 0;
                     }
@@ -76,7 +75,7 @@ public class Deliver implements Runnable{
         try{
             CausalMessage message = null;
             while ((message = this.received.take()) != null){
-                String topic = message.getTopic();
+                final String topic = message.getMessage().getTopic();
                 addCausalMessage(message);
                 deliver(topic);
             }

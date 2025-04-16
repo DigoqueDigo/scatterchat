@@ -3,12 +3,15 @@ import java.util.concurrent.BlockingQueue;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
+import scatterchat.protocol.messages.CausalMessage;
 import scatterchat.protocol.messages.Message;
 import scatterchat.protocol.messages.Message.MESSAGE_TYPE;
 import scatterchat.protocol.messages.chat.ChatExitMessage;
 import scatterchat.protocol.messages.chat.ChatMessage;
-import scatterchat.protocol.messages.crtd.OrSetMessage;
-import scatterchat.protocol.messages.crtd.OrSetMessage.OPERATION;
+import scatterchat.protocol.messages.crtd.ORSetMessage;
+import scatterchat.protocol.messages.crtd.UsersORSetMessage;
+import scatterchat.protocol.messages.crtd.ORSetMessage.OPERATION;
+import scatterchat.chatserver.state.ORSet;
 import scatterchat.chatserver.state.State;
 import scatterchat.protocol.carrier.Carrier;
 
@@ -17,10 +20,10 @@ public class ChatServerExtPull implements Runnable{
 
     private State state;
     private String extPullAddress; 
-    private BlockingQueue<Message> broadcast;
+    private BlockingQueue<CausalMessage> broadcast;
 
 
-    public ChatServerExtPull(String extPullAddress, State state, BlockingQueue<Message> broadcast){
+    public ChatServerExtPull(String extPullAddress, State state, BlockingQueue<CausalMessage> broadcast){
         this.extPullAddress = extPullAddress;
         this.state = state;
         this.broadcast = broadcast;
@@ -29,8 +32,25 @@ public class ChatServerExtPull implements Runnable{
 
     private void handleChatMessage(ChatMessage message) throws InterruptedException{
 
-        // TODO :: VERIFICAR SE O CLIENT AINDA NÃO FOI REGISTADO NO TOPICO
-        this.broadcast.put(message);
+        synchronized (state){
+
+            final String topic = message.getTopic();
+            final String sender = message.getSender();
+            ORSet orSet = state.getUsersORSetOf(topic);
+
+            if (!orSet.contains(sender)){
+
+                ORSetMessage orSetMessage = orSet.prepare(OPERATION.ADD, sender);
+                UsersORSetMessage usersORSetMessage = new UsersORSetMessage(topic, sender, orSetMessage);
+                CausalMessage causalMessage = new CausalMessage(usersORSetMessage, state.getVectorClockOf(topic));
+
+                orSet.effect(orSetMessage);
+                broadcast.put(causalMessage);
+            }
+
+            CausalMessage causalMessage = new CausalMessage(message, state.getVectorClockOf(topic));
+            broadcast.put(causalMessage);
+        }
     }
 
 
@@ -38,19 +58,18 @@ public class ChatServerExtPull implements Runnable{
 
         synchronized (state){
 
-            OrSetMessage orSetMessage = new OrSetMessage(
-                message.getTopic(),
-                message.getSender(),
-                state.getClockOf(message.getTopic()),
-                OPERATION.REMOVE,
-                state.getCRDTClockUsers(),
-                state.);
-            this.broadcast.put(message);
+            final String topic = message.getTopic();
+            final String sender = message.getSender();
 
+            ORSet orSet = state.getUsersORSetOf(topic);
+            ORSetMessage orSetMessage = orSet.prepare(OPERATION.REMOVE, sender);
+
+            UsersORSetMessage usersORSetMessage = new UsersORSetMessage(topic, sender, orSetMessage);
+            CausalMessage causalMessage = new CausalMessage(usersORSetMessage, state.getVectorClockOf(topic));
+
+            orSet.effect(orSetMessage);
+            broadcast.put(causalMessage);
         }
-
-        // TODOO :: RETIRAR O CLIENTE DO TOPICO
-
     }
 
 

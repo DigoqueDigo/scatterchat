@@ -7,7 +7,7 @@ import com.esotericsoftware.kryo.io.Output;
 import scatterchat.clock.VectorClock;
 
 
-public abstract class CausalMessage{
+public class CausalMessage{
 
     private Message message;
     private VectorClock vectorClock;

@@ -2,7 +2,6 @@ package scatterchat.protocol.messages.crtd;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.HashSet;
-import java.util.Set;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
@@ -12,32 +11,17 @@ import scatterchat.protocol.messages.Message;
 
 public class UsersORSetMessage extends Message{
 
-    public enum OPERATION{
-        ADD,
-        REMOVE,
-    };
-
-    private String element;
-    private CRDTEntry clock;
-    private OPERATION operation;
-    private Set<CRDTEntry> entries;
+    private ORSetMessage orSetMessage;
 
 
-    public UsersORSetMessage(String topic, String sender, OPERATION operation, String element, CRDTEntry clock, Set<CRDTEntry> entries){
+    public UsersORSetMessage(String topic, String sender, ORSetMessage orSetMessage){
         super(MESSAGE_TYPE.USERS_ORSET_MESSAGE, topic, sender);
-        this.operation = operation;
-        this.element = element;
-        this.clock = clock;
-        this.entries = entries;
+        this.orSetMessage = orSetMessage;
     }
 
 
-    public UsersORSetMessage(String topic, String sender, OPERATION operation, String element, Set<CRDTEntry> entries){
-        super(MESSAGE_TYPE.USERS_ORSET_MESSAGE, topic, sender);
-        this.operation = operation;
-        this.element = element;
-        this.clock = null;
-        this.entries = entries;
+    public ORSetMessage getOrSetMessage(){
+        return this.orSetMessage;
     }
 
 

@@ -19,7 +19,6 @@ public class LogServer extends Rx3LogServiceGrpc.LogServiceImplBase implements R
         this.logServerPort = logServerPort;
     }
 
-    // TODO :: ADAPTAR PARA SACAR OS LOGS DO STATE
 
     @Override
     public Flowable<LogMessageReply> getLogs(Single<LogMessageRequest> request){
