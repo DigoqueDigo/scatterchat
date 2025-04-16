@@ -11,7 +11,7 @@ public class ChatExitMessage extends Message{
 
 
     public ChatExitMessage(String topic, String sender){
-        super(MESSAGE_TYPE.EXIT_ROOM_REQUEST, topic, sender);
+        super(MESSAGE_TYPE.CHAT_EXIT_MESSAGE, topic, sender);
     }
 
 

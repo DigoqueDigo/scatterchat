@@ -3,10 +3,11 @@ import java.util.concurrent.BlockingQueue;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
-import scatterchat.chatserver.deliver.Deliver;
 import scatterchat.protocol.carrier.Carrier;
+import scatterchat.protocol.messages.CausalMessage;
 import scatterchat.protocol.messages.Message;
 import scatterchat.protocol.messages.Message.MESSAGE_TYPE;
+import scatterchat.protocol.messages.chat.ChatExitMessage;
 import scatterchat.protocol.messages.chat.ChatMessage;
 import scatterchat.protocol.messages.info.ServeTopicRequest;
 
@@ -15,29 +16,33 @@ public class ChatServerInterSub implements Runnable{
 
     private String nodeId;
     private String interPubAddress;
-    private Deliver deliver;
+    private BlockingQueue<CausalMessage> received;
 
 
-    public ChatServerInterSub(String nodeId, String interPubAddress, BlockingQueue<Message> delivered){
+    public ChatServerInterSub(String nodeId, String interPubAddress, BlockingQueue<CausalMessage> received){
         this.nodeId = nodeId;
         this.interPubAddress = interPubAddress;
-        this.deliver = new Deliver(delivered);
+        this.received = received;
     }
 
 
-    private void handleChatMessage(ChatMessage message){
-        String topic = message.getTopic();
-        this.deliver.addPendingMessage(topic, message);
+    private void handleChatMessage(ChatMessage message) throws InterruptedException{
+        this.received.put(message);
     }
 
 
-    private void handleGroupJoinMessage(ServeTopicRequest message, ZMQ.Socket subSocket){
+    public void handleChatExitMessage(ChatExitMessage message) throws InterruptedException{
+        this.received.put(message);
+    }
+
+
+    private void handleServeTopicRequest(ServeTopicRequest message, ZMQ.Socket subSocket){
 
         String topic = message.getTopic().replace("[internal]", "");
-        ServeTopicRequest groupJoinWarning = (ServeTopicRequest) message;
+        ServeTopicRequest serveTopicRequest = (ServeTopicRequest) message;
         subSocket.subscribe(topic);
 
-        for (String nodeInterPubAddres : groupJoinWarning.getNodes()){
+        for (String nodeInterPubAddres : serveTopicRequest.getNodes()){
             if (!nodeInterPubAddres.equals(nodeId)){
                 subSocket.connect(nodeInterPubAddres);
             }
@@ -54,14 +59,14 @@ public class ChatServerInterSub implements Runnable{
 
             subSocket.connect(interPubAddress);
             subSocket.subscribe("[internal]");
+            System.out.println("[SC interSub] started");
 
             Message message = null;
             Carrier carrier = new Carrier(subSocket);
 
             carrier.on(MESSAGE_TYPE.CHAT_MESSAGE, x -> ChatMessage.deserialize(x));
-            carrier.on(MESSAGE_TYPE.GROUP_JOIN_WARNING, x -> ServeTopicRequest.deserialize(x));
-
-            System.out.println("[SC interSub] started");
+            carrier.on(MESSAGE_TYPE.CHAT_EXIT_MESSAGE, x -> ChatExitMessage.deserialize(x));
+            carrier.on(MESSAGE_TYPE.SERVE_TOPIC_REQUEST, x -> ServeTopicRequest.deserialize(x));
 
             while ((message = carrier.receiveWithTopic()) != null){
 
@@ -69,7 +74,8 @@ public class ChatServerInterSub implements Runnable{
 
                 switch (message){
                     case ChatMessage m -> handleChatMessage(m);
-                    case ServeTopicRequest m -> handleGroupJoinMessage(m, subSocket);
+                    case ChatExitMessage m -> handleChatExitMessage(m);
+                    case ServeTopicRequest m -> handleServeTopicRequest(m, subSocket);
                     default -> System.out.println("[SC interSub] Unknown: " + message);
                 }
             }

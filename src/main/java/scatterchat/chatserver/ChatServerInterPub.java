@@ -5,7 +5,9 @@ import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 import scatterchat.protocol.carrier.Carrier;
 import scatterchat.protocol.messages.Message;
-import scatterchat.protocol.messages.Message.MESSAGE_TYPE;
+import scatterchat.protocol.messages.chat.ChatExitMessage;
+import scatterchat.protocol.messages.chat.ChatMessage;
+import scatterchat.protocol.messages.info.ServeTopicRequest;
 
 
 public class ChatServerInterPub implements Runnable{
@@ -20,34 +22,48 @@ public class ChatServerInterPub implements Runnable{
     }
 
 
+    private void handleChatMessage(ChatMessage message, Carrier carrier){
+        carrier.sendWithTopic(message);
+    }
+
+
+    private void handleChatExitMessage(ChatExitMessage message, Carrier carrier){
+        message.setTopic("[internal]" + message.getTopic());
+        carrier.sendWithTopic(message);
+    }
+
+
+    private void handleServeTopicRequest(ServeTopicRequest message, Carrier carrier){
+        message.setTopic("[internal]" + message.getTopic());
+        carrier.sendWithTopic(message);
+    }
+
+
     @Override
     public void run(){
 
         try{
             ZContext context = new ZContext();
-            ZMQ.Socket pubSocket = context.createSocket(SocketType.PUB);
-            pubSocket.bind(this.interPubAddress);
+            ZMQ.Socket socket = context.createSocket(SocketType.PUB);
+            socket.bind(this.interPubAddress);
 
             Message message = null;
-            Carrier pubCarrier = new Carrier(pubSocket);
-
-            System.out.println("[SC interPuB] started on: " + this.interPubAddress);
+            Carrier carrier = new Carrier(socket);
+            System.out.println("[SC interPub] started on: " + this.interPubAddress);
 
             while ((message = broadcast.take()) != null){
 
-                System.out.println("[SC interPuB] Reveived: " + message.toString());
+                System.out.println("[SC interPub] Reveived: " + message.toString());
 
-                if (message.getType() == MESSAGE_TYPE.CHAT_MESSAGE){
-                    pubCarrier.sendWithTopic(message);
-                }
-
-                else if (message.getType() == MESSAGE_TYPE.GROUP_JOIN_WARNING){
-                    message.setTopic("[internal]" + message.getTopic());
-                    pubCarrier.sendWithTopic(message);
+                switch (message){
+                    case ChatMessage m -> handleChatMessage(m, carrier);
+                    case ChatExitMessage m -> handleChatExitMessage(m, carrier);
+                    case ServeTopicRequest m -> handleServeTopicRequest(m, carrier);
+                    default -> System.out.println("[SC interPub] Unknown: " + message);
                 }
             }
 
-            pubSocket.close();
+            socket.close();
             context.close();
         }
 

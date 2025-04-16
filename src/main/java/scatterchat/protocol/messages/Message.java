@@ -5,11 +5,12 @@ public abstract class Message{
 
     public enum MESSAGE_TYPE{
         CHAT_MESSAGE,
-        EXIT_ROOM_REQUEST,
+        CHAT_EXIT_MESSAGE,
         SERVER_STATE_REQUEST,
         SERVER_STATE_RESPONSE,
         SERVE_TOPIC_REQUEST,
         SERVE_TOPIC_RESPONSE,
+        USERS_ORSET_MESSAGE,
     }
 
     private MESSAGE_TYPE type;

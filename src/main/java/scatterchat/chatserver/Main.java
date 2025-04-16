@@ -21,15 +21,16 @@ public class Main{
 
         final String configFileContent = new String(Files.readAllBytes(Paths.get(configFilePath)));
         final JSONObject nodeConfig = new JSONObject(configFileContent).getJSONObject(nodeId);
-
-        BlockingQueue<Message> broadcast = new ArrayBlockingQueue<>(10);
-        BlockingQueue<Message> delivered = new ArrayBlockingQueue<>(10);
-
+        
+        final int logServerPort = nodeConfig.getInt("logServerPort");
+        final String extPubAddress = nodeConfig.getString("extPubAddress");
         final String extPullAddress = nodeConfig.getString("extPullAddress");
         final String interPubAddress = nodeConfig.getString("interPubAddress");
-        final String extPubAddress = nodeConfig.getString("extPubAddress");
-        final int logServerPort = nodeConfig.getInt("logServerPort");
         final String logServerAddress = nodeConfig.getString("logServerAddress");
+
+        BlockingQueue<Message> broadcast = new ArrayBlockingQueue<>(10);
+        BlockingQueue<Message> received = new ArrayBlockingQueue<>(10);
+        BlockingQueue<Message> delivered = new ArrayBlockingQueue<>(10);
 
         Runnable chatServerExtPull = new ChatServerExtPull(extPullAddress, delivered, broadcast);
         Runnable chatServerInterPub = new ChatServerInterPub(interPubAddress, broadcast);
