@@ -3,7 +3,6 @@ package scatterchat.protocol.message.info;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-
 import scatterchat.protocol.message.Message;
 
 import java.io.ByteArrayInputStream;
