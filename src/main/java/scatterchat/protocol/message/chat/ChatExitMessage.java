@@ -1,18 +1,23 @@
-package scatterchat.protocol.messages.info;
+package scatterchat.protocol.message.chat;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import scatterchat.protocol.messages.Message;
+
+import scatterchat.protocol.message.Message;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
 
-public class ServerStateRequest extends Message {
+public class ChatExitMessage extends Message {
 
-    public ServerStateRequest() {
-        super(MessageType.SERVER_STATE_REQUEST);
+    public ChatExitMessage() {
+        super(MessageType.CHAT_EXIT_MESSAGE);
+    }
+
+    public ChatExitMessage(String topic, String sender) {
+        super(MessageType.CHAT_EXIT_MESSAGE, topic, sender);
     }
 
     public byte[] serialize() {
@@ -22,7 +27,7 @@ public class ServerStateRequest extends Message {
         Output output = new Output(byteArrayOutputStream);
 
         kryo.register(MessageType.class);
-        kryo.register(ServerStateRequest.class);
+        kryo.register(ChatExitMessage.class);
         kryo.writeObject(output, this);
 
         output.flush();
@@ -31,18 +36,18 @@ public class ServerStateRequest extends Message {
         return byteArrayOutputStream.toByteArray();
     }
 
-    public static ServerStateRequest deserialize(byte[] data) {
+    public static ChatExitMessage deserialize(byte[] data) {
 
         Kryo kryo = new Kryo();
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
         Input input = new Input(byteArrayInputStream);
 
         kryo.register(MessageType.class);
-        kryo.register(ServerStateRequest.class);
+        kryo.register(ChatExitMessage.class);
 
-        ServerStateRequest serverStateRequest = kryo.readObject(input, ServerStateRequest.class);
+        ChatExitMessage chatExitMessage = kryo.readObject(input, ChatExitMessage.class);
         input.close();
 
-        return serverStateRequest;
+        return chatExitMessage;
     }
 }

@@ -1,13 +1,12 @@
-package scatterchat.chatserver.state;
-
-import scatterchat.crdt.CRDTEntry;
-import scatterchat.protocol.messages.crtd.ORSetMessage;
-import scatterchat.protocol.messages.crtd.ORSetMessage.Operation;
+package scatterchat.crdt;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import scatterchat.protocol.message.crtd.ORSetMessage;
+import scatterchat.protocol.message.crtd.ORSetMessage.Operation;
 
 public class ORSet {
 

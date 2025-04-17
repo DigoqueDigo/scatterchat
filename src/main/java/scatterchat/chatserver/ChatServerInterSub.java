@@ -6,11 +6,11 @@ import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 import scatterchat.chatserver.state.State;
 import scatterchat.protocol.carrier.Carrier;
-import scatterchat.protocol.messages.CausalMessage;
-import scatterchat.protocol.messages.chat.ChatMessage;
-import scatterchat.protocol.messages.Message.MessageType;
-import scatterchat.protocol.messages.crtd.UsersORSetMessage;
-import scatterchat.protocol.messages.info.ServeTopicRequest;
+import scatterchat.protocol.message.CausalMessage;
+import scatterchat.protocol.message.Message.MessageType;
+import scatterchat.protocol.message.chat.ChatMessage;
+import scatterchat.protocol.message.crtd.UsersORSetMessage;
+import scatterchat.protocol.message.info.ServeTopicRequest;
 
 import java.util.concurrent.BlockingQueue;
 
@@ -27,6 +27,7 @@ public class ChatServerInterSub implements Runnable {
         this.config = config;
         this.received = received;
     }
+
 
     private void forwardCausalMessage(CausalMessage message) throws InterruptedException {
         this.received.put(message);
@@ -70,7 +71,7 @@ public class ChatServerInterSub implements Runnable {
             carrier.on(MessageType.USERS_ORSET_MESSAGE, UsersORSetMessage::deserialize);
             carrier.on(MessageType.SERVE_TOPIC_REQUEST, ServeTopicRequest::deserialize);
 
-            while ((causalMessage = carrier.receiveCausalWithTopic()) != null) {
+            while ((causalMessage = carrier.receiveCausalMessageWithTopic()) != null) {
 
                 System.out.println("[SC interSub] Received: " + causalMessage.getMessage());
 

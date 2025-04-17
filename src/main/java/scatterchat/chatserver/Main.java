@@ -3,9 +3,9 @@ package scatterchat.chatserver;
 import org.json.JSONObject;
 import scatterchat.chatserver.log.LogServer;
 import scatterchat.chatserver.state.State;
+import scatterchat.protocol.message.CausalMessage;
+import scatterchat.protocol.message.Message;
 import scatterchat.chatserver.state.Deliver;
-import scatterchat.protocol.messages.Message;
-import scatterchat.protocol.messages.CausalMessage;
 
 import java.io.IOException;
 import java.nio.file.Files;

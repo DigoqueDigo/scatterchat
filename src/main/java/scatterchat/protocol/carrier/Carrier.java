@@ -1,9 +1,9 @@
 package scatterchat.protocol.carrier;
 
 import org.zeromq.ZMQ;
-import scatterchat.protocol.messages.Message;
-import scatterchat.protocol.messages.CausalMessage;
-import scatterchat.protocol.messages.Message.MessageType;
+import scatterchat.protocol.message.CausalMessage;
+import scatterchat.protocol.message.Message;
+import scatterchat.protocol.message.Message.MessageType;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,32 +28,41 @@ public final class Carrier {
         this.deserializers.put(type, deserializer);
     }
 
-    public void send(Message message) {
+    public void sendMessage(Message message) {
         socket.sendMore(message.getType().name());
         socket.send(message.serialize());
     }
 
-    public Message receive() {
+    public Message receiveMessage() {
         MessageType type = MessageType.valueOf(new String(socket.recv()));
         return deserializers.get(type).apply(socket.recv());
     }
 
-    public void sendWithTopic(Message message) {
+    public void sendMessageWithTopic(Message message) {
         socket.sendMore(message.getTopic());
-        send(message);
+        sendMessage(message);
     }
 
-    public Message receiveWithTopic() {
+    public Message receiveMessageWithTopic() {
         socket.recv();
-        return receive();
+        return receiveMessage();
     }
 
-    public void sendCausalWihtTopic(CausalMessage message) {
-        System.out.println("Not implemented");
+    public void sendCausalMessage(CausalMessage message) {
+        socket.send(message.serialize());
     }
 
-    public CausalMessage receiveCausalWithTopic() {
-        System.out.println("Not implemented");
-        return null;
+    public CausalMessage receiveCausalMessage() {
+        return CausalMessage.deserialize(socket.recv());
+    }
+
+    public void sendCausalMessageWithTopic(CausalMessage message) {
+        socket.sendMore(message.getMessage().getTopic());
+        sendCausalMessage(message);
+    }
+
+    public CausalMessage receiveCausalMessageWithTopic() {
+        socket.recv();
+        return receiveCausalMessage();
     }
 }

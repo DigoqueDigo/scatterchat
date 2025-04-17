@@ -5,14 +5,16 @@ import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 import scatterchat.chatserver.state.State;
 import scatterchat.protocol.carrier.Carrier;
-import scatterchat.protocol.messages.Message;
-import scatterchat.protocol.messages.Message.MessageType;
-import scatterchat.protocol.messages.info.ServerStateRequest;
-import scatterchat.protocol.messages.info.ServerStateResponse;
+import scatterchat.protocol.message.Message;
+import scatterchat.protocol.message.Message.MessageType;
+import scatterchat.protocol.message.info.ServeTopicRequest;
+import scatterchat.protocol.message.info.ServerStateRequest;
+import scatterchat.protocol.message.info.ServerStateResponse;
 
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 
 public class ChatServerExtRep implements Runnable {
 
@@ -25,6 +27,7 @@ public class ChatServerExtRep implements Runnable {
         this.extRepAddress = extRepAddress;
     }
 
+
     private void handleServerStateRequest(ServerStateRequest message, Carrier carrier) {
 
         synchronized (state) {
@@ -36,14 +39,13 @@ public class ChatServerExtRep implements Runnable {
                     topic -> state.getUsersORSetOf(topic).elements()));
 
             ServerStateResponse response = new ServerStateResponse(serverState);
-            carrier.send(response);
+            carrier.sendMessage(response);
         }
     }
 
 
     @Override
     public void run() {
-
         try {
             ZContext context = new ZContext();
             ZMQ.Socket socket = context.createSocket(SocketType.REP);
@@ -52,10 +54,11 @@ public class ChatServerExtRep implements Runnable {
             Message message = null;
             Carrier carrier = new Carrier(socket);
 
+            carrier.on(MessageType.SERVE_TOPIC_REQUEST, ServeTopicRequest::deserialize);
             carrier.on(MessageType.SERVER_STATE_REQUEST, ServerStateRequest::deserialize);
             System.out.println("[SC extRep] started on: " + extRepAddress);
 
-            while ((message = carrier.receive()) != null) {
+            while ((message = carrier.receiveMessage()) != null) {
 
                 System.out.println("[SC extRep] Received: " + message);
 

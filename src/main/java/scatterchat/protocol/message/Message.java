@@ -1,4 +1,4 @@
-package scatterchat.protocol.messages;
+package scatterchat.protocol.message;
 
 
 public abstract class Message {

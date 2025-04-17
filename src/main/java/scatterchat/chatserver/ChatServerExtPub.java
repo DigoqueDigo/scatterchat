@@ -4,22 +4,22 @@ import org.json.JSONObject;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
-import scatterchat.chatserver.state.ORSet;
 import scatterchat.chatserver.state.State;
+import scatterchat.crdt.ORSet;
 import scatterchat.protocol.carrier.Carrier;
-import scatterchat.protocol.messages.Message;
-import scatterchat.protocol.messages.chat.ChatMessage;
-import scatterchat.protocol.messages.crtd.ORSetMessage;
-import scatterchat.protocol.messages.crtd.UsersORSetMessage;
+import scatterchat.protocol.message.Message;
+import scatterchat.protocol.message.chat.ChatMessage;
+import scatterchat.protocol.message.crtd.ORSetMessage;
+import scatterchat.protocol.message.crtd.UsersORSetMessage;
 
 import java.util.concurrent.BlockingQueue;
+
 
 public class ChatServerExtPub implements Runnable {
 
     private State state;
     private JSONObject config;
     private BlockingQueue<Message> delivered;
-
 
     public ChatServerExtPub(JSONObject config, State state, BlockingQueue<Message> delivered) {
         this.state = state;
@@ -28,7 +28,7 @@ public class ChatServerExtPub implements Runnable {
     }
 
     private void handleChatMessage(ChatMessage message, Carrier carrier) {
-        carrier.sendWithTopic(message);
+        carrier.sendMessageWithTopic(message);
     }
 
     private void handleUsersORSetMessage(UsersORSetMessage message) {

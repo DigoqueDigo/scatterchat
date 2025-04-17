@@ -1,8 +1,8 @@
 package scatterchat.chatserver.state;
 
 import scatterchat.clock.VectorClock;
-import scatterchat.protocol.messages.CausalMessage;
-import scatterchat.protocol.messages.Message;
+import scatterchat.protocol.message.CausalMessage;
+import scatterchat.protocol.message.Message;
 
 import java.util.ArrayList;
 import java.util.HashMap;

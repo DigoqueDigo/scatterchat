@@ -1,4 +1,4 @@
-package scatterchat.protocol.messages.crtd;
+package scatterchat.protocol.message.crtd;
 
 import scatterchat.crdt.CRDTEntry;
 

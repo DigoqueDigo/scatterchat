@@ -1,37 +1,41 @@
-package scatterchat.protocol.messages.info;
+package scatterchat.protocol.message.info;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import scatterchat.protocol.messages.Message;
+
+import scatterchat.protocol.message.Message;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 
-public class ServeTopicRequest extends Message {
+public class ServeTopicResponse extends Message {
 
-    private List<String> nodes;
+    private boolean success;
 
-    public ServeTopicRequest(String topic, List<String> nodes) {
-        super(MessageType.SERVE_TOPIC_REQUEST, topic);
-        this.nodes = new ArrayList<>(nodes);
+    public ServeTopicResponse(){
+        super(MessageType.SERVE_TOPIC_RESPONSE);
+        this.success = false;
     }
 
-    public List<String> getNodes() {
-        return this.nodes;
+    public ServeTopicResponse(boolean success) {
+        super(MessageType.SERVE_TOPIC_RESPONSE);
+        this.success = success;
+    }
+
+    public boolean getSuccess() {
+        return this.success;
     }
 
     public byte[] serialize() {
+
         Kryo kryo = new Kryo();
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         Output output = new Output(byteArrayOutputStream);
 
         kryo.register(MessageType.class);
-        kryo.register(ServeTopicRequest.class);
-        kryo.register(ArrayList.class);
+        kryo.register(ServeTopicResponse.class);
         kryo.writeObject(output, this);
 
         output.flush();
@@ -40,22 +44,22 @@ public class ServeTopicRequest extends Message {
         return byteArrayOutputStream.toByteArray();
     }
 
-    public static ServeTopicRequest deserialize(byte[] data) {
+    public static ServeTopicResponse deserialize(byte[] data) {
+
         Kryo kryo = new Kryo();
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
         Input input = new Input(byteArrayInputStream);
 
         kryo.register(MessageType.class);
-        kryo.register(ServeTopicRequest.class);
-        kryo.reference(ArrayList.class);
+        kryo.register(ServeTopicResponse.class);
 
-        ServeTopicRequest serveTopicRequest = kryo.readObject(input, ServeTopicRequest.class);
+        ServeTopicResponse serveTopicResponse = kryo.readObject(input, ServeTopicResponse.class);
         input.close();
 
-        return serveTopicRequest;
+        return serveTopicResponse;
     }
 
     public String toString() {
-        return super.toString() + "\t nodes: " + nodes;
+        return super.toString() + "\t success: " + success;
     }
 }

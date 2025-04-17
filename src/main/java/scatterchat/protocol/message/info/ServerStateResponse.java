@@ -1,9 +1,10 @@
-package scatterchat.protocol.messages.info;
+package scatterchat.protocol.message.info;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import scatterchat.protocol.messages.Message;
+
+import scatterchat.protocol.message.Message;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -17,17 +18,18 @@ public class ServerStateResponse extends Message {
 
     private Map<String, Set<String>> serverState;
 
-
-    public ServerStateResponse(Map<String, Set<String>> serverState) {
-        super(MessageType.SERVER_STATE_REQUEST);
-        this.serverState = serverState;
+    public ServerStateResponse() {
+        super(MessageType.SERVER_STATE_RESPONSE);
     }
 
+    public ServerStateResponse(Map<String, Set<String>> serverState) {
+        super(MessageType.SERVER_STATE_RESPONSE);
+        this.serverState = serverState;
+    }
 
     public Map<String, Set<String>> getServerState() {
         return this.serverState;
     }
-
 
     public byte[] serialize() {
         Kryo kryo = new Kryo();
@@ -45,7 +47,6 @@ public class ServerStateResponse extends Message {
 
         return byteArrayOutputStream.toByteArray();
     }
-
 
     public static ServerStateResponse deserialize(byte[] data) {
         Kryo kryo = new Kryo();

@@ -7,11 +7,11 @@ import org.zeromq.ZMQ;
 import scatterchat.chatserver.state.State;
 import scatterchat.clock.VectorClock;
 import scatterchat.protocol.carrier.Carrier;
-import scatterchat.protocol.messages.CausalMessage;
-import scatterchat.protocol.messages.Message;
-import scatterchat.protocol.messages.chat.ChatMessage;
-import scatterchat.protocol.messages.crtd.UsersORSetMessage;
-import scatterchat.protocol.messages.info.ServeTopicRequest;
+import scatterchat.protocol.message.CausalMessage;
+import scatterchat.protocol.message.Message;
+import scatterchat.protocol.message.chat.ChatMessage;
+import scatterchat.protocol.message.crtd.UsersORSetMessage;
+import scatterchat.protocol.message.info.ServeTopicRequest;
 
 import java.util.concurrent.BlockingQueue;
 
@@ -29,6 +29,7 @@ public class ChatServerInterPub implements Runnable {
         this.broadcast = broadcast;
     }
 
+
     private void forwardAsCausalMessage(Message message, Carrier carrier) {
 
         synchronized (state){
@@ -40,17 +41,19 @@ public class ChatServerInterPub implements Runnable {
             VectorClock vectorClock = state.getVectorClockOf(topic);
             CausalMessage causalMessage = new CausalMessage(message, vectorClock);
 
-            carrier.sendCausalWihtTopic(causalMessage);
+            carrier.sendCausalMessageWithTopic(causalMessage);
             vectorClock.putTimeOf(nodeId, vectorClock.getTimeOf(nodeId) + 1);
             state.setVectorClockOf(topic, vectorClock);
         }
     }
 
+
     private void handleServeTopicRequest(ServeTopicRequest message, Carrier carrier){
         message.setTopic("[internal]" + message.getTopic());
         CausalMessage causalMessage = new CausalMessage(message, null);
-        carrier.sendCausalWihtTopic(causalMessage);
+        carrier.sendCausalMessageWithTopic(causalMessage);
     }
+
 
     @Override
     public void run() {

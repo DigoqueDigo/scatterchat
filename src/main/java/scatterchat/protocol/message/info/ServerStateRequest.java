@@ -1,26 +1,19 @@
-package scatterchat.protocol.messages.info;
+package scatterchat.protocol.message.info;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import scatterchat.protocol.messages.Message;
+
+import scatterchat.protocol.message.Message;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
 
-public class ServeTopicResponse extends Message {
+public class ServerStateRequest extends Message {
 
-    private boolean success;
-
-    public ServeTopicResponse(boolean success) {
-        super(MessageType.SERVE_TOPIC_RESPONSE);
-        this.success = success;
-    }
-
-
-    public boolean getSuccess() {
-        return this.success;
+    public ServerStateRequest() {
+        super(MessageType.SERVER_STATE_REQUEST);
     }
 
     public byte[] serialize() {
@@ -30,7 +23,7 @@ public class ServeTopicResponse extends Message {
         Output output = new Output(byteArrayOutputStream);
 
         kryo.register(MessageType.class);
-        kryo.register(ServeTopicResponse.class);
+        kryo.register(ServerStateRequest.class);
         kryo.writeObject(output, this);
 
         output.flush();
@@ -39,22 +32,18 @@ public class ServeTopicResponse extends Message {
         return byteArrayOutputStream.toByteArray();
     }
 
-    public static ServeTopicResponse deserialize(byte[] data) {
+    public static ServerStateRequest deserialize(byte[] data) {
 
         Kryo kryo = new Kryo();
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
         Input input = new Input(byteArrayInputStream);
 
         kryo.register(MessageType.class);
-        kryo.register(ServeTopicResponse.class);
+        kryo.register(ServerStateRequest.class);
 
-        ServeTopicResponse serveTopicResponse = kryo.readObject(input, ServeTopicResponse.class);
+        ServerStateRequest serverStateRequest = kryo.readObject(input, ServerStateRequest.class);
         input.close();
 
-        return serveTopicResponse;
-    }
-
-    public String toString() {
-        return super.toString() + "\t success: " + success;
+        return serverStateRequest;
     }
 }

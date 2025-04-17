@@ -1,17 +1,24 @@
-package scatterchat.protocol.messages.chat;
+package scatterchat.protocol.message.chat;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import scatterchat.protocol.messages.Message;
+
+import scatterchat.protocol.message.Message;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 
+
 public class ChatMessage extends Message {
 
     private final String message;
+
+    public ChatMessage() {
+        super(MessageType.CHAT_MESSAGE);
+        this.message = null;
+    }
 
     public ChatMessage(String topic, String message) {
         super(MessageType.CHAT_MESSAGE, topic);

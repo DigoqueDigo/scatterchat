@@ -8,6 +8,10 @@ public class VectorClock {
 
     private Map<String, Integer> vector;
 
+    public VectorClock() {
+        this.vector = new HashMap<>();
+    }
+
     public VectorClock(Map<String, Integer> vector) {
         this.vector = new HashMap<>(vector);
     }
@@ -27,5 +31,9 @@ public class VectorClock {
 
     public Integer getTimeOf(String node) {
         return this.vector.get(node);
+    }
+
+    public String toString(){
+        return this.vector.toString();
     }
 }

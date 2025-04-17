@@ -1,6 +1,7 @@
 package scatterchat.chatserver.state;
 
 import scatterchat.clock.VectorClock;
+import scatterchat.crdt.ORSet;
 
 import java.util.HashMap;
 import java.util.HashSet;
