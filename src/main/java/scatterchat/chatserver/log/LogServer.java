@@ -1,6 +1,5 @@
 package scatterchat.chatserver.log;
 
-import java.net.InetSocketAddress;
 import org.json.JSONObject;
 import io.grpc.netty.NettyServerBuilder;
 import io.grpc.Server;
@@ -9,6 +8,9 @@ import io.reactivex.rxjava3.core.Single;
 import scatterchat.LogMessageReply;
 import scatterchat.LogMessageRequest;
 import scatterchat.Rx3LogServiceGrpc;
+
+import java.net.InetSocketAddress;
+
 
 public class LogServer extends Rx3LogServiceGrpc.LogServiceImplBase implements Runnable {
 

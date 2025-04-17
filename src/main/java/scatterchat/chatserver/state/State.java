@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+
 
 public final class State {
 
@@ -29,20 +31,32 @@ public final class State {
     public VectorClock getVectorClockOf(String topic) {
         return this.clockPerTopic.get(topic).clone();
     }
+    
+    public ORSet getUsersORSetOf(String topic) {
+        return this.usersORSetPerTopic.get(topic);
+    }
+    
+    public Set<String> getServedTopics() {
+        return new HashSet<>(this.nodesPerTopic.keySet());
+    }
 
     public void setVectorClockOf(String topic, VectorClock vectorClock) {
         this.clockPerTopic.put(topic, vectorClock);
     }
 
-    public ORSet getUsersORSetOf(String topic) {
-        return this.usersORSetPerTopic.get(topic);
+    public void setNodesOf(String topic, Set<String> nodes){
+        this.nodesPerTopic.put(topic, nodes);
     }
 
-    public Set<String> getNodesOfTopic(String topic) {
-        return this.nodesPerTopic.get(topic);
+    public void addUsersORSetOf(String topic) {
+        this.usersORSetPerTopic.put(topic, new ORSet(nodeId));
     }
 
-    public Set<String> getServedTopics() {
-        return new HashSet<>(this.nodesPerTopic.keySet());
+    public Map<String, Set<String>> getState() {
+        return this.usersORSetPerTopic.entrySet()
+            .stream()
+            .collect(Collectors.toMap(
+                entry -> entry.getKey(),
+                entry -> entry.getValue().elements()));
     }
 }

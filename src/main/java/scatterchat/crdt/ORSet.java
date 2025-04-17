@@ -1,12 +1,12 @@
 package scatterchat.crdt;
 
+import scatterchat.crdt.ORSetAction.Operation;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import scatterchat.protocol.message.crtd.ORSetMessage;
-import scatterchat.protocol.message.crtd.ORSetMessage.Operation;
 
 public class ORSet {
 
@@ -18,20 +18,20 @@ public class ORSet {
         this.clock = new CRDTEntry(nodeId, 0);
     }
 
-    private ORSetMessage prepareAdd(Operation operation, String element) {
-        this.clock = this.clock.increment();
+    private ORSetAction prepareAdd(Operation operation, String element) {
+        this.clock = this.clock.increment(); // TODO :: DEVIA INCREMENTAR O RELOGIO DO ESTADO
         this.store.putIfAbsent(element, new HashSet<>());
         Set<CRDTEntry> entries = new HashSet<>(this.store.get(element));
-        return new ORSetMessage(element, clock, operation, entries);
+        return new ORSetAction(element, clock, operation, entries);
     }
 
-    private ORSetMessage prepareRemove(Operation operation, String element) {
+    private ORSetAction prepareRemove(Operation operation, String element) {
         this.store.putIfAbsent(element, new HashSet<>());
         Set<CRDTEntry> entries = new HashSet<>(this.store.get(element));
-        return new ORSetMessage(element, null, operation, entries);
+        return new ORSetAction(element, null, operation, entries);
     }
 
-    private void effectAdd(ORSetMessage message) {
+    private void effectAdd(ORSetAction message) {
         String element = message.element();
         this.store.putIfAbsent(element, new HashSet<>());
 
@@ -40,7 +40,7 @@ public class ORSet {
         entries.add(message.clock());
     }
 
-    private void effectRemove(ORSetMessage message) {
+    private void effectRemove(ORSetAction message) {
         String element = message.element();
         Set<CRDTEntry> entries = this.store.get(element);
         entries.removeAll(message.entries());
@@ -50,14 +50,14 @@ public class ORSet {
         }
     }
 
-    public ORSetMessage prepare(Operation operation, String element) {
+    public ORSetAction prepare(Operation operation, String element) {
         return switch (operation) {
             case ADD -> prepareAdd(operation, element);
             case REMOVE -> prepareRemove(operation, element);
         };
     }
 
-    public void effect(ORSetMessage message) {
+    public void effect(ORSetAction message) {
         switch (message.operation()) {
             case ADD -> effectAdd(message);
             case REMOVE -> effectRemove(message);

@@ -6,14 +6,15 @@ import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 import scatterchat.chatserver.state.State;
 import scatterchat.crdt.ORSet;
+import scatterchat.crdt.ORSetAction;
+import scatterchat.crdt.ORSetAction.Operation;
 import scatterchat.protocol.carrier.Carrier;
 import scatterchat.protocol.message.Message;
 import scatterchat.protocol.message.Message.MessageType;
-import scatterchat.protocol.message.chat.ChatExitMessage;
 import scatterchat.protocol.message.chat.ChatMessage;
-import scatterchat.protocol.message.crtd.ORSetMessage;
-import scatterchat.protocol.message.crtd.UsersORSetMessage;
-import scatterchat.protocol.message.crtd.ORSetMessage.Operation;
+import scatterchat.protocol.message.chat.TopicEnterMessage;
+import scatterchat.protocol.message.chat.TopicExitMessage;
+import scatterchat.protocol.message.crtd.UserORSetMessage;
 
 import java.util.concurrent.BlockingQueue;
 
@@ -31,27 +32,26 @@ public class ChatServerExtPull implements Runnable {
     }
 
     private void handleChatMessage(ChatMessage message) throws InterruptedException {
+        this.broadcast.add(message);
+    }
 
-        synchronized (state) {
+    private void handleTopicEnterMessage(TopicEnterMessage message) throws InterruptedException{
+
+        synchronized (state){
 
             final String topic = message.getTopic();
             final String sender = message.getSender();
+
             ORSet orSet = state.getUsersORSetOf(topic);
+            ORSetAction orSetAction = orSet.prepare(Operation.ADD, sender);
+            UserORSetMessage userORSetMessage = new UserORSetMessage(topic, sender, orSetAction);
 
-            if (!orSet.contains(sender)) {
-
-                ORSetMessage orSetMessage = orSet.prepare(Operation.ADD, sender);
-                UsersORSetMessage usersORSetMessage = new UsersORSetMessage(topic, sender, orSetMessage);
-
-                orSet.effect(orSetMessage);
-                broadcast.put(usersORSetMessage);
-            }
-
-            broadcast.put(message);
+            orSet.effect(orSetAction);
+            broadcast.put(userORSetMessage);
         }
     }
 
-    private void handleChatExitMessage(ChatExitMessage message) throws InterruptedException {
+    private void handleTopicExitMessage(TopicExitMessage message) throws InterruptedException {
 
         synchronized (state) {
 
@@ -59,10 +59,10 @@ public class ChatServerExtPull implements Runnable {
             final String sender = message.getSender();
 
             ORSet orSet = state.getUsersORSetOf(topic);
-            ORSetMessage orSetMessage = orSet.prepare(Operation.REMOVE, sender);
-            UsersORSetMessage usersORSetMessage = new UsersORSetMessage(topic, sender, orSetMessage);
+            ORSetAction orSetAction = orSet.prepare(Operation.REMOVE, sender);
+            UserORSetMessage usersORSetMessage = new UserORSetMessage(topic, sender, orSetAction);
 
-            orSet.effect(orSetMessage);
+            orSet.effect(orSetAction);
             broadcast.put(usersORSetMessage);
         }
     }
@@ -81,14 +81,16 @@ public class ChatServerExtPull implements Runnable {
             Carrier carrier = new Carrier(socket);
 
             carrier.on(MessageType.CHAT_MESSAGE, ChatMessage::deserialize);
-            carrier.on(MessageType.CHAT_EXIT_MESSAGE, ChatExitMessage::deserialize);
+            carrier.on(MessageType.TOPIC_EXIT_MESSAGE, TopicExitMessage::deserialize);
+            carrier.on(MessageType.TOPIC_ENTER_MESSAGE, TopicEnterMessage::deserialize);
 
             while ((message = carrier.receiveMessage()) != null) {
                 System.out.println("[SC extPull] Received: " + message);
 
                 switch (message) {
                     case ChatMessage m -> handleChatMessage(m);
-                    case ChatExitMessage m -> handleChatExitMessage(m);
+                    case TopicExitMessage m -> handleTopicExitMessage(m);
+                    case TopicEnterMessage m -> handleTopicEnterMessage(m);
                     default -> System.out.println("[SC extPull] Unknown: " + message);
                 }
             }

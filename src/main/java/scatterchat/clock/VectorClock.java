@@ -2,6 +2,8 @@ package scatterchat.clock;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 public class VectorClock {
@@ -10,6 +12,12 @@ public class VectorClock {
 
     public VectorClock() {
         this.vector = new HashMap<>();
+    }
+
+    public VectorClock(Set<String> nodes) {
+        this.vector = nodes.stream().collect(Collectors.toMap(
+            node -> node, 
+            node -> 0));
     }
 
     public VectorClock(Map<String, Integer> vector) {
@@ -31,6 +39,10 @@ public class VectorClock {
 
     public Integer getTimeOf(String node) {
         return this.vector.get(node);
+    }
+
+    public Set<String> getNodes() {
+        return this.vector.keySet();
     }
 
     public String toString(){

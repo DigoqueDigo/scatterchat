@@ -7,25 +7,25 @@ import scatterchat.protocol.message.Message;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 
 public class ServeTopicRequest extends Message {
 
-    private List<String> nodes;
+    private Set<String> nodes;
 
     public ServeTopicRequest() {
         super(MessageType.SERVE_TOPIC_REQUEST);
-        this.nodes = new ArrayList<>();
+        this.nodes = new HashSet<>();
     }
 
-    public ServeTopicRequest(String topic, List<String> nodes) {
+    public ServeTopicRequest(String topic, Set<String> nodes) {
         super(MessageType.SERVE_TOPIC_REQUEST, topic);
-        this.nodes = new ArrayList<>(nodes);
+        this.nodes = new HashSet<>(nodes);
     }
 
-    public List<String> getNodes() {
+    public Set<String> getNodes() {
         return this.nodes;
     }
 
@@ -36,7 +36,7 @@ public class ServeTopicRequest extends Message {
 
         kryo.register(MessageType.class);
         kryo.register(ServeTopicRequest.class);
-        kryo.register(ArrayList.class);
+        kryo.register(HashSet.class);
         kryo.writeObject(output, this);
 
         output.flush();
@@ -52,7 +52,7 @@ public class ServeTopicRequest extends Message {
 
         kryo.register(MessageType.class);
         kryo.register(ServeTopicRequest.class);
-        kryo.register(ArrayList.class);
+        kryo.register(HashSet.class);
 
         ServeTopicRequest serveTopicRequest = kryo.readObject(input, ServeTopicRequest.class);
         input.close();

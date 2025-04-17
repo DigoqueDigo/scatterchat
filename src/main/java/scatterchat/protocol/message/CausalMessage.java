@@ -5,12 +5,13 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import scatterchat.clock.VectorClock;
 import scatterchat.crdt.CRDTEntry;
+import scatterchat.crdt.ORSetAction;
+import scatterchat.crdt.ORSetAction.Operation;
 import scatterchat.protocol.message.Message.MessageType;
-import scatterchat.protocol.message.chat.ChatExitMessage;
 import scatterchat.protocol.message.chat.ChatMessage;
-import scatterchat.protocol.message.crtd.ORSetMessage;
-import scatterchat.protocol.message.crtd.ORSetMessage.Operation;
-import scatterchat.protocol.message.crtd.UsersORSetMessage;
+import scatterchat.protocol.message.chat.TopicEnterMessage;
+import scatterchat.protocol.message.chat.TopicExitMessage;
+import scatterchat.protocol.message.crtd.UserORSetMessage;
 import scatterchat.protocol.message.info.ServeTopicRequest;
 import scatterchat.protocol.message.info.ServeTopicResponse;
 import scatterchat.protocol.message.info.ServerStateRequest;
@@ -18,7 +19,6 @@ import scatterchat.protocol.message.info.ServerStateResponse;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -56,21 +56,21 @@ public class CausalMessage {
 
         kryo.register(Message.class);
         kryo.register(ChatMessage.class);
-        kryo.register(ChatExitMessage.class);
-        kryo.register(UsersORSetMessage.class);
+        kryo.register(TopicEnterMessage.class);
+        kryo.register(TopicExitMessage.class);
+        kryo.register(UserORSetMessage.class);
         kryo.register(ServerStateRequest.class);
         kryo.register(ServerStateResponse.class);
         kryo.register(ServeTopicRequest.class);
         kryo.register(ServeTopicResponse.class);
 
-        kryo.register(ORSetMessage.class);
+        kryo.register(ORSetAction.class);
         kryo.register(Operation.class);
         kryo.register(CRDTEntry.class);
         kryo.register(MessageType.class);
 
         kryo.register(HashMap.class);
         kryo.register(HashSet.class);
-        kryo.register(ArrayList.class);
         kryo.writeObject(output, this);
 
         output.flush();
@@ -89,21 +89,21 @@ public class CausalMessage {
 
         kryo.register(Message.class);
         kryo.register(ChatMessage.class);
-        kryo.register(ChatExitMessage.class);
-        kryo.register(UsersORSetMessage.class);
+        kryo.register(TopicEnterMessage.class);
+        kryo.register(TopicExitMessage.class);
+        kryo.register(UserORSetMessage.class);
         kryo.register(ServerStateRequest.class);
         kryo.register(ServerStateResponse.class);
         kryo.register(ServeTopicRequest.class);
         kryo.register(ServeTopicResponse.class);
 
-        kryo.register(ORSetMessage.class);
+        kryo.register(ORSetAction.class);
         kryo.register(Operation.class);
         kryo.register(CRDTEntry.class);
         kryo.register(MessageType.class);
 
         kryo.register(HashMap.class);
         kryo.register(HashSet.class);
-        kryo.register(ArrayList.class);
 
         CausalMessage causalMessage = kryo.readObject(input, CausalMessage.class);
         input.close();

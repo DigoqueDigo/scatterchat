@@ -4,30 +4,31 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import scatterchat.crdt.CRDTEntry;
+import scatterchat.crdt.ORSetAction;
+import scatterchat.crdt.ORSetAction.Operation;
 import scatterchat.protocol.message.Message;
-import scatterchat.protocol.message.crtd.ORSetMessage.Operation;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.HashSet;
 
 
-public class UsersORSetMessage extends Message{
+public class UserORSetMessage extends Message{
 
-    private ORSetMessage orSetMessage;
+    private ORSetAction orSetAction;
 
-    public UsersORSetMessage() {
+    public UserORSetMessage() {
         super(MessageType.USERS_ORSET_MESSAGE);
-        this.orSetMessage = null;
+        this.orSetAction = null;
     }
 
-    public UsersORSetMessage(String topic, String sender, ORSetMessage orSetMessage){
+    public UserORSetMessage(String topic, String sender, ORSetAction orSetAction) {
         super(MessageType.USERS_ORSET_MESSAGE, topic, sender);
-        this.orSetMessage = orSetMessage;
+        this.orSetAction = orSetAction;
     }
 
-    public ORSetMessage getOrSetMessage(){
-        return this.orSetMessage;
+    public ORSetAction getORSetAction(){
+        return this.orSetAction;
     }
 
     public byte[] serialize(){
@@ -37,8 +38,8 @@ public class UsersORSetMessage extends Message{
         Output output = new Output(byteArrayOutputStream);
 
         kryo.register(MessageType.class);
-        kryo.register(UsersORSetMessage.class);
-        kryo.register(ORSetMessage.class);
+        kryo.register(UserORSetMessage.class);
+        kryo.register(ORSetAction.class);
         kryo.register(Operation.class);
         kryo.register(CRDTEntry.class);
         kryo.register(HashSet.class);
@@ -50,29 +51,29 @@ public class UsersORSetMessage extends Message{
         return byteArrayOutputStream.toByteArray();
     }
 
-    public static UsersORSetMessage deserialize(byte[] data){
+    public static UserORSetMessage deserialize(byte[] data){
 
         Kryo kryo = new Kryo();
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
         Input input = new Input(byteArrayInputStream);
 
         kryo.register(MessageType.class);
-        kryo.register(UsersORSetMessage.class);
-        kryo.register(ORSetMessage.class);
+        kryo.register(UserORSetMessage.class);
+        kryo.register(ORSetAction.class);
         kryo.register(Operation.class);
         kryo.register(CRDTEntry.class);
         kryo.register(HashSet.class);
 
-        UsersORSetMessage usersORSetMessage = kryo.readObject(input, UsersORSetMessage.class);
+        UserORSetMessage userORSetAction = kryo.readObject(input, UserORSetMessage.class);
         input.close();
 
-        return usersORSetMessage;
+        return userORSetAction;
     }
 
     public String toString(){
         StringBuffer buffer = new StringBuffer();
         buffer.append(super.toString());
-        buffer.append(this.orSetMessage);
+        buffer.append(this.orSetAction);
         return buffer.toString();
     }
 }

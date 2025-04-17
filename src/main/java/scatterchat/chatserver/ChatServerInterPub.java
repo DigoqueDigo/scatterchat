@@ -10,7 +10,7 @@ import scatterchat.protocol.carrier.Carrier;
 import scatterchat.protocol.message.CausalMessage;
 import scatterchat.protocol.message.Message;
 import scatterchat.protocol.message.chat.ChatMessage;
-import scatterchat.protocol.message.crtd.UsersORSetMessage;
+import scatterchat.protocol.message.crtd.UserORSetMessage;
 import scatterchat.protocol.message.info.ServeTopicRequest;
 
 import java.util.concurrent.BlockingQueue;
@@ -74,7 +74,7 @@ public class ChatServerInterPub implements Runnable {
 
                 switch (message) {
                     case ChatMessage m -> forwardAsCausalMessage(m, carrier);
-                    case UsersORSetMessage m -> forwardAsCausalMessage(m, carrier);
+                    case UserORSetMessage m -> forwardAsCausalMessage(m, carrier);
                     case ServeTopicRequest m -> handleServeTopicRequest(m, carrier);
                     default -> System.out.println("[SC interPub] Unknown: " + message);
                 }

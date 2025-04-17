@@ -36,6 +36,7 @@ public class Main {
         Runnable chatServerInterPub = new ChatServerInterPub(config, state, broadcast);
         Runnable chatServerInterSub = new ChatServerInterSub(config, state, received);
         Runnable chatServerExtPub = new ChatServerExtPub(config, state, delivered);
+        Runnable chatServerExtRep = new ChatServerExtRep(config, state, broadcast);
 
         Runnable deliver = new Deliver(state, received, delivered);
         Runnable logServer = new LogServer(config); 
@@ -47,6 +48,7 @@ public class Main {
         workers.add(threadFactory.newThread(chatServerInterPub));
         workers.add(threadFactory.newThread(chatServerInterSub));
         workers.add(threadFactory.newThread(chatServerExtPub));
+        workers.add(threadFactory.newThread(chatServerExtRep));
         workers.add(threadFactory.newThread(deliver));
         workers.add(threadFactory.newThread(logServer));
 

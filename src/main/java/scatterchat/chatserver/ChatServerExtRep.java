@@ -5,6 +5,7 @@ import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 import scatterchat.chatserver.state.State;
+import scatterchat.clock.VectorClock;
 import scatterchat.protocol.carrier.Carrier;
 import scatterchat.protocol.message.Message;
 import scatterchat.protocol.message.Message.MessageType;
@@ -13,10 +14,7 @@ import scatterchat.protocol.message.info.ServeTopicResponse;
 import scatterchat.protocol.message.info.ServerStateRequest;
 import scatterchat.protocol.message.info.ServerStateResponse;
 
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.BlockingQueue;
-import java.util.stream.Collectors;
 
 
 public class ChatServerExtRep implements Runnable {
@@ -31,25 +29,25 @@ public class ChatServerExtRep implements Runnable {
         this.broadcast = broadcast;
     }
 
-    private void handleServerStateRequest(ServerStateRequest message, Carrier carrier) {
-
-        synchronized (state) {
-
-            Map<String, Set<String>> serverState = state.getServedTopics()
-                .stream()
-                .collect(Collectors.toMap(
-                    topic -> topic,
-                    topic -> state.getUsersORSetOf(topic).elements()));
-
-            ServerStateResponse response = new ServerStateResponse(serverState);
-            carrier.sendMessage(response);
-        }
-    }
-
     private void handleServeTopicRequest(ServeTopicRequest message, Carrier carrier) throws InterruptedException {
+
+        synchronized (state){
+            final String topic = message.getTopic();
+            state.addUsersORSetOf(topic);
+            state.setNodesOf(topic, message.getNodes());
+            state.setVectorClockOf(topic, new VectorClock(message.getNodes()));
+        }
+
         broadcast.put(message);
         ServeTopicResponse response = new ServeTopicResponse(true);
         carrier.sendMessage(response);
+    }
+
+    private void handleServerStateRequest(ServerStateRequest message, Carrier carrier) {
+        synchronized (state) {
+            ServerStateResponse response = new ServerStateResponse(state.getState());
+            carrier.sendMessage(response);
+        }
     }
 
     @Override

@@ -34,7 +34,7 @@ public class Deliver implements Runnable {
     private void deliver(String topic) throws InterruptedException {
         synchronized (state) {
             int index = 0;
-            final VectorClock clock = state.getVectorClockOf(topic);
+            final VectorClock vectorClock = state.getVectorClockOf(topic);
             final List<CausalMessage> pendingBuffer = pending.get(topic);
 
             while (index < pendingBuffer.size()) {
@@ -43,12 +43,12 @@ public class Deliver implements Runnable {
                 final CausalMessage pendingMessage = pendingBuffer.get(index);
 
                 final String sender = pendingMessage.getMessage().getSender();
-                final VectorClock messageClock = pendingMessage.getVectorClock();
+                final VectorClock senderVectorClock = pendingMessage.getVectorClock();
 
-                if (clock.getTimeOf(sender) + 1 == messageClock.getTimeOf(sender)) {
+                if (vectorClock.getTimeOf(sender) + 1 == senderVectorClock.getTimeOf(sender)) {
 
-                    for (String node : state.getNodesOfTopic(topic)) {
-                        if (!node.equals(sender) && clock.getTimeOf(node) < messageClock.getTimeOf(node)) {
+                    for (String node : vectorClock.getNodes()) {
+                        if (!node.equals(sender) && vectorClock.getTimeOf(node) < vectorClock.getTimeOf(node)) {
                             deliverable = false;
                             break;
                         }
@@ -57,10 +57,13 @@ public class Deliver implements Runnable {
                     if (deliverable) {
                         pendingBuffer.remove(index);
                         delivered.put(pendingMessage.getMessage());
-                        clock.putTimeOf(sender, messageClock.getTimeOf(sender));
+                        vectorClock.putTimeOf(sender, vectorClock.getTimeOf(sender));
+                        state.setVectorClockOf(topic, vectorClock);
                         index = 0;
                     }
                 }
+
+                index++;
             }
         }
     }

@@ -9,14 +9,14 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
 
-public class ChatExitMessage extends Message {
+public class TopicEnterMessage extends Message {
 
-    public ChatExitMessage() {
-        super(MessageType.CHAT_EXIT_MESSAGE);
+    public TopicEnterMessage() {
+        super(MessageType.TOPIC_ENTER_MESSAGE);
     }
 
-    public ChatExitMessage(String topic, String sender) {
-        super(MessageType.CHAT_EXIT_MESSAGE, topic, sender);
+    public TopicEnterMessage(String topic, String sender) {
+        super(MessageType.TOPIC_ENTER_MESSAGE, topic, sender);
     }
 
     public byte[] serialize() {
@@ -26,7 +26,7 @@ public class ChatExitMessage extends Message {
         Output output = new Output(byteArrayOutputStream);
 
         kryo.register(MessageType.class);
-        kryo.register(ChatExitMessage.class);
+        kryo.register(TopicEnterMessage.class);
         kryo.writeObject(output, this);
 
         output.flush();
@@ -35,18 +35,18 @@ public class ChatExitMessage extends Message {
         return byteArrayOutputStream.toByteArray();
     }
 
-    public static ChatExitMessage deserialize(byte[] data) {
+    public static TopicEnterMessage deserialize(byte[] data) {
 
         Kryo kryo = new Kryo();
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
         Input input = new Input(byteArrayInputStream);
 
         kryo.register(MessageType.class);
-        kryo.register(ChatExitMessage.class);
+        kryo.register(TopicEnterMessage.class);
 
-        ChatExitMessage chatExitMessage = kryo.readObject(input, ChatExitMessage.class);
+        TopicEnterMessage topicEnterMessage = kryo.readObject(input, TopicEnterMessage.class);
         input.close();
 
-        return chatExitMessage;
+        return topicEnterMessage;
     }
 }

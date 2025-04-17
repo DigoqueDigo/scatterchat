@@ -5,7 +5,8 @@ public abstract class Message {
 
     public enum MessageType {
         CHAT_MESSAGE,
-        CHAT_EXIT_MESSAGE,
+        TOPIC_ENTER_MESSAGE,
+        TOPIC_EXIT_MESSAGE,
         SERVER_STATE_REQUEST,
         SERVER_STATE_RESPONSE,
         SERVE_TOPIC_REQUEST,

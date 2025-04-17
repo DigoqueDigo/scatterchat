@@ -6,11 +6,11 @@ import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 import scatterchat.chatserver.state.State;
 import scatterchat.crdt.ORSet;
+import scatterchat.crdt.ORSetAction;
 import scatterchat.protocol.carrier.Carrier;
 import scatterchat.protocol.message.Message;
 import scatterchat.protocol.message.chat.ChatMessage;
-import scatterchat.protocol.message.crtd.ORSetMessage;
-import scatterchat.protocol.message.crtd.UsersORSetMessage;
+import scatterchat.protocol.message.crtd.UserORSetMessage;
 
 import java.util.concurrent.BlockingQueue;
 
@@ -31,11 +31,11 @@ public class ChatServerExtPub implements Runnable {
         carrier.sendMessageWithTopic(message);
     }
 
-    private void handleUsersORSetMessage(UsersORSetMessage message) {
+    private void handleUsersORSetMessage(UserORSetMessage message) {
         synchronized (state) {
             ORSet orSet = state.getUsersORSetOf(message.getTopic());
-            ORSetMessage orSetMessage = message.getOrSetMessage();
-            orSet.effect(orSetMessage);
+            ORSetAction orSetAction = message.getORSetAction();
+            orSet.effect(orSetAction);
         }
     }
 
@@ -58,7 +58,7 @@ public class ChatServerExtPub implements Runnable {
 
                 switch (message) {
                     case ChatMessage m -> handleChatMessage(m, carrier);
-                    case UsersORSetMessage m -> handleUsersORSetMessage(m);
+                    case UserORSetMessage m -> handleUsersORSetMessage(m);
                     default -> System.out.println("[SC extPuB] Unknown: " + message);
                 }
             }
