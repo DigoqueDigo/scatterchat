@@ -10,24 +10,24 @@ import java.util.Set;
 
 public class ORSet {
 
-    private CRDTEntry clock;
-    private final Map<String, Set<CRDTEntry>> store;
+    private OrSetEntry clock;
+    private final Map<String, Set<OrSetEntry>> store;
 
     public ORSet(String nodeId) {
         this.store = new HashMap<>();
-        this.clock = new CRDTEntry(nodeId, 0);
+        this.clock = new OrSetEntry(nodeId, 0);
     }
 
     private ORSetAction prepareAdd(Operation operation, String element) {
-        this.clock = this.clock.increment(); // TODO :: DEVIA INCREMENTAR O RELOGIO DO ESTADO
+        this.clock = this.clock.increment();
         this.store.putIfAbsent(element, new HashSet<>());
-        Set<CRDTEntry> entries = new HashSet<>(this.store.get(element));
+        Set<OrSetEntry> entries = new HashSet<>(this.store.get(element));
         return new ORSetAction(element, clock, operation, entries);
     }
 
     private ORSetAction prepareRemove(Operation operation, String element) {
         this.store.putIfAbsent(element, new HashSet<>());
-        Set<CRDTEntry> entries = new HashSet<>(this.store.get(element));
+        Set<OrSetEntry> entries = new HashSet<>(this.store.get(element));
         return new ORSetAction(element, null, operation, entries);
     }
 
@@ -35,14 +35,14 @@ public class ORSet {
         String element = message.element();
         this.store.putIfAbsent(element, new HashSet<>());
 
-        Set<CRDTEntry> entries = this.store.get(element);
+        Set<OrSetEntry> entries = this.store.get(element);
         entries.removeAll(message.entries());
         entries.add(message.clock());
     }
 
     private void effectRemove(ORSetAction message) {
         String element = message.element();
-        Set<CRDTEntry> entries = this.store.get(element);
+        Set<OrSetEntry> entries = this.store.get(element);
         entries.removeAll(message.entries());
 
         if (entries.isEmpty()) {

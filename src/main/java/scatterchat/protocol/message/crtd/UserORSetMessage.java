@@ -3,7 +3,7 @@ package scatterchat.protocol.message.crtd;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import scatterchat.crdt.CRDTEntry;
+import scatterchat.crdt.OrSetEntry;
 import scatterchat.crdt.ORSetAction;
 import scatterchat.crdt.ORSetAction.Operation;
 import scatterchat.protocol.message.Message;
@@ -41,7 +41,7 @@ public class UserORSetMessage extends Message{
         kryo.register(UserORSetMessage.class);
         kryo.register(ORSetAction.class);
         kryo.register(Operation.class);
-        kryo.register(CRDTEntry.class);
+        kryo.register(OrSetEntry.class);
         kryo.register(HashSet.class);
         kryo.writeObject(output, this);
 
@@ -61,7 +61,7 @@ public class UserORSetMessage extends Message{
         kryo.register(UserORSetMessage.class);
         kryo.register(ORSetAction.class);
         kryo.register(Operation.class);
-        kryo.register(CRDTEntry.class);
+        kryo.register(OrSetEntry.class);
         kryo.register(HashSet.class);
 
         UserORSetMessage userORSetAction = kryo.readObject(input, UserORSetMessage.class);
