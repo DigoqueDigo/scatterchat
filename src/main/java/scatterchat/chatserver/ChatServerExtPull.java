@@ -75,10 +75,10 @@ public class ChatServerExtPull implements Runnable {
 
             final String address = config.getString("extPullAddress");
             socket.bind(address);
+            System.out.println("[SC extPull] started on: " + address);
 
             Message message = null;
             Carrier carrier = new Carrier(socket);
-            System.out.println("[SC extPull] started on: " + address);
 
             carrier.on(MessageType.CHAT_MESSAGE, ChatMessage::deserialize);
             carrier.on(MessageType.CHAT_EXIT_MESSAGE, ChatExitMessage::deserialize);

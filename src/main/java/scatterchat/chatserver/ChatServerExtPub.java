@@ -47,11 +47,10 @@ public class ChatServerExtPub implements Runnable {
 
             final String address = config.getString("extPubAddress");
             socket.bind(address);
+            System.out.println("[SC extPub] started on: " + address);
 
             Message message = null;
             Carrier carrier = new Carrier(socket);
-
-            System.out.println("[SC extPub] started on: " + address);
 
             while ((message = this.delivered.take()) != null) {
 

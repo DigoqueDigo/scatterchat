@@ -3,6 +3,7 @@
         "extPullAddress": "tcp://localhost:3000",
         "interPubAddress": "tcp://localhost:3001",
         "extPubAddress": "tcp://localhost:3002",
+        "extRepAddress": "tcp://localhost:3003",
         "logServerPort": "localhost",
         "logServerAddress": "3003"
     },
@@ -11,6 +12,7 @@
         "extPullAddress": "tcp://localhost:4000",
         "interPubAddress": "tcp://localhost:4001",
         "extPubAddress": "tcp://localhost:4002",
+        "extRepAddress": "tcp://localhost:4003",
         "logServerPort": "localhost",
         "logServerAddress": "4003"
     },
@@ -19,6 +21,7 @@
         "extPullAddress": "tcp://localhost:5000",
         "interPubAddress": "tcp://localhost:5001",
         "extPubAddress": "tcp://localhost:5002",
+        "extRepAddress": "tcp://localhost:5003",
         "logServerPort": "localhost",
         "logServerAddress": "5003"
     },
@@ -27,6 +30,7 @@
         "extPullAddress": "tcp://localhost:6000",
         "interPubAddress": "tcp://localhost:6001",
         "extPubAddress": "tcp://localhost:6002",
+        "extRepAddress": "tcp://localhost:6003",
         "logServerPort": "localhost",
         "logServerAddress": "6003"
     },
@@ -35,6 +39,7 @@
         "extPullAddress": "tcp://localhost:7000",
         "interPubAddress": "tcp://localhost:7001",
         "extPubAddress": "tcp://localhost:7002",
+        "extRepAddress": "tcp://localhost:7003",
         "logServerPort": "localhost",
         "logServerAddress": "7003"
     }

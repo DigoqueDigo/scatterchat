@@ -63,10 +63,10 @@ public class ChatServerInterPub implements Runnable {
 
             final String address = config.getString("interPubAddress");
             socket.bind(address);
+            System.out.println("[SC interPub] started on: " + address);
 
             Message message = null;
             Carrier carrier = new Carrier(socket);
-            System.out.println("[SC interPub] started on: " + address);
 
             while ((message = broadcast.take()) != null) {
 

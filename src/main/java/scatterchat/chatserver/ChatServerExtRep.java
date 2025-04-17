@@ -1,5 +1,6 @@
 package scatterchat.chatserver;
 
+import org.json.JSONObject;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
@@ -8,25 +9,27 @@ import scatterchat.protocol.carrier.Carrier;
 import scatterchat.protocol.message.Message;
 import scatterchat.protocol.message.Message.MessageType;
 import scatterchat.protocol.message.info.ServeTopicRequest;
+import scatterchat.protocol.message.info.ServeTopicResponse;
 import scatterchat.protocol.message.info.ServerStateRequest;
 import scatterchat.protocol.message.info.ServerStateResponse;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
 import java.util.stream.Collectors;
 
 
 public class ChatServerExtRep implements Runnable {
 
     private State state;
-    private String extRepAddress;
+    private JSONObject config;
+    private BlockingQueue<Message> broadcast;
 
-
-    public ChatServerExtRep(State state, String extRepAddress) {
+    public ChatServerExtRep(JSONObject config, State state, BlockingQueue<Message> broadcast) {
         this.state = state;
-        this.extRepAddress = extRepAddress;
+        this.config = config;
+        this.broadcast = broadcast;
     }
-
 
     private void handleServerStateRequest(ServerStateRequest message, Carrier carrier) {
 
@@ -43,26 +46,34 @@ public class ChatServerExtRep implements Runnable {
         }
     }
 
+    private void handleServeTopicRequest(ServeTopicRequest message, Carrier carrier) throws InterruptedException {
+        broadcast.put(message);
+        ServeTopicResponse response = new ServeTopicResponse(true);
+        carrier.sendMessage(response);
+    }
 
     @Override
     public void run() {
         try {
             ZContext context = new ZContext();
             ZMQ.Socket socket = context.createSocket(SocketType.REP);
-            socket.bind(extRepAddress);
+
+            final String address = config.getString("extRepAddress");
+            socket.bind(address);
+            System.out.println("[SC extRep] started on: " + address);
 
             Message message = null;
             Carrier carrier = new Carrier(socket);
 
             carrier.on(MessageType.SERVE_TOPIC_REQUEST, ServeTopicRequest::deserialize);
             carrier.on(MessageType.SERVER_STATE_REQUEST, ServerStateRequest::deserialize);
-            System.out.println("[SC extRep] started on: " + extRepAddress);
 
             while ((message = carrier.receiveMessage()) != null) {
 
                 System.out.println("[SC extRep] Received: " + message);
 
                 switch (message) {
+                    case ServeTopicRequest m -> handleServeTopicRequest(m, carrier);
                     case ServerStateRequest m -> handleServerStateRequest(m, carrier);
                     default -> System.out.println("[SC extRep] Unknown: " + message);
                 }
