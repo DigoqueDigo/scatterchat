@@ -68,4 +68,8 @@ public class ORSet {
     public boolean contains(String element) {
         return this.store.containsKey(element);
     }
+
+    public Set<String> elements() {
+        return new HashSet<>(this.store.keySet());
+    }
 }

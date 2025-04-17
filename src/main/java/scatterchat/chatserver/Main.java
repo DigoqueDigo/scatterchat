@@ -2,7 +2,10 @@ package scatterchat.chatserver;
 
 import org.json.JSONObject;
 import scatterchat.chatserver.log.LogServer;
+import scatterchat.chatserver.state.State;
+import scatterchat.chatserver.state.Deliver;
 import scatterchat.protocol.messages.Message;
+import scatterchat.protocol.messages.CausalMessage;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -17,27 +20,25 @@ import java.util.concurrent.ThreadFactory;
 public class Main {
 
     public static void main(String[] args) throws IOException, InterruptedException {
+
         final String configFilePath = args[0];
         final String nodeId = args[1];
 
         final String configFileContent = new String(Files.readAllBytes(Paths.get(configFilePath)));
-        final JSONObject nodeConfig = new JSONObject(configFileContent).getJSONObject(nodeId);
+        final JSONObject config = new JSONObject(configFileContent).getJSONObject(nodeId);
 
-        final int logServerPort = nodeConfig.getInt("logServerPort");
-        final String extPubAddress = nodeConfig.getString("extPubAddress");
-        final String extPullAddress = nodeConfig.getString("extPullAddress");
-        final String interPubAddress = nodeConfig.getString("interPubAddress");
-        final String logServerAddress = nodeConfig.getString("logServerAddress");
-
+        State state = new State(nodeId);
         BlockingQueue<Message> broadcast = new ArrayBlockingQueue<>(10);
-        BlockingQueue<Message> received = new ArrayBlockingQueue<>(10);
         BlockingQueue<Message> delivered = new ArrayBlockingQueue<>(10);
+        BlockingQueue<CausalMessage> received = new ArrayBlockingQueue<>(10);
 
-        Runnable chatServerExtPull = new ChatServerExtPull(extPullAddress, delivered, broadcast);
-        Runnable chatServerInterPub = new ChatServerInterPub(interPubAddress, broadcast);
-        Runnable chatServerInterSub = new ChatServerInterSub(nodeId, interPubAddress, delivered);
-        Runnable chatServerExtPub = new ChatServerExtPub(extPubAddress, delivered);
-        Runnable logServer = new LogServer(logServerAddress, logServerPort);
+        Runnable chatServerExtPull = new ChatServerExtPull(config, state, broadcast);
+        Runnable chatServerInterPub = new ChatServerInterPub(config, state, broadcast);
+        Runnable chatServerInterSub = new ChatServerInterSub(config, state, received);
+        Runnable chatServerExtPub = new ChatServerExtPub(config, state, delivered);
+
+        Runnable deliver = new Deliver(state, received, delivered);
+        Runnable logServer = new LogServer(config); 
 
         List<Thread> workers = new ArrayList<>();
         ThreadFactory threadFactory = Thread.ofVirtual().factory();
@@ -46,6 +47,7 @@ public class Main {
         workers.add(threadFactory.newThread(chatServerInterPub));
         workers.add(threadFactory.newThread(chatServerInterSub));
         workers.add(threadFactory.newThread(chatServerExtPub));
+        workers.add(threadFactory.newThread(deliver));
         workers.add(threadFactory.newThread(logServer));
 
         for (Thread worker : workers) {

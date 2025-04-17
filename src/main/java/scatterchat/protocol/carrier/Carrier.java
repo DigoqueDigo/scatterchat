@@ -2,6 +2,7 @@ package scatterchat.protocol.carrier;
 
 import org.zeromq.ZMQ;
 import scatterchat.protocol.messages.Message;
+import scatterchat.protocol.messages.CausalMessage;
 import scatterchat.protocol.messages.Message.MessageType;
 
 import java.util.HashMap;
@@ -45,5 +46,14 @@ public final class Carrier {
     public Message receiveWithTopic() {
         socket.recv();
         return receive();
+    }
+
+    public void sendCausalWihtTopic(CausalMessage message) {
+        System.out.println("Not implemented");
+    }
+
+    public CausalMessage receiveCausalWithTopic() {
+        System.out.println("Not implemented");
+        return null;
     }
 }

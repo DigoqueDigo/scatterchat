@@ -8,17 +8,36 @@ import scatterchat.protocol.carrier.Carrier;
 import scatterchat.protocol.messages.Message;
 import scatterchat.protocol.messages.Message.MessageType;
 import scatterchat.protocol.messages.info.ServerStateRequest;
+import scatterchat.protocol.messages.info.ServerStateResponse;
 
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ChatServerExtRep implements Runnable {
 
-    private String extRepAddress;
     private State state;
+    private String extRepAddress;
 
 
-    public ChatServerExtRep(String extRepAddress, State state) {
-        this.extRepAddress = extRepAddress;
+    public ChatServerExtRep(State state, String extRepAddress) {
         this.state = state;
+        this.extRepAddress = extRepAddress;
+    }
+
+    private void handleServerStateRequest(ServerStateRequest message, Carrier carrier) {
+
+        synchronized (state) {
+
+            Map<String, Set<String>> serverState = state.getServedTopics()
+                .stream()
+                .collect(Collectors.toMap(
+                    topic -> topic,
+                    topic -> state.getUsersORSetOf(topic).elements()));
+
+            ServerStateResponse response = new ServerStateResponse(serverState);
+            carrier.send(response);
+        }
     }
 
 
@@ -27,29 +46,26 @@ public class ChatServerExtRep implements Runnable {
 
         try {
             ZContext context = new ZContext();
-            ZMQ.Socket repSocket = context.createSocket(SocketType.PUB);
-            repSocket.bind(extRepAddress);
+            ZMQ.Socket socket = context.createSocket(SocketType.REP);
+            socket.bind(extRepAddress);
 
             Message message = null;
-            Carrier repCarrier = new Carrier(repSocket);
+            Carrier carrier = new Carrier(socket);
 
-            repCarrier.on(MessageType.SERVER_INFO, x -> ServerStateRequest.deserialize(x));
-            repCarrier.on(MessageType.USERS_LOGGED, x -> UsersLoggedMessage.deserialize(x));
-
+            carrier.on(MessageType.SERVER_STATE_REQUEST, ServerStateRequest::deserialize);
             System.out.println("[SC extRep] started on: " + extRepAddress);
 
-            while ((message = repCarrier.receive()) != null) {
+            while ((message = carrier.receive()) != null) {
 
                 System.out.println("[SC extRep] Received: " + message);
 
                 switch (message) {
-                    case ServerStateRequest m -> System.out.println(m);
-                    case UsersLoggedMessage m -> System.out.println(m);
+                    case ServerStateRequest m -> handleServerStateRequest(m, carrier);
                     default -> System.out.println("[SC extRep] Unknown: " + message);
                 }
             }
 
-            repSocket.close();
+            socket.close();
             context.close();
         } catch (Exception e) {
             e.printStackTrace();

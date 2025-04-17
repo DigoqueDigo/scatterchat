@@ -1,14 +1,15 @@
 package scatterchat.chatserver;
 
+import org.json.JSONObject;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
+import scatterchat.chatserver.state.State;
 import scatterchat.protocol.carrier.Carrier;
 import scatterchat.protocol.messages.CausalMessage;
-import scatterchat.protocol.messages.Message;
-import scatterchat.protocol.messages.Message.MessageType;
-import scatterchat.protocol.messages.chat.ChatExitMessage;
 import scatterchat.protocol.messages.chat.ChatMessage;
+import scatterchat.protocol.messages.Message.MessageType;
+import scatterchat.protocol.messages.crtd.UsersORSetMessage;
 import scatterchat.protocol.messages.info.ServeTopicRequest;
 
 import java.util.concurrent.BlockingQueue;
@@ -16,32 +17,36 @@ import java.util.concurrent.BlockingQueue;
 
 public class ChatServerInterSub implements Runnable {
 
-    private String nodeId;
-    private String interPubAddress;
-    private BlockingQueue<CausalMessage> received;
+    private final State state;
+    private final JSONObject config;
+    private final BlockingQueue<CausalMessage> received;
 
 
-    public ChatServerInterSub(String nodeId, String interPubAddress, BlockingQueue<CausalMessage> received) {
-        this.nodeId = nodeId;
-        this.interPubAddress = interPubAddress;
+    public ChatServerInterSub(JSONObject config, State state, BlockingQueue<CausalMessage> received) {
+        this.state = state;
+        this.config = config;
         this.received = received;
     }
 
-    private void handleChatMessage(ChatMessage message) throws InterruptedException {
+    private void forwardCausalMessage(CausalMessage message) throws InterruptedException {
         this.received.put(message);
     }
 
-    public void handleChatExitMessage(ChatExitMessage message) throws InterruptedException {
-        this.received.put(message);
-    }
 
     private void handleServeTopicRequest(ServeTopicRequest message, ZMQ.Socket subSocket) {
-        String topic = message.getTopic().replace("[internal]", "");
-        subSocket.subscribe(topic);
 
-        for (String nodeInterPubAddres : message.getNodes()) {
-            if (!nodeInterPubAddres.equals(nodeId)) {
-                subSocket.connect(nodeInterPubAddres);
+        synchronized (state) {
+
+            final String nodeId = state.getNodeId();
+            final String topic = message.getTopic().replace("[internal]", "");
+
+            ServeTopicRequest serveTopicRequest = (ServeTopicRequest) message;
+            subSocket.subscribe(topic);
+
+            for (String nodeInterPubAddres : serveTopicRequest.getNodes()) {
+                if (!nodeInterPubAddres.equals(nodeId)) {
+                    subSocket.connect(nodeInterPubAddres);
+                }
             }
         }
     }
@@ -53,26 +58,27 @@ public class ChatServerInterSub implements Runnable {
             ZContext context = new ZContext();
             ZMQ.Socket subSocket = context.createSocket(SocketType.SUB);
 
-            subSocket.connect(interPubAddress);
+            final String address = config.getString("interPubAddress");
+            subSocket.connect(address);
             subSocket.subscribe("[internal]");
             System.out.println("[SC interSub] started");
 
-            Message message = null;
+            CausalMessage causalMessage = null;
             Carrier carrier = new Carrier(subSocket);
 
             carrier.on(MessageType.CHAT_MESSAGE, ChatMessage::deserialize);
-            carrier.on(MessageType.CHAT_EXIT_MESSAGE, ChatExitMessage::deserialize);
+            carrier.on(MessageType.USERS_ORSET_MESSAGE, UsersORSetMessage::deserialize);
             carrier.on(MessageType.SERVE_TOPIC_REQUEST, ServeTopicRequest::deserialize);
 
-            while ((message = carrier.receiveWithTopic()) != null) {
+            while ((causalMessage = carrier.receiveCausalWithTopic()) != null) {
 
-                System.out.println("[SC interSub] Received: " + message);
+                System.out.println("[SC interSub] Received: " + causalMessage.getMessage());
 
-                switch (message) {
-                    case ChatMessage m -> handleChatMessage(m);
-                    case ChatExitMessage m -> handleChatExitMessage(m);
+                switch (causalMessage.getMessage()) {
+                    case ChatMessage m -> forwardCausalMessage(causalMessage);
+                    case UsersORSetMessage m -> forwardCausalMessage(causalMessage);
                     case ServeTopicRequest m -> handleServeTopicRequest(m, subSocket);
-                    default -> System.out.println("[SC interSub] Unknown: " + message);
+                    default -> System.out.println("[SC interSub] Unknown: " + causalMessage.getMessage());
                 }
             }
 

@@ -52,6 +52,10 @@ public abstract class Message {
         this.topic = topic;
     }
 
+    public void setSender(String sender){
+        this.sender = sender;
+    }
+
     public abstract byte[] serialize();
 
     public String toString() {

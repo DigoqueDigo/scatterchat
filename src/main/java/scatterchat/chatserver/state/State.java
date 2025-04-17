@@ -3,6 +3,7 @@ package scatterchat.chatserver.state;
 import scatterchat.clock.VectorClock;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -38,5 +39,9 @@ public final class State {
 
     public Set<String> getNodesOfTopic(String topic) {
         return this.nodesPerTopic.get(topic);
+    }
+
+    public Set<String> getServedTopics() {
+        return new HashSet<>(this.nodesPerTopic.keySet());
     }
 }
