@@ -1,49 +1,46 @@
 package scatterchat.chatserver;
-import java.util.concurrent.BlockingQueue;
+
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 import scatterchat.protocol.carrier.Carrier;
 import scatterchat.protocol.messages.CausalMessage;
 import scatterchat.protocol.messages.Message;
-import scatterchat.protocol.messages.Message.MESSAGE_TYPE;
+import scatterchat.protocol.messages.Message.MessageType;
 import scatterchat.protocol.messages.chat.ChatExitMessage;
 import scatterchat.protocol.messages.chat.ChatMessage;
 import scatterchat.protocol.messages.info.ServeTopicRequest;
 
+import java.util.concurrent.BlockingQueue;
 
-public class ChatServerInterSub implements Runnable{
+
+public class ChatServerInterSub implements Runnable {
 
     private String nodeId;
     private String interPubAddress;
     private BlockingQueue<CausalMessage> received;
 
 
-    public ChatServerInterSub(String nodeId, String interPubAddress, BlockingQueue<CausalMessage> received){
+    public ChatServerInterSub(String nodeId, String interPubAddress, BlockingQueue<CausalMessage> received) {
         this.nodeId = nodeId;
         this.interPubAddress = interPubAddress;
         this.received = received;
     }
 
-
-    private void handleChatMessage(ChatMessage message) throws InterruptedException{
+    private void handleChatMessage(ChatMessage message) throws InterruptedException {
         this.received.put(message);
     }
 
-
-    public void handleChatExitMessage(ChatExitMessage message) throws InterruptedException{
+    public void handleChatExitMessage(ChatExitMessage message) throws InterruptedException {
         this.received.put(message);
     }
 
-
-    private void handleServeTopicRequest(ServeTopicRequest message, ZMQ.Socket subSocket){
-
+    private void handleServeTopicRequest(ServeTopicRequest message, ZMQ.Socket subSocket) {
         String topic = message.getTopic().replace("[internal]", "");
-        ServeTopicRequest serveTopicRequest = (ServeTopicRequest) message;
         subSocket.subscribe(topic);
 
-        for (String nodeInterPubAddres : serveTopicRequest.getNodes()){
-            if (!nodeInterPubAddres.equals(nodeId)){
+        for (String nodeInterPubAddres : message.getNodes()) {
+            if (!nodeInterPubAddres.equals(nodeId)) {
                 subSocket.connect(nodeInterPubAddres);
             }
         }
@@ -51,9 +48,8 @@ public class ChatServerInterSub implements Runnable{
 
 
     @Override
-    public void run(){
-
-        try{
+    public void run() {
+        try {
             ZContext context = new ZContext();
             ZMQ.Socket subSocket = context.createSocket(SocketType.SUB);
 
@@ -64,15 +60,15 @@ public class ChatServerInterSub implements Runnable{
             Message message = null;
             Carrier carrier = new Carrier(subSocket);
 
-            carrier.on(MESSAGE_TYPE.CHAT_MESSAGE, x -> ChatMessage.deserialize(x));
-            carrier.on(MESSAGE_TYPE.CHAT_EXIT_MESSAGE, x -> ChatExitMessage.deserialize(x));
-            carrier.on(MESSAGE_TYPE.SERVE_TOPIC_REQUEST, x -> ServeTopicRequest.deserialize(x));
+            carrier.on(MessageType.CHAT_MESSAGE, ChatMessage::deserialize);
+            carrier.on(MessageType.CHAT_EXIT_MESSAGE, ChatExitMessage::deserialize);
+            carrier.on(MessageType.SERVE_TOPIC_REQUEST, ServeTopicRequest::deserialize);
 
-            while ((message = carrier.receiveWithTopic()) != null){
+            while ((message = carrier.receiveWithTopic()) != null) {
 
                 System.out.println("[SC interSub] Received: " + message);
 
-                switch (message){
+                switch (message) {
                     case ChatMessage m -> handleChatMessage(m);
                     case ChatExitMessage m -> handleChatExitMessage(m);
                     case ServeTopicRequest m -> handleServeTopicRequest(m, subSocket);
@@ -82,9 +78,7 @@ public class ChatServerInterSub implements Runnable{
 
             subSocket.close();
             context.close();
-        }
-
-        catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

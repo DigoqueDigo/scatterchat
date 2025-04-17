@@ -1,81 +1,71 @@
 package scatterchat.chatserver.state;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
+
 import scatterchat.crdt.CRDTEntry;
 import scatterchat.protocol.messages.crtd.ORSetMessage;
-import scatterchat.protocol.messages.crtd.ORSetMessage.OPERATION;
+import scatterchat.protocol.messages.crtd.ORSetMessage.Operation;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
-public class ORSet{
+public class ORSet {
 
     private CRDTEntry clock;
-    private HashMap<String, Set<CRDTEntry>> store;
+    private final Map<String, Set<CRDTEntry>> store;
 
-
-    public ORSet(String nodeId){
+    public ORSet(String nodeId) {
         this.store = new HashMap<>();
         this.clock = new CRDTEntry(nodeId, 0);
     }
-    
 
-    private ORSetMessage prepareAdd(OPERATION operation, String element){
-        this.clock.increment();
+    private ORSetMessage prepareAdd(Operation operation, String element) {
+        this.clock = this.clock.increment();
         this.store.putIfAbsent(element, new HashSet<>());
-        Set<CRDTEntry> entries = this.store.get(element).stream().map(x -> x.clone()).collect(Collectors.toSet());
-        return new ORSetMessage(operation, element, clock.clone(), entries);
+        Set<CRDTEntry> entries = new HashSet<>(this.store.get(element));
+        return new ORSetMessage(element, clock, operation, entries);
     }
 
-
-    private ORSetMessage prepareRemove(OPERATION operation, String element){
+    private ORSetMessage prepareRemove(Operation operation, String element) {
         this.store.putIfAbsent(element, new HashSet<>());
-        Set<CRDTEntry> entries = this.store.get(element).stream().map(x -> x.clone()).collect(Collectors.toSet());
-        return new ORSetMessage(operation, element, entries);
+        Set<CRDTEntry> entries = new HashSet<>(this.store.get(element));
+        return new ORSetMessage(element, null, operation, entries);
     }
 
-
-    private void effectADD(ORSetMessage message){
-
-        String element = message.getElement();
+    private void effectAdd(ORSetMessage message) {
+        String element = message.element();
         this.store.putIfAbsent(element, new HashSet<>());
 
         Set<CRDTEntry> entries = this.store.get(element);
-        entries.removeAll(message.getEntries());
-        entries.add(message.getClock());
+        entries.removeAll(message.entries());
+        entries.add(message.clock());
     }
 
-
-    private void effectREMOVE(ORSetMessage message){
-
-        String element = message.getElement();
+    private void effectRemove(ORSetMessage message) {
+        String element = message.element();
         Set<CRDTEntry> entries = this.store.get(element);
-        entries.removeAll(message.getEntries());
+        entries.removeAll(message.entries());
 
-        if (entries.size() == 0){
+        if (entries.isEmpty()) {
             this.store.remove(element);
         }
     }
 
-
-    public ORSetMessage prepare(OPERATION operation, String element){
-        return switch (operation){
+    public ORSetMessage prepare(Operation operation, String element) {
+        return switch (operation) {
             case ADD -> prepareAdd(operation, element);
             case REMOVE -> prepareRemove(operation, element);
-            default -> null;
         };
     }
 
-
-    public void effect(ORSetMessage message){
-        switch (message.getOperation()){
-            case ADD -> effectADD(message);
-            case REMOVE -> effectREMOVE(message);
+    public void effect(ORSetMessage message) {
+        switch (message.operation()) {
+            case ADD -> effectAdd(message);
+            case REMOVE -> effectRemove(message);
         }
     }
 
-
-    public boolean contains(String element){
+    public boolean contains(String element) {
         return this.store.containsKey(element);
     }
 }

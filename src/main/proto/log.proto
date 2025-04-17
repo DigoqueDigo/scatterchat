@@ -2,17 +2,14 @@ syntax = "proto3";
 option java_package = "scatterchat";
 option java_multiple_files = true;
 
-
 service LogService {
-    rpc getLogs (LogMessageRequest) returns (stream LogMessageReply);
+  rpc getLogs (LogMessageRequest) returns (stream LogMessageReply);
 }
-
 
 message LogMessageRequest {
-    int32 history = 1;
+  int32 history = 1;
 }
 
-
 message LogMessageReply {
-    string message = 1;
+  string message = 1;
 }

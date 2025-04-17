@@ -15,7 +15,7 @@ public class UsersORSetMessage extends Message{
 
 
     public UsersORSetMessage(String topic, String sender, ORSetMessage orSetMessage){
-        super(MESSAGE_TYPE.USERS_ORSET_MESSAGE, topic, sender);
+        super(MessageType.USERS_ORSET_MESSAGE, topic, sender);
         this.orSetMessage = orSetMessage;
     }
 
@@ -31,7 +31,7 @@ public class UsersORSetMessage extends Message{
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         Output output = new Output(byteArrayOutputStream);
 
-        kryo.register(Message.MESSAGE_TYPE.class);
+        kryo.register(MessageType.class);
         kryo.register(UsersORSetMessage.class);
         kryo.register(CRDTEntry.class);
         kryo.register(HashSet.class);
@@ -50,7 +50,7 @@ public class UsersORSetMessage extends Message{
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
         Input input = new Input(byteArrayInputStream);
 
-        kryo.register(Message.MESSAGE_TYPE.class);
+        kryo.register(MessageType.class);
         kryo.register(UsersORSetMessage.class);
         kryo.register(CRDTEntry.class);
         kryo.register(HashSet.class);

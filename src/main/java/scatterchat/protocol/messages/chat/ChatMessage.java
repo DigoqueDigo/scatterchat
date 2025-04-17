@@ -1,42 +1,38 @@
 package scatterchat.protocol.messages.chat;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.util.HashMap;
+
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import scatterchat.protocol.messages.Message;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.util.HashMap;
 
-public class ChatMessage extends Message{
+public class ChatMessage extends Message {
 
-    private String message;
+    private final String message;
 
-
-    public ChatMessage(String topic, String message){
-        super(MESSAGE_TYPE.CHAT_MESSAGE, topic);
+    public ChatMessage(String topic, String message) {
+        super(MessageType.CHAT_MESSAGE, topic);
         this.message = message;
     }
 
-
-    public ChatMessage(String topic, String sender, String message){
-        super(MESSAGE_TYPE.CHAT_MESSAGE, topic, sender);
+    public ChatMessage(String topic, String sender, String message) {
+        super(MessageType.CHAT_MESSAGE, topic, sender);
         this.message = message;
     }
 
-
-    public String getMessage(){
+    public String getMessage() {
         return this.message;
     }
 
-
-    public byte[] serialize(){
-
+    public byte[] serialize() {
         Kryo kryo = new Kryo();
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         Output output = new Output(byteArrayOutputStream);
 
-        kryo.register(Message.MESSAGE_TYPE.class);
+        kryo.register(MessageType.class);
         kryo.register(ChatMessage.class);
         kryo.register(HashMap.class);
         kryo.writeObject(output, this);
@@ -47,14 +43,12 @@ public class ChatMessage extends Message{
         return byteArrayOutputStream.toByteArray();
     }
 
-
-    public static ChatMessage deserialize(byte[] data){
-
+    public static ChatMessage deserialize(byte[] data) {
         Kryo kryo = new Kryo();
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
         Input input = new Input(byteArrayInputStream);
 
-        kryo.register(Message.MESSAGE_TYPE.class);
+        kryo.register(MessageType.class);
         kryo.register(ChatMessage.class);
         kryo.register(HashMap.class);
 
@@ -64,11 +58,7 @@ public class ChatMessage extends Message{
         return chatMessage;
     }
 
-
-    public String toString(){
-        StringBuilder buffer = new StringBuilder();
-        buffer.append(super.toString());
-        buffer.append("\t message: " + message);
-        return buffer.toString();
+    public String toString() {
+        return super.toString() + "\t message: " + message;
     }
 }

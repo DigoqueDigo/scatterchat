@@ -1,0 +1,67 @@
+plugins {
+    id 'java'
+    id 'com.google.protobuf' version '0.9.5'
+    id 'com.google.osdetector' version '1.6.2'
+}
+
+group = 'project'
+version = '1.0'
+
+def javaVersion = JavaVersion.VERSION_21
+
+java {
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
+}
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    rxjavaVersion = '3.1.8'
+    reactiveGrpcVersion = '1.2.4'
+    grpcVersion = '1.72.0'
+    protobufVersion = '4.30.2'
+}
+
+dependencies {
+    implementation "com.google.protobuf:protobuf-java:${protobufVersion}"
+    implementation "io.grpc:grpc-netty:${grpcVersion}"
+    implementation "io.grpc:grpc-stub:${grpcVersion}"
+    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
+    implementation "com.salesforce.servicelibs:rx3grpc-stub:${reactiveGrpcVersion}"
+    implementation "io.reactivex.rxjava3:rxjava:${rxjavaVersion}"
+    implementation "org.zeromq:jeromq:0.6.0"
+    implementation "com.esotericsoftware:kryo:5.6.2"
+    implementation "org.json:json:20250107"
+    implementation 'org.apache.commons:commons-lang3:3.0'
+}
+
+protobuf {
+    protoc {
+        // The artifact spec for the Protobuf Compiler
+        artifact = "com.google.protobuf:protoc:${protobufVersion}"
+    }
+    clean {
+        delete protobuf.generatedFilesBaseDir
+    }
+    plugins {
+        grpc {
+            artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}"
+        }
+        rxgrpc {
+            artifact = "com.salesforce.servicelibs:rxgrpc:${reactiveGrpcVersion}"
+        }
+        reactor {
+            artifact = "com.salesforce.servicelibs:reactor-grpc:${reactiveGrpcVersion}"
+        }
+    }
+    generateProtoTasks {
+        all()*.plugins {
+            grpc {}
+            rxgrpc {}
+            reactor {}
+        }
+    }
+}

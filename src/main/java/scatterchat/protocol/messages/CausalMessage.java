@@ -1,36 +1,33 @@
 package scatterchat.protocol.messages;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import scatterchat.clock.VectorClock;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 
-public class CausalMessage{
+
+public class CausalMessage {
 
     private Message message;
     private VectorClock vectorClock;
 
-
-    public CausalMessage(Message message, VectorClock vectorClock){
+    public CausalMessage(Message message, VectorClock vectorClock) {
         this.message = message;
         this.vectorClock = vectorClock;
     }
 
-
-    public Message getMessage(){
+    public Message getMessage() {
         return this.message;
     }
 
-
-    public VectorClock getVectorClock(){
+    public VectorClock getVectorClock() {
         return this.vectorClock;
     }
 
-
-    public byte[] serialize(){
-
+    public byte[] serialize() {
         Kryo kryo = new Kryo();
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         Output output = new Output(byteArrayOutputStream);
@@ -46,9 +43,7 @@ public class CausalMessage{
         return byteArrayOutputStream.toByteArray();
     }
 
-
-    public static CausalMessage deserialize(byte[] data){
-
+    public static CausalMessage deserialize(byte[] data) {
         Kryo kryo = new Kryo();
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
         Input input = new Input(byteArrayInputStream);

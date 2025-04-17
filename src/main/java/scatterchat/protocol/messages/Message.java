@@ -1,9 +1,9 @@
 package scatterchat.protocol.messages;
 
 
-public abstract class Message{
+public abstract class Message {
 
-    public enum MESSAGE_TYPE{
+    public enum MessageType {
         CHAT_MESSAGE,
         CHAT_EXIT_MESSAGE,
         SERVER_STATE_REQUEST,
@@ -13,55 +13,48 @@ public abstract class Message{
         USERS_ORSET_MESSAGE,
     }
 
-    private MESSAGE_TYPE type;
+    private MessageType type;
     private String topic;
     private String sender;
 
 
-    public Message(MESSAGE_TYPE type){
+    public Message(MessageType type) {
         this.type = type;
         this.topic = null;
         this.sender = null;
     }
 
-
-    public Message(MESSAGE_TYPE type, String topic){
+    public Message(MessageType type, String topic) {
         this.type = type;
         this.topic = topic;
         this.sender = null;
     }
 
-    public Message(MESSAGE_TYPE type, String topic, String sender){
+    public Message(MessageType type, String topic, String sender) {
         this.type = type;
         this.topic = topic;
         this.sender = sender;
     }
 
-
-    public MESSAGE_TYPE getType(){
+    public MessageType getType() {
         return this.type;
     }
 
-
-    public String getTopic(){
+    public String getTopic() {
         return this.topic;
     }
 
-
-    public String getSender(){
+    public String getSender() {
         return this.sender;
     }
 
-
-    public void setTopic(String topic){
+    public void setTopic(String topic) {
         this.topic = topic;
     }
 
-
     public abstract byte[] serialize();
 
-
-    public String toString(){
+    public String toString() {
         StringBuilder buffer = new StringBuilder();
         buffer.append("type: " + type.name());
         buffer.append("\t topic: " + topic);

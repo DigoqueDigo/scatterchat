@@ -1,39 +1,40 @@
 package scatterchat.protocol.messages.info;
+
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
+import scatterchat.protocol.messages.Message;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
-import scatterchat.protocol.messages.Message;
 
 
-public class ServerStateResponse extends Message{
+public class ServerStateResponse extends Message {
 
     private Map<String, Set<String>> serverState;
 
 
-    public ServerStateResponse(Map<String, Set<String>> serverState){
-        super(MESSAGE_TYPE.SERVER_STATE_REQUEST);
+    public ServerStateResponse(Map<String, Set<String>> serverState) {
+        super(MessageType.SERVER_STATE_REQUEST);
         this.serverState = serverState;
     }
 
 
-    public Map<String, Set<String>> getServerState(){
+    public Map<String, Set<String>> getServerState() {
         return this.serverState;
     }
 
 
-    public byte[] serialize(){
-
+    public byte[] serialize() {
         Kryo kryo = new Kryo();
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         Output output = new Output(byteArrayOutputStream);
 
-        kryo.register(Message.MESSAGE_TYPE.class);
+        kryo.register(MessageType.class);
         kryo.register(ServerStateResponse.class);
         kryo.register(HashMap.class);
         kryo.register(HashSet.class);
@@ -46,13 +47,12 @@ public class ServerStateResponse extends Message{
     }
 
 
-    public static ServerStateResponse deserialize(byte[] data){
-
+    public static ServerStateResponse deserialize(byte[] data) {
         Kryo kryo = new Kryo();
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
         Input input = new Input(byteArrayInputStream);
 
-        kryo.register(Message.MESSAGE_TYPE.class);
+        kryo.register(MessageType.class);
         kryo.register(ServerStateResponse.class);
         kryo.register(HashMap.class);
         kryo.register(HashSet.class);
@@ -63,11 +63,7 @@ public class ServerStateResponse extends Message{
         return serverInfoMessage;
     }
 
-
-    public String toString(){
-        StringBuilder buffer = new StringBuilder();
-        buffer.append(super.toString());
-        buffer.append("\t serverState: " + this.serverState);
-        return buffer.toString();
+    public String toString() {
+        return super.toString() + "\t serverState: " + this.serverState;
     }
 }

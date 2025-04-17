@@ -5,7 +5,7 @@ import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 import scatterchat.protocol.carrier.Carrier;
 import scatterchat.protocol.messages.Message;
-import scatterchat.protocol.messages.Message.MESSAGE_TYPE;
+import scatterchat.protocol.messages.Message.MessageType;
 
 
 public class ChatServerExtPub implements Runnable{
@@ -37,11 +37,11 @@ public class ChatServerExtPub implements Runnable{
 
                 System.out.println("[SC extPub] Received: " + message);
 
-                if (message.getType() == MESSAGE_TYPE.CHAT_MESSAGE){
+                if (message.getType() == MessageType.CHAT_MESSAGE){
                     pubCarrier.sendWithTopic(message);
                 }
 
-                else if (message.getType() == MESSAGE_TYPE.LOGGED_USERS_REQUEST){
+                else if (message.getType() == MessageType.LOGGED_USERS_REQUEST){
                     // TODO :: SACAR OS UTILIZADORES QUE ESTAO LOGIN E ENVIAR
                 }
             }

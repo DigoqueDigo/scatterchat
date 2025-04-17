@@ -1,5 +1,5 @@
 package scatterchat.chatserver;
-import java.util.concurrent.BlockingQueue;
+
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
@@ -9,40 +9,37 @@ import scatterchat.protocol.messages.chat.ChatExitMessage;
 import scatterchat.protocol.messages.chat.ChatMessage;
 import scatterchat.protocol.messages.info.ServeTopicRequest;
 
+import java.util.concurrent.BlockingQueue;
 
-public class ChatServerInterPub implements Runnable{
+
+public class ChatServerInterPub implements Runnable {
 
     private String interPubAddress;
     private BlockingQueue<Message> broadcast;
 
 
-    public ChatServerInterPub(String interPubAddress, BlockingQueue<Message> broadcast){
+    public ChatServerInterPub(String interPubAddress, BlockingQueue<Message> broadcast) {
         this.interPubAddress = interPubAddress;
         this.broadcast = broadcast;
     }
 
-
-    private void handleChatMessage(ChatMessage message, Carrier carrier){
+    private void handleChatMessage(ChatMessage message, Carrier carrier) {
         carrier.sendWithTopic(message);
     }
 
-
-    private void handleChatExitMessage(ChatExitMessage message, Carrier carrier){
+    private void handleChatExitMessage(ChatExitMessage message, Carrier carrier) {
         message.setTopic("[internal]" + message.getTopic());
         carrier.sendWithTopic(message);
     }
 
-
-    private void handleServeTopicRequest(ServeTopicRequest message, Carrier carrier){
+    private void handleServeTopicRequest(ServeTopicRequest message, Carrier carrier) {
         message.setTopic("[internal]" + message.getTopic());
         carrier.sendWithTopic(message);
     }
-
 
     @Override
-    public void run(){
-
-        try{
+    public void run() {
+        try {
             ZContext context = new ZContext();
             ZMQ.Socket socket = context.createSocket(SocketType.PUB);
             socket.bind(this.interPubAddress);
@@ -51,11 +48,11 @@ public class ChatServerInterPub implements Runnable{
             Carrier carrier = new Carrier(socket);
             System.out.println("[SC interPub] started on: " + this.interPubAddress);
 
-            while ((message = broadcast.take()) != null){
+            while ((message = broadcast.take()) != null) {
 
                 System.out.println("[SC interPub] Reveived: " + message.toString());
 
-                switch (message){
+                switch (message) {
                     case ChatMessage m -> handleChatMessage(m, carrier);
                     case ChatExitMessage m -> handleChatExitMessage(m, carrier);
                     case ServeTopicRequest m -> handleServeTopicRequest(m, carrier);
@@ -65,9 +62,7 @@ public class ChatServerInterPub implements Runnable{
 
             socket.close();
             context.close();
-        }
-
-        catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

@@ -1,27 +1,29 @@
 package scatterchat.protocol.messages.chat;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import scatterchat.protocol.messages.Message;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 
-public class ChatExitMessage extends Message{
+
+public class ChatExitMessage extends Message {
 
 
-    public ChatExitMessage(String topic, String sender){
-        super(MESSAGE_TYPE.CHAT_EXIT_MESSAGE, topic, sender);
+    public ChatExitMessage(String topic, String sender) {
+        super(MessageType.CHAT_EXIT_MESSAGE, topic, sender);
     }
 
 
-    public byte[] serialize(){
+    public byte[] serialize() {
 
         Kryo kryo = new Kryo();
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         Output output = new Output(byteArrayOutputStream);
 
-        kryo.register(Message.MESSAGE_TYPE.class);
+        kryo.register(MessageType.class);
         kryo.register(ChatExitMessage.class);
         kryo.writeObject(output, this);
 
@@ -32,13 +34,13 @@ public class ChatExitMessage extends Message{
     }
 
 
-    public static ChatExitMessage deserialize(byte[] data){
+    public static ChatExitMessage deserialize(byte[] data) {
 
         Kryo kryo = new Kryo();
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
         Input input = new Input(byteArrayInputStream);
 
-        kryo.register(Message.MESSAGE_TYPE.class);
+        kryo.register(MessageType.class);
         kryo.register(ChatExitMessage.class);
 
         ChatExitMessage chatExitMessage = kryo.readObject(input, ChatExitMessage.class);

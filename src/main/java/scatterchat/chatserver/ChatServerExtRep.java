@@ -1,31 +1,31 @@
 package scatterchat.chatserver;
+
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 import scatterchat.chatserver.state.State;
 import scatterchat.protocol.carrier.Carrier;
 import scatterchat.protocol.messages.Message;
-import scatterchat.protocol.messages.UsersLoggedMessage;
-import scatterchat.protocol.messages.Message.MESSAGE_TYPE;
+import scatterchat.protocol.messages.Message.MessageType;
 import scatterchat.protocol.messages.info.ServerStateRequest;
 
 
-public class ChatServerExtRep implements Runnable{
+public class ChatServerExtRep implements Runnable {
 
     private String extRepAddress;
     private State state;
 
 
-    public ChatServerExtRep(String extRepAddress, State state){
+    public ChatServerExtRep(String extRepAddress, State state) {
         this.extRepAddress = extRepAddress;
         this.state = state;
     }
 
 
     @Override
-    public void run(){
+    public void run() {
 
-        try{
+        try {
             ZContext context = new ZContext();
             ZMQ.Socket repSocket = context.createSocket(SocketType.PUB);
             repSocket.bind(extRepAddress);
@@ -33,16 +33,16 @@ public class ChatServerExtRep implements Runnable{
             Message message = null;
             Carrier repCarrier = new Carrier(repSocket);
 
-            repCarrier.on(MESSAGE_TYPE.SERVER_INFO, x -> ServerStateRequest.deserialize(x));
-            repCarrier.on(MESSAGE_TYPE.USERS_LOGGED, x -> UsersLoggedMessage.deserialize(x));
+            repCarrier.on(MessageType.SERVER_INFO, x -> ServerStateRequest.deserialize(x));
+            repCarrier.on(MessageType.USERS_LOGGED, x -> UsersLoggedMessage.deserialize(x));
 
             System.out.println("[SC extRep] started on: " + extRepAddress);
 
-            while ((message = repCarrier.receive()) != null){
+            while ((message = repCarrier.receive()) != null) {
 
                 System.out.println("[SC extRep] Received: " + message);
 
-                switch (message){
+                switch (message) {
                     case ServerStateRequest m -> System.out.println(m);
                     case UsersLoggedMessage m -> System.out.println(m);
                     default -> System.out.println("[SC extRep] Unknown: " + message);
@@ -51,10 +51,8 @@ public class ChatServerExtRep implements Runnable{
 
             repSocket.close();
             context.close();
-        }
-
-        catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
-    }   
+    }
 }

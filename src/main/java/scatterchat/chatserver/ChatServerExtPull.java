@@ -1,46 +1,44 @@
 package scatterchat.chatserver;
-import java.util.concurrent.BlockingQueue;
+
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
-import scatterchat.protocol.messages.CausalMessage;
-import scatterchat.protocol.messages.Message;
-import scatterchat.protocol.messages.Message.MESSAGE_TYPE;
-import scatterchat.protocol.messages.chat.ChatExitMessage;
-import scatterchat.protocol.messages.chat.ChatMessage;
-import scatterchat.protocol.messages.crtd.ORSetMessage;
-import scatterchat.protocol.messages.crtd.UsersORSetMessage;
-import scatterchat.protocol.messages.crtd.ORSetMessage.OPERATION;
 import scatterchat.chatserver.state.ORSet;
 import scatterchat.chatserver.state.State;
 import scatterchat.protocol.carrier.Carrier;
+import scatterchat.protocol.messages.CausalMessage;
+import scatterchat.protocol.messages.Message;
+import scatterchat.protocol.messages.Message.MessageType;
+import scatterchat.protocol.messages.chat.ChatExitMessage;
+import scatterchat.protocol.messages.chat.ChatMessage;
+import scatterchat.protocol.messages.crtd.ORSetMessage;
+import scatterchat.protocol.messages.crtd.ORSetMessage.Operation;
+import scatterchat.protocol.messages.crtd.UsersORSetMessage;
+
+import java.util.concurrent.BlockingQueue;
 
 
-public class ChatServerExtPull implements Runnable{
+public class ChatServerExtPull implements Runnable {
 
-    private State state;
-    private String extPullAddress; 
-    private BlockingQueue<CausalMessage> broadcast;
+    private final State state;
+    private final String extPullAddress;
+    private final BlockingQueue<CausalMessage> broadcast;
 
-
-    public ChatServerExtPull(String extPullAddress, State state, BlockingQueue<CausalMessage> broadcast){
+    public ChatServerExtPull(String extPullAddress, State state, BlockingQueue<CausalMessage> broadcast) {
         this.extPullAddress = extPullAddress;
         this.state = state;
         this.broadcast = broadcast;
     }
 
-
-    private void handleChatMessage(ChatMessage message) throws InterruptedException{
-
-        synchronized (state){
-
+    private void handleChatMessage(ChatMessage message) throws InterruptedException {
+        synchronized (state) {
             final String topic = message.getTopic();
             final String sender = message.getSender();
             ORSet orSet = state.getUsersORSetOf(topic);
 
-            if (!orSet.contains(sender)){
+            if (!orSet.contains(sender)) {
 
-                ORSetMessage orSetMessage = orSet.prepare(OPERATION.ADD, sender);
+                ORSetMessage orSetMessage = orSet.prepare(Operation.ADD, sender);
                 UsersORSetMessage usersORSetMessage = new UsersORSetMessage(topic, sender, orSetMessage);
                 CausalMessage causalMessage = new CausalMessage(usersORSetMessage, state.getVectorClockOf(topic));
 
@@ -53,16 +51,13 @@ public class ChatServerExtPull implements Runnable{
         }
     }
 
-
-    private void handleChatExitMessage(ChatExitMessage message) throws InterruptedException{
-
-        synchronized (state){
-
+    private void handleChatExitMessage(ChatExitMessage message) throws InterruptedException {
+        synchronized (state) {
             final String topic = message.getTopic();
             final String sender = message.getSender();
 
             ORSet orSet = state.getUsersORSetOf(topic);
-            ORSetMessage orSetMessage = orSet.prepare(OPERATION.REMOVE, sender);
+            ORSetMessage orSetMessage = orSet.prepare(Operation.REMOVE, sender);
 
             UsersORSetMessage usersORSetMessage = new UsersORSetMessage(topic, sender, orSetMessage);
             CausalMessage causalMessage = new CausalMessage(usersORSetMessage, state.getVectorClockOf(topic));
@@ -72,11 +67,9 @@ public class ChatServerExtPull implements Runnable{
         }
     }
 
-
     @Override
-    public void run(){
-
-        try{
+    public void run() {
+        try {
             ZContext context = new ZContext();
             ZMQ.Socket socket = context.createSocket(SocketType.PULL);
             socket.bind(this.extPullAddress);
@@ -85,14 +78,13 @@ public class ChatServerExtPull implements Runnable{
             Carrier carrier = new Carrier(socket);
             System.out.println("[SC extPull] started on: " + this.extPullAddress);
 
-            carrier.on(MESSAGE_TYPE.CHAT_MESSAGE, x -> ChatMessage.deserialize(x));
-            carrier.on(MESSAGE_TYPE.CHAT_EXIT_MESSAGE, x -> ChatExitMessage.deserialize(x));
+            carrier.on(MessageType.CHAT_MESSAGE, ChatMessage::deserialize);
+            carrier.on(MessageType.CHAT_EXIT_MESSAGE, ChatExitMessage::deserialize);
 
-            while ((message = carrier.receive()) != null){
+            while ((message = carrier.receive()) != null) {
+                System.out.println("[SC extPull] Received: " + message);
 
-                System.out.println("[SC extPull] Received: " + message.toString());
-
-                switch (message){
+                switch (message) {
                     case ChatMessage m -> handleChatMessage(m);
                     case ChatExitMessage m -> handleChatExitMessage(m);
                     default -> System.out.println("[SC extPull] Unknown: " + message);
@@ -101,9 +93,7 @@ public class ChatServerExtPull implements Runnable{
 
             socket.close();
             context.close();
-        }
-
-        catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
