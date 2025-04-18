@@ -30,15 +30,15 @@ public class ChatServerInterSub implements Runnable {
         this.received.put(message);
     }
 
-    private void handleServeTopicRequest(ServeTopicRequest message, ZMQ.Socket subSocket) {
+    private void handleServeTopicRequest(ServeTopicRequest message, ZMQ.Socket socket) {
 
         synchronized (state) {
 
             final String topic = message.getTopic().replace("[internal]", "");
-            subSocket.subscribe(topic);
+            socket.subscribe(topic);
 
             for (String nodeInterPubAddres : message.getNodes()) {
-                subSocket.connect(nodeInterPubAddres);
+                socket.connect(nodeInterPubAddres);
             }
         }
     }
@@ -47,15 +47,19 @@ public class ChatServerInterSub implements Runnable {
     public void run() {
         try {
             ZContext context = new ZContext();
-            ZMQ.Socket subSocket = context.createSocket(SocketType.SUB);
+            ZMQ.Socket socket = context.createSocket(SocketType.SUB);
 
-            final String address = config.getString("interPubAddress");
-            subSocket.connect(address);
-            subSocket.subscribe("[internal]");
-            System.out.println("[SC interSub] started");
+            String tcpAddress = config.getString("interPubTCPAddress");
+            String inprocAddress = config.getString("interPubProcAddress");
+
+            socket.connect(tcpAddress);
+            socket.connect(inprocAddress);
+            socket.subscribe("[internal]");
 
             CausalMessage causalMessage = null;
-            Carrier carrier = new Carrier(subSocket);
+            Carrier carrier = new Carrier(socket);
+
+            System.out.println("[SC interSub] started");
 
             while ((causalMessage = carrier.receiveCausalMessageWithTopic()) != null) {
 
@@ -64,12 +68,12 @@ public class ChatServerInterSub implements Runnable {
                 switch (causalMessage.getMessage()) {
                     case ChatMessage m -> forwardCausalMessage(causalMessage);
                     case UserORSetMessage m -> forwardCausalMessage(causalMessage);
-                    case ServeTopicRequest m -> handleServeTopicRequest(m, subSocket);
+                    case ServeTopicRequest m -> handleServeTopicRequest(m, socket);
                     default -> System.out.println("[SC interSub] Unknown: " + causalMessage.getMessage());
                 }
             }
 
-            subSocket.close();
+            socket.close();
             context.close();
         } catch (Exception e) {
             e.printStackTrace();

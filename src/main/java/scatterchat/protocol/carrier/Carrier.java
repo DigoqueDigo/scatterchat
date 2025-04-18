@@ -4,6 +4,14 @@ import org.zeromq.ZMQ;
 import scatterchat.protocol.message.CausalMessage;
 import scatterchat.protocol.message.Message;
 import scatterchat.protocol.message.Message.MessageType;
+import scatterchat.protocol.message.chat.ChatMessage;
+import scatterchat.protocol.message.chat.TopicEnterMessage;
+import scatterchat.protocol.message.chat.TopicExitMessage;
+import scatterchat.protocol.message.crtd.UserORSetMessage;
+import scatterchat.protocol.message.info.ServeTopicRequest;
+import scatterchat.protocol.message.info.ServeTopicResponse;
+import scatterchat.protocol.message.info.ServerStateRequest;
+import scatterchat.protocol.message.info.ServerStateResponse;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,20 +20,27 @@ import java.util.function.Function;
 
 public final class Carrier {
 
-    private final Map<MessageType, Function<byte[], Message>> deserializers;
+    private static final Map<MessageType, Function<byte[], Message>> deserializers = new HashMap<>();
+
+    static {
+        deserializers.put(MessageType.CHAT_MESSAGE, ChatMessage::deserialize);
+        deserializers.put(MessageType.SERVER_STATE_REQUEST, ServerStateRequest::deserialize);
+        deserializers.put(MessageType.SERVER_STATE_RESPONSE, ServerStateResponse::deserialize);
+        deserializers.put(MessageType.SERVE_TOPIC_REQUEST, ServeTopicRequest::deserialize);
+        deserializers.put(MessageType.SERVE_TOPIC_RESPONSE, ServeTopicResponse::deserialize);
+        deserializers.put(MessageType.TOPIC_ENTER_MESSAGE, TopicEnterMessage::deserialize);
+        deserializers.put(MessageType.TOPIC_EXIT_MESSAGE, TopicExitMessage::deserialize);
+        deserializers.put(MessageType.USERS_ORSET_MESSAGE, UserORSetMessage::deserialize);
+    }
+
     private ZMQ.Socket socket;
 
     public Carrier(ZMQ.Socket socket) {
         this.socket = socket;
-        this.deserializers = new HashMap<>();
     }
 
     public void register(ZMQ.Socket socket) {
         this.socket = socket;
-    }
-
-    public void on(MessageType type, Function<byte[], Message> deserializer) {
-        this.deserializers.put(type, deserializer);
     }
 
     public void sendMessage(Message message) {

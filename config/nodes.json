@@ -1,46 +1,50 @@
 {
-    "n1": {
-        "extPullAddress": "tcp://localhost:3000",
-        "interPubAddress": "tcp://localhost:3001",
-        "extPubAddress": "tcp://localhost:3002",
-        "extRepAddress": "tcp://localhost:3003",
-        "logServerPort": "localhost",
-        "logServerAddress": "3003"
+    "chatserver1": {
+        "extPullTCPAddress": "tcp://localhost:3000",
+        "interPubTCPAddress": "tcp://localhost:3001",
+        "extPubTCPAddress": "tcp://localhost:3002",
+        "extRepTCPAddress": "tcp://localhost:3003",
+        "interPubProcAddress": "inproc://info",
+        "logPort": "3004"
     },
 
-    "n2": {
-        "extPullAddress": "tcp://localhost:4000",
-        "interPubAddress": "tcp://localhost:4001",
-        "extPubAddress": "tcp://localhost:4002",
-        "extRepAddress": "tcp://localhost:4003",
-        "logServerPort": "localhost",
-        "logServerAddress": "4003"
+    "chatserver2": {
+        "extPullTCPAddress": "tcp://localhost:4000",
+        "interPubTCPAddress": "tcp://localhost:4001",
+        "extPubTCPAddress": "tcp://localhost:4002",
+        "extRepTCPAddress": "tcp://localhost:4003",
+        "interPubProcAddress": "inproc://info",
+        "logPort": "4004"
     },
 
-    "n3": {
-        "extPullAddress": "tcp://localhost:5000",
-        "interPubAddress": "tcp://localhost:5001",
-        "extPubAddress": "tcp://localhost:5002",
-        "extRepAddress": "tcp://localhost:5003",
-        "logServerPort": "localhost",
-        "logServerAddress": "5003"
+    "chatserver3": {
+        "extPullTCPAddress": "tcp://localhost:5000",
+        "interPubTCPAddress": "tcp://localhost:5001",
+        "extPubTCPAddress": "tcp://localhost:5002",
+        "extRepTCPAddress": "tcp://localhost:5003",
+        "interPubProcAddress": "inproc://info",
+        "logPort": "5004"
     },
 
-    "n4": {
-        "extPullAddress": "tcp://localhost:6000",
-        "interPubAddress": "tcp://localhost:6001",
-        "extPubAddress": "tcp://localhost:6002",
-        "extRepAddress": "tcp://localhost:6003",
-        "logServerPort": "localhost",
-        "logServerAddress": "6003"
+    "chatserver4": {
+        "extPullTCPAddress": "tcp://localhost:6000",
+        "interPubTCPAddress": "tcp://localhost:6001",
+        "extPubTCPAddress": "tcp://localhost:6002",
+        "extRepTCPAddress": "tcp://localhost:6003",
+        "interPubProcAddress": "inproc://info",
+        "logPort": "6004"
     },
 
-    "n5": {
-        "extPullAddress": "tcp://localhost:7000",
-        "interPubAddress": "tcp://localhost:7001",
-        "extPubAddress": "tcp://localhost:7002",
-        "extRepAddress": "tcp://localhost:7003",
-        "logServerPort": "localhost",
-        "logServerAddress": "7003"
+    "chatserver5": {
+        "extPullTCPAddress": "tcp://localhost:7000",
+        "interPubTCPAddress": "tcp://localhost:7001",
+        "extPubTCPAddress": "tcp://localhost:7002",
+        "extRepTCPAddress": "tcp://localhost:7003",
+        "interPubProcAddress": "inproc://info",
+        "logPort": "7004"
+    },
+
+    "client1": {
+        "interPubProcAddress": "inproc://exitenter"
     }
 }

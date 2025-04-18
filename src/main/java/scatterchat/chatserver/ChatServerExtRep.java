@@ -8,7 +8,6 @@ import scatterchat.chatserver.state.State;
 import scatterchat.clock.VectorClock;
 import scatterchat.protocol.carrier.Carrier;
 import scatterchat.protocol.message.Message;
-import scatterchat.protocol.message.Message.MessageType;
 import scatterchat.protocol.message.info.ServeTopicRequest;
 import scatterchat.protocol.message.info.ServeTopicResponse;
 import scatterchat.protocol.message.info.ServerStateRequest;
@@ -56,15 +55,13 @@ public class ChatServerExtRep implements Runnable {
             ZContext context = new ZContext();
             ZMQ.Socket socket = context.createSocket(SocketType.REP);
 
-            final String address = config.getString("extRepAddress");
+            String address = config.getString("extRepTCPAddress");
             socket.bind(address);
-            System.out.println("[SC extRep] started on: " + address);
 
             Message message = null;
             Carrier carrier = new Carrier(socket);
 
-            carrier.on(MessageType.SERVE_TOPIC_REQUEST, ServeTopicRequest::deserialize);
-            carrier.on(MessageType.SERVER_STATE_REQUEST, ServerStateRequest::deserialize);
+            System.out.println("[SC extRep] started on: " + address);
 
             while ((message = carrier.receiveMessage()) != null) {
 

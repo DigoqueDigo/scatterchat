@@ -18,9 +18,10 @@
         <reactive.grpc.version>1.2.4</reactive.grpc.version>
         <grpc.version>1.61.1</grpc.version>
         <protoc.version>3.25.3</protoc.version>
-        <zeromq.version>0.5.4</zeromq.version>
-        <kryo.version>5.3.0</kryo.version>
-        <json.version>20240303</json.version>
+        <zeromq.version>0.6.0</zeromq.version>
+        <kryo.version>5.6.2</kryo.version>
+        <jline.version>3.29.0</jline.version>
+        <json.version>20250107</json.version>
     </properties>
 
     <dependencies>
@@ -65,9 +66,9 @@
             <version>${json.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.0</version>
+            <groupId>org.jline</groupId>
+            <artifactId>jline</artifactId>
+            <version>${jline.version}</version>
         </dependency>
     </dependencies>
 

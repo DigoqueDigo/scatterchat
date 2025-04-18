@@ -17,7 +17,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadFactory;
 
 
-public class Main {
+public class ChatServer {
 
     public static void main(String[] args) throws IOException, InterruptedException {
 

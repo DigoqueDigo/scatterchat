@@ -45,12 +45,13 @@ public class ChatServerExtPub implements Runnable {
             ZContext context = new ZContext();
             ZMQ.Socket socket = context.createSocket(SocketType.PUB);
 
-            final String address = config.getString("extPubAddress");
+            String address = config.getString("extPubTCPAddress");
             socket.bind(address);
-            System.out.println("[SC extPub] started on: " + address);
 
             Message message = null;
             Carrier carrier = new Carrier(socket);
+
+            System.out.println("[SC extPub] started on: " + address);
 
             while ((message = this.delivered.take()) != null) {
 

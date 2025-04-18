@@ -61,12 +61,17 @@ public class ChatServerInterPub implements Runnable {
             ZContext context = new ZContext();
             ZMQ.Socket socket = context.createSocket(SocketType.PUB);
 
-            final String address = config.getString("interPubAddress");
-            socket.bind(address);
-            System.out.println("[SC interPub] started on: " + address);
+            String tcpAddress = config.getString("interPubTCPAddress");
+            String inprocAddress = config.getString("interPubProcAddress");
+
+            socket.bind(tcpAddress);
+            socket.bind(inprocAddress);
 
             Message message = null;
             Carrier carrier = new Carrier(socket);
+
+            System.out.println("[SC interPub] started on: " + tcpAddress);
+            System.out.println("[SC interPub] started on: " + inprocAddress);
 
             while ((message = broadcast.take()) != null) {
 

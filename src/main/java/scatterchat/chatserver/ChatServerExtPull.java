@@ -10,7 +10,6 @@ import scatterchat.crdt.ORSetAction;
 import scatterchat.crdt.ORSetAction.Operation;
 import scatterchat.protocol.carrier.Carrier;
 import scatterchat.protocol.message.Message;
-import scatterchat.protocol.message.Message.MessageType;
 import scatterchat.protocol.message.chat.ChatMessage;
 import scatterchat.protocol.message.chat.TopicEnterMessage;
 import scatterchat.protocol.message.chat.TopicExitMessage;
@@ -73,16 +72,13 @@ public class ChatServerExtPull implements Runnable {
             ZContext context = new ZContext();
             ZMQ.Socket socket = context.createSocket(SocketType.PULL);
 
-            final String address = config.getString("extPullAddress");
+            String address = config.getString("extPullTCPAddress");
             socket.bind(address);
-            System.out.println("[SC extPull] started on: " + address);
 
             Message message = null;
             Carrier carrier = new Carrier(socket);
 
-            carrier.on(MessageType.CHAT_MESSAGE, ChatMessage::deserialize);
-            carrier.on(MessageType.TOPIC_EXIT_MESSAGE, TopicExitMessage::deserialize);
-            carrier.on(MessageType.TOPIC_ENTER_MESSAGE, TopicEnterMessage::deserialize);
+            System.out.println("[SC extPull] started on: " + address);
 
             while ((message = carrier.receiveMessage()) != null) {
                 System.out.println("[SC extPull] Received: " + message);
