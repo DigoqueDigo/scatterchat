@@ -45,6 +45,17 @@
     },
 
     "client1": {
+        "id": "client1",
+        "interPubProcAddress": "inproc://exitenter"
+    },
+
+    "client2": {
+        "id": "client2",
+        "interPubProcAddress": "inproc://exitenter"
+    },
+
+    "client3": {
+        "id": "client3",
         "interPubProcAddress": "inproc://exitenter"
     }
 }

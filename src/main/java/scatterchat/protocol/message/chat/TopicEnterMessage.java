@@ -11,12 +11,25 @@ import java.io.ByteArrayOutputStream;
 
 public class TopicEnterMessage extends Message {
 
+    private String chatServerAddress;
+
     public TopicEnterMessage() {
         super(MessageType.TOPIC_ENTER_MESSAGE);
+        this.chatServerAddress = null;
     }
 
     public TopicEnterMessage(String topic, String sender) {
         super(MessageType.TOPIC_ENTER_MESSAGE, topic, sender);
+        this.chatServerAddress = null;
+    }
+
+    public TopicEnterMessage(String topic, String sender, String chatServerAddress) {
+        super(MessageType.TOPIC_ENTER_MESSAGE, topic, sender);
+        this.chatServerAddress = chatServerAddress;
+    }
+
+    public String getChatServerAddress() {
+        return this.chatServerAddress;
     }
 
     public byte[] serialize() {

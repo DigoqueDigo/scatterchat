@@ -81,6 +81,7 @@ public class ChatServerExtPull implements Runnable {
             System.out.println("[SC extPull] started on: " + address);
 
             while ((message = carrier.receiveMessage()) != null) {
+
                 System.out.println("[SC extPull] Received: " + message);
 
                 switch (message) {

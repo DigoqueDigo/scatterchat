@@ -28,12 +28,21 @@ public class ClientSub implements Runnable{
 
 
     private void handleTopicEnterMessage(TopicEnterMessage message, ZMQ.Socket socket){
-        socket.subscribe(message.getTopic());
+        String topic = message.getTopic().replace("[internal]", "");
+        socket.connect(message.getChatServerAddress());
+        socket.subscribe(topic);
     }
 
 
-    private void handleTopicExitMessage(TopicExitMessage message, ZMQ.Socket socket){
-        socket.unsubscribe(message.getTopic());
+    private void handleTopicExitMessage(TopicExitMessage message, ZMQ.Socket socket) throws NullPointerException{
+
+        if (message.getTopic() == null){
+            throw new NullPointerException("client exit");
+        }
+
+        String topic = message.getTopic().replace("[internal]", "");
+        socket.unsubscribe(topic);
+        socket.disconnect(message.getChatServerAddress());
     }
 
 
@@ -51,19 +60,29 @@ public class ClientSub implements Runnable{
         socket.subscribe("[internal]");
         System.out.println("[Client SUB] started");
 
-        while ((message = carrier.receiveMessageWithTopic()) != null){
+        try{
 
-            System.out.println("[Client SUB] received " + message);
+            while ((message = carrier.receiveMessageWithTopic()) != null){
 
-            switch (message){
-                case ChatMessage m -> handleChatMessage(m);
-                case TopicExitMessage m -> handleTopicExitMessage(m, socket);
-                case TopicEnterMessage m -> handleTopicEnterMessage(m, socket);
-                default -> System.out.println("[Client SUB] Unknown " );
+                System.out.println("[Client SUB] received " + message);
+
+                switch (message){
+                    case ChatMessage m -> handleChatMessage(m);
+                    case TopicExitMessage m -> handleTopicExitMessage(m, socket);
+                    case TopicEnterMessage m -> handleTopicEnterMessage(m, socket);
+                    default -> System.out.println("[Client SUB] Unknown " );
+                }
             }
         }
 
-        socket.close();
-        context.close();
+        catch (NullPointerException e){
+            socket.unsubscribe("[internal]");
+            socket.close();
+            context.close();
+        }
+
+        catch (Exception e){
+            e.printStackTrace();
+        }
     }
 }

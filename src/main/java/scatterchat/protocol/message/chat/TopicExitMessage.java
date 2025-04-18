@@ -11,12 +11,24 @@ import java.io.ByteArrayOutputStream;
 
 public class TopicExitMessage extends Message {
 
+    private String chatServerAddress;
+
     public TopicExitMessage() {
         super(MessageType.TOPIC_EXIT_MESSAGE);
     }
 
     public TopicExitMessage(String topic, String sender) {
         super(MessageType.TOPIC_EXIT_MESSAGE, topic, sender);
+        this.chatServerAddress = null;
+    }
+
+    public TopicExitMessage(String topic, String sender, String chatServerAddress) {
+        super(MessageType.TOPIC_EXIT_MESSAGE, topic, sender);
+        this.chatServerAddress = chatServerAddress;
+    }
+
+    public String getChatServerAddress() {
+        return this.chatServerAddress;
     }
 
     public byte[] serialize() {
