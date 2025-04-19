@@ -6,7 +6,7 @@ import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 import scatterchat.chatserver.state.State;
 import scatterchat.clock.VectorClock;
-import scatterchat.protocol.carrier.Carrier;
+import scatterchat.protocol.carrier.ZMQCarrier;
 import scatterchat.protocol.message.Message;
 import scatterchat.protocol.message.info.ServeTopicRequest;
 import scatterchat.protocol.message.info.ServeTopicResponse;
@@ -28,7 +28,7 @@ public class ChatServerExtRep implements Runnable {
         this.broadcast = broadcast;
     }
 
-    private void handleServeTopicRequest(ServeTopicRequest message, Carrier carrier) throws InterruptedException {
+    private void handleServeTopicRequest(ServeTopicRequest message, ZMQCarrier carrier) throws InterruptedException {
 
         synchronized (state){
             final String topic = message.getTopic();
@@ -42,7 +42,7 @@ public class ChatServerExtRep implements Runnable {
         carrier.sendMessage(response);
     }
 
-    private void handleServerStateRequest(ServerStateRequest message, Carrier carrier) {
+    private void handleServerStateRequest(ServerStateRequest message, ZMQCarrier carrier) {
         synchronized (state) {
             ServerStateResponse response = new ServerStateResponse(state.getState());
             carrier.sendMessage(response);
@@ -59,7 +59,7 @@ public class ChatServerExtRep implements Runnable {
             socket.bind(address);
 
             Message message = null;
-            Carrier carrier = new Carrier(socket);
+            ZMQCarrier carrier = new ZMQCarrier(socket);
 
             System.out.println("[SC extRep] started on: " + address);
 

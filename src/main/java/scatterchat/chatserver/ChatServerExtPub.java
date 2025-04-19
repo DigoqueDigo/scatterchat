@@ -7,7 +7,7 @@ import org.zeromq.ZMQ;
 import scatterchat.chatserver.state.State;
 import scatterchat.crdt.ORSet;
 import scatterchat.crdt.ORSetAction;
-import scatterchat.protocol.carrier.Carrier;
+import scatterchat.protocol.carrier.ZMQCarrier;
 import scatterchat.protocol.message.Message;
 import scatterchat.protocol.message.chat.ChatMessage;
 import scatterchat.protocol.message.crtd.UserORSetMessage;
@@ -27,7 +27,7 @@ public class ChatServerExtPub implements Runnable {
         this.delivered = delivered;
     }
 
-    private void handleChatMessage(ChatMessage message, Carrier carrier) {
+    private void handleChatMessage(ChatMessage message, ZMQCarrier carrier) {
         carrier.sendMessageWithTopic(message);
     }
 
@@ -49,7 +49,7 @@ public class ChatServerExtPub implements Runnable {
             socket.bind(address);
 
             Message message = null;
-            Carrier carrier = new Carrier(socket);
+            ZMQCarrier carrier = new ZMQCarrier(socket);
 
             System.out.println("[SC extPub] started on: " + address);
 

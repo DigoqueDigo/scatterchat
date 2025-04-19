@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 
-public final class Carrier {
+public final class ZMQCarrier {
 
     private static final Map<MessageType, Function<byte[], Message>> deserializers = new HashMap<>();
 
@@ -35,7 +35,7 @@ public final class Carrier {
 
     private ZMQ.Socket socket;
 
-    public Carrier(ZMQ.Socket socket) {
+    public ZMQCarrier(ZMQ.Socket socket) {
         this.socket = socket;
     }
 

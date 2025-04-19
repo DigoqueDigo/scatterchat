@@ -8,7 +8,7 @@ import scatterchat.chatserver.state.State;
 import scatterchat.crdt.ORSet;
 import scatterchat.crdt.ORSetAction;
 import scatterchat.crdt.ORSetAction.Operation;
-import scatterchat.protocol.carrier.Carrier;
+import scatterchat.protocol.carrier.ZMQCarrier;
 import scatterchat.protocol.message.Message;
 import scatterchat.protocol.message.chat.ChatMessage;
 import scatterchat.protocol.message.chat.TopicEnterMessage;
@@ -76,7 +76,7 @@ public class ChatServerExtPull implements Runnable {
             socket.bind(address);
 
             Message message = null;
-            Carrier carrier = new Carrier(socket);
+            ZMQCarrier carrier = new ZMQCarrier(socket);
 
             System.out.println("[SC extPull] started on: " + address);
 

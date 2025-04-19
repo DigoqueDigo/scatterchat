@@ -6,7 +6,7 @@ import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 import scatterchat.chatserver.state.State;
 import scatterchat.clock.VectorClock;
-import scatterchat.protocol.carrier.Carrier;
+import scatterchat.protocol.carrier.ZMQCarrier;
 import scatterchat.protocol.message.CausalMessage;
 import scatterchat.protocol.message.Message;
 import scatterchat.protocol.message.chat.ChatMessage;
@@ -30,7 +30,7 @@ public class ChatServerInterPub implements Runnable {
     }
 
 
-    private void forwardAsCausalMessage(Message message, Carrier carrier) {
+    private void forwardAsCausalMessage(Message message, ZMQCarrier carrier) {
 
         synchronized (state){
 
@@ -48,10 +48,14 @@ public class ChatServerInterPub implements Runnable {
     }
 
 
-    private void handleServeTopicRequest(ServeTopicRequest message, Carrier carrier){
-        message.setTopic("[internal]" + message.getTopic());
-        CausalMessage causalMessage = new CausalMessage(message, null);
-        carrier.sendCausalMessageWithTopic(causalMessage);
+    private void handleServeTopicRequest(ServeTopicRequest message, ZMQCarrier carrier){
+
+        synchronized (state){
+
+            message.setTopic("[internal]" + state.getNodeId() + message.getTopic());
+            CausalMessage causalMessage = new CausalMessage(message, null);
+            carrier.sendCausalMessageWithTopic(causalMessage);
+        }
     }
 
 
@@ -68,7 +72,7 @@ public class ChatServerInterPub implements Runnable {
             socket.bind(inprocAddress);
 
             Message message = null;
-            Carrier carrier = new Carrier(socket);
+            ZMQCarrier carrier = new ZMQCarrier(socket);
 
             System.out.println("[SC interPub] started on: " + tcpAddress);
             System.out.println("[SC interPub] started on: " + inprocAddress);

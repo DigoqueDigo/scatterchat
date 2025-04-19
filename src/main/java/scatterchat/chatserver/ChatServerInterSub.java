@@ -5,7 +5,7 @@ import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 import scatterchat.chatserver.state.State;
-import scatterchat.protocol.carrier.Carrier;
+import scatterchat.protocol.carrier.ZMQCarrier;
 import scatterchat.protocol.message.CausalMessage;
 import scatterchat.protocol.message.chat.ChatMessage;
 import scatterchat.protocol.message.crtd.UserORSetMessage;
@@ -34,7 +34,7 @@ public class ChatServerInterSub implements Runnable {
 
         synchronized (state) {
 
-            final String topic = message.getTopic().replace("[internal]", "");
+            String topic = message.getTopic().replace("[internal]" + state.getNodeId(), "");
             socket.subscribe(topic);
 
             for (String nodeInterPubAddres : message.getNodes()) {
@@ -45,6 +45,7 @@ public class ChatServerInterSub implements Runnable {
 
     @Override
     public void run() {
+
         try {
             ZContext context = new ZContext();
             ZMQ.Socket socket = context.createSocket(SocketType.SUB);
@@ -54,10 +55,13 @@ public class ChatServerInterSub implements Runnable {
 
             socket.connect(tcpAddress);
             socket.connect(inprocAddress);
-            socket.subscribe("[internal]");
+
+            synchronized (state){
+                socket.subscribe("[internal]" + state.getNodeId());
+            }
 
             CausalMessage causalMessage = null;
-            Carrier carrier = new Carrier(socket);
+            ZMQCarrier carrier = new ZMQCarrier(socket);
 
             System.out.println("[SC interSub] started");
 

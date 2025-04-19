@@ -3,13 +3,33 @@ option java_package = "scatterchat";
 option java_multiple_files = true;
 
 service LogService {
-  rpc getLogs (LogMessageRequest) returns (stream LogMessageReply);
+    rpc getLogs (LogMessageRequest) returns (stream LogMessageReply);
 }
 
 message LogMessageRequest {
-  int32 history = 1;
+    int32 history = 1;                      // Number of log lines
 }
 
 message LogMessageReply {
-  string message = 1;
+    string message = 1;                     // Log line content
+}
+
+message SCState {
+    string sc_id = 1;                       // Unique identifier of the SC
+    uint32 num_topics = 2;                  // Number of topics served (N_t)
+    uint32 num_clients = 3;                 // Number of connected clients (N_c)
+}
+
+message SCStateList {
+    repeated SCState sc_states = 1;         // List of SC states (up to C entries)
+}
+
+message GossipMessage {
+    string sender = 1;                      // Sender of GossipMessage
+    string aggregation_id = 2;              // ID of the aggregation
+    SCStateList state_list = 3;             // List of C best SC states
+}
+
+message AggregationRequest {
+    string sender = 1;                      // Sender of request (client)
 }

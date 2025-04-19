@@ -5,7 +5,7 @@ import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
-import scatterchat.protocol.carrier.Carrier;
+import scatterchat.protocol.carrier.ZMQCarrier;
 import scatterchat.protocol.message.Message;
 import scatterchat.protocol.message.chat.ChatMessage;
 import scatterchat.protocol.message.chat.TopicEnterMessage;
@@ -53,7 +53,7 @@ public class ClientSub implements Runnable{
         ZMQ.Socket socket = context.createSocket(SocketType.SUB);
 
         Message message = null;
-        Carrier carrier = new Carrier(socket);
+        ZMQCarrier carrier = new ZMQCarrier(socket);
         String pubAddress = config.getString("interPubProcAddress");
 
         socket.connect(pubAddress);

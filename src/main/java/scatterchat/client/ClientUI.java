@@ -14,7 +14,7 @@ import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
-import scatterchat.protocol.carrier.Carrier;
+import scatterchat.protocol.carrier.ZMQCarrier;
 import scatterchat.protocol.message.Message;
 import scatterchat.protocol.message.chat.ChatMessage;
 import scatterchat.protocol.message.chat.TopicEnterMessage;
@@ -73,9 +73,9 @@ public class ClientUI implements Runnable{
         ZMQ.Socket reqSocket = context.createSocket(SocketType.REQ);
         ZMQ.Socket pubSocket = context.createSocket(SocketType.PUB);
 
-        Carrier pushCarrier = new Carrier(pushSocket);
-        Carrier pubCarrier = new Carrier(pubSocket);
-        Carrier reqCarrier = new Carrier(reqSocket);
+        ZMQCarrier pushCarrier = new ZMQCarrier(pushSocket);
+        ZMQCarrier pubCarrier = new ZMQCarrier(pubSocket);
+        ZMQCarrier reqCarrier = new ZMQCarrier(reqSocket);
 
         pubSocket.bind(config.getString("interPubProcAddress"));
         final String sender = config.getString("id");
