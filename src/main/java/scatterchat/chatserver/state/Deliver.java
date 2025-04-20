@@ -32,7 +32,9 @@ public class Deliver implements Runnable {
     }
 
     private void deliver(String topic) throws InterruptedException {
+
         synchronized (state) {
+
             int index = 0;
             final VectorClock vectorClock = state.getVectorClockOf(topic);
             final List<CausalMessage> pendingBuffer = pending.get(topic);

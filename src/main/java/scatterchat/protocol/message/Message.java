@@ -12,6 +12,9 @@ public abstract class Message {
         SERVE_TOPIC_REQUEST,
         SERVE_TOPIC_RESPONSE,
         USERS_ORSET_MESSAGE,
+        CYCLON,
+        CYCLON_OK,
+        CYCLON_ERROR,
     }
 
     private MessageType type;
