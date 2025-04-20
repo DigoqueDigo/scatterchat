@@ -18,7 +18,7 @@ import scatterchat.protocol.message.cyclon.CyclonEntry;
 import scatterchat.protocol.message.cyclon.CyclonMessage;
 
 
-public class CyclonTimer implements Runnable {
+public class AggrServerCyclonTimer implements Runnable {
 
     private static final Long DELAY = 1000L;
     private static final Long LOWER_BOUND_RATE = 5000L;
@@ -29,7 +29,7 @@ public class CyclonTimer implements Runnable {
     private ScheduledExecutorService executor;
 
 
-    public CyclonTimer(State state){
+    public AggrServerCyclonTimer(State state){
         this.state = state;
         this.random = new Random();
         this.executor = Executors.newSingleThreadScheduledExecutor();
