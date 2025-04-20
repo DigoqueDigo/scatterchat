@@ -2,8 +2,10 @@ package scatterchat.protocol.message.cyclon;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.List;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
@@ -14,21 +16,25 @@ import scatterchat.protocol.message.Message;
 
 public class CyclonOk extends Message {
 
-    private Set<String> subSet;
+    private Set<CyclonEntry> subSet;
+
 
     public CyclonOk(){
         super(MessageType.CYCLON_OK);
         this.subSet = null;
     }
 
-    public CyclonOk(Set<String> subSet) {
+
+    public CyclonOk(Set<CyclonEntry> subSet) {
         super(MessageType.CYCLON_OK);
         this.subSet = new HashSet<>(subSet);
     }
 
-    public Set<String> getSubSet() {
-        return this.subSet;
+
+    public List<CyclonEntry> getSubSet() {
+        return new ArrayList<>(this.subSet);
     }
+
 
     public byte[] serialize() {
 
@@ -39,6 +45,7 @@ public class CyclonOk extends Message {
         kryo.register(MessageType.class);
         kryo.register(CyclonOk.class);
         kryo.register(HashSet.class);
+        kryo.register(CyclonEntry.class);
         kryo.writeObject(output, this);
 
         output.flush();
@@ -46,6 +53,7 @@ public class CyclonOk extends Message {
 
         return byteArrayOutputStream.toByteArray();
     }
+
 
     public static CyclonOk deserialize(byte[] data) {
 
@@ -56,12 +64,14 @@ public class CyclonOk extends Message {
         kryo.register(MessageType.class);
         kryo.register(CyclonOk.class);
         kryo.register(HashSet.class);
+        kryo.register(CyclonEntry.class);
 
         CyclonOk cyclonOk = kryo.readObject(input, CyclonOk.class);
         input.close();
 
         return cyclonOk;
     }
+
 
     public String toString() {
         StringBuffer buffer = new StringBuffer();

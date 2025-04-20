@@ -2,7 +2,9 @@ package scatterchat.protocol.message.cyclon;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.esotericsoftware.kryo.Kryo;
@@ -12,23 +14,34 @@ import com.esotericsoftware.kryo.io.Output;
 import scatterchat.protocol.message.Message;
 
 
-public class Cyclon extends Message {
+public class CyclonMessage extends Message {
 
-    private Set<String> subSet;
+    private String identity;
+    private Set<CyclonEntry> subSet;
 
-    public Cyclon(){
+
+    public CyclonMessage(){
         super(MessageType.CYCLON);
         this.subSet = null;
     }
 
-    public Cyclon(Set<String> subSet) {
-        super(MessageType.CYCLON);
+
+    public CyclonMessage(String identity, String sender, Set<CyclonEntry> subSet) {
+        super(MessageType.CYCLON, null, sender);
+        this.identity = identity;
         this.subSet = new HashSet<>(subSet);
     }
 
-    public Set<String> getSubSet() {
-        return this.subSet;
+
+    public String getIdentity() {
+        return this.identity;
     }
+
+
+    public List<CyclonEntry> getSubSet() {
+        return new ArrayList<>(this.subSet);
+    }
+
 
     public byte[] serialize() {
 
@@ -37,8 +50,9 @@ public class Cyclon extends Message {
         Output output = new Output(byteArrayOutputStream);
 
         kryo.register(MessageType.class);
-        kryo.register(Cyclon.class);
+        kryo.register(CyclonMessage.class);
         kryo.register(HashSet.class);
+        kryo.register(CyclonEntry.class);
         kryo.writeObject(output, this);
 
         output.flush();
@@ -47,21 +61,24 @@ public class Cyclon extends Message {
         return byteArrayOutputStream.toByteArray();
     }
 
-    public static Cyclon deserialize(byte[] data) {
+
+    public static CyclonMessage deserialize(byte[] data) {
 
         Kryo kryo = new Kryo();
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
         Input input = new Input(byteArrayInputStream);
 
         kryo.register(MessageType.class);
-        kryo.register(Cyclon.class);
+        kryo.register(CyclonMessage.class);
         kryo.register(HashSet.class);
+        kryo.register(CyclonEntry.class);
 
-        Cyclon cyclon = kryo.readObject(input, Cyclon.class);
+        CyclonMessage cyclonMessage = kryo.readObject(input, CyclonMessage.class);
         input.close();
 
-        return cyclon;
+        return cyclonMessage;
     }
+
 
     public String toString() {
         StringBuffer buffer = new StringBuffer();
