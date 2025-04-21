@@ -22,11 +22,13 @@ public class ChatServerExtRep implements Runnable {
     private JSONObject config;
     private BlockingQueue<Message> broadcast;
 
+
     public ChatServerExtRep(JSONObject config, State state, BlockingQueue<Message> broadcast) {
         this.state = state;
         this.config = config;
         this.broadcast = broadcast;
     }
+
 
     private void handleServeTopicRequest(ServeTopicRequest message, ZMQCarrier carrier) throws InterruptedException {
 
@@ -38,9 +40,10 @@ public class ChatServerExtRep implements Runnable {
         }
 
         broadcast.put(message);
-        ServeTopicResponse response = new ServeTopicResponse(true);
+        ServeTopicResponse response = new ServeTopicResponse(message.getTopic(), true);
         carrier.sendMessage(response);
     }
+
 
     private void handleServerStateRequest(ServerStateRequest message, ZMQCarrier carrier) {
         synchronized (state) {
@@ -48,6 +51,7 @@ public class ChatServerExtRep implements Runnable {
             carrier.sendMessage(response);
         }
     }
+
 
     @Override
     public void run() {
@@ -76,7 +80,9 @@ public class ChatServerExtRep implements Runnable {
 
             socket.close();
             context.close();
-        } catch (Exception e) {
+        }
+
+        catch (Exception e) {
             e.printStackTrace();
         }
     }

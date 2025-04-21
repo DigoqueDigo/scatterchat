@@ -16,32 +16,27 @@ import scatterchat.protocol.message.Message;
 
 public class CyclonMessage extends Message {
 
-    private String identity;
+    private String senderIdentity;
     private Set<CyclonEntry> subSet;
-
 
     public CyclonMessage(){
         super(MessageType.CYCLON);
         this.subSet = null;
     }
 
-
-    public CyclonMessage(String identity, String sender, Set<CyclonEntry> subSet) {
-        super(MessageType.CYCLON, null, sender);
-        this.identity = identity;
+    public CyclonMessage(String sender, String senderIdentity, Set<CyclonEntry> subSet) {
+        super(MessageType.CYCLON, sender);
+        this.senderIdentity = senderIdentity;
         this.subSet = new HashSet<>(subSet);
     }
 
-
-    public String getIdentity() {
-        return this.identity;
+    public String getSenderIdentity() {
+        return this.senderIdentity;
     }
-
 
     public List<CyclonEntry> getSubSet() {
         return new ArrayList<>(this.subSet);
     }
-
 
     public byte[] serialize() {
 
@@ -61,7 +56,6 @@ public class CyclonMessage extends Message {
         return byteArrayOutputStream.toByteArray();
     }
 
-
     public static CyclonMessage deserialize(byte[] data) {
 
         Kryo kryo = new Kryo();
@@ -79,10 +73,10 @@ public class CyclonMessage extends Message {
         return cyclonMessage;
     }
 
-
     public String toString() {
         StringBuffer buffer = new StringBuffer();
         buffer.append(super.toString());
+        buffer.append("\t senderIdentity: " + this.senderIdentity);
         buffer.append("\t subset: " + this.subSet);
         return buffer.toString();
     }

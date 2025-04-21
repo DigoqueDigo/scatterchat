@@ -24,15 +24,18 @@ public class ChatServerExtPull implements Runnable {
     private final JSONObject config;
     private final BlockingQueue<Message> broadcast;
 
+
     public ChatServerExtPull(JSONObject config, State state, BlockingQueue<Message> broadcast) {
         this.state = state;
         this.config = config;
         this.broadcast = broadcast;
     }
 
+
     private void handleChatMessage(ChatMessage message) throws InterruptedException {
         this.broadcast.add(message);
     }
+
 
     private void handleTopicEnterMessage(TopicEnterMessage message) throws InterruptedException{
 
@@ -43,12 +46,13 @@ public class ChatServerExtPull implements Runnable {
 
             ORSet orSet = state.getUsersORSetOf(topic);
             ORSetAction orSetAction = orSet.prepare(Operation.ADD, sender);
-            UserORSetMessage userORSetMessage = new UserORSetMessage(topic, sender, orSetAction);
+            UserORSetMessage userORSetMessage = new UserORSetMessage(sender, topic, orSetAction);
 
             orSet.effect(orSetAction);
             broadcast.put(userORSetMessage);
         }
     }
+
 
     private void handleTopicExitMessage(TopicExitMessage message) throws InterruptedException {
 
@@ -59,12 +63,13 @@ public class ChatServerExtPull implements Runnable {
 
             ORSet orSet = state.getUsersORSetOf(topic);
             ORSetAction orSetAction = orSet.prepare(Operation.REMOVE, sender);
-            UserORSetMessage usersORSetMessage = new UserORSetMessage(topic, sender, orSetAction);
+            UserORSetMessage usersORSetMessage = new UserORSetMessage(sender, topic, orSetAction);
 
             orSet.effect(orSetAction);
             broadcast.put(usersORSetMessage);
         }
     }
+
 
     @Override
     public void run() {
@@ -94,7 +99,9 @@ public class ChatServerExtPull implements Runnable {
 
             socket.close();
             context.close();
-        } catch (Exception e) {
+        }
+
+        catch (Exception e) {
             e.printStackTrace();
         }
     }

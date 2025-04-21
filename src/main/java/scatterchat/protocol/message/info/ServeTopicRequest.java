@@ -13,6 +13,7 @@ import java.util.Set;
 
 public class ServeTopicRequest extends Message {
 
+    private String topic;
     private Set<String> nodes;
 
     public ServeTopicRequest() {
@@ -20,9 +21,14 @@ public class ServeTopicRequest extends Message {
         this.nodes = new HashSet<>();
     }
 
-    public ServeTopicRequest(String topic, Set<String> nodes) {
-        super(MessageType.SERVE_TOPIC_REQUEST, topic);
+    public ServeTopicRequest(String sender, String topic, Set<String> nodes) {
+        super(MessageType.SERVE_TOPIC_REQUEST, sender);
+        this.topic = topic;
         this.nodes = new HashSet<>(nodes);
+    }
+
+    public String getTopic() {
+        return this.topic;
     }
 
     public Set<String> getNodes() {
@@ -61,6 +67,10 @@ public class ServeTopicRequest extends Message {
     }
 
     public String toString() {
-        return super.toString() + "\t nodes: " + nodes;
+        StringBuilder buffer = new StringBuilder();
+        buffer.append(super.toString());
+        buffer.append("\t topic: " + this.topic);
+        buffer.append("\t nodes" + this.nodes);
+        return buffer.toString();
     }
 }

@@ -11,6 +11,7 @@ import java.io.ByteArrayOutputStream;
 
 public class TopicEnterMessage extends Message {
 
+    private String topic;
     private String chatServerAddress;
 
     public TopicEnterMessage() {
@@ -18,14 +19,20 @@ public class TopicEnterMessage extends Message {
         this.chatServerAddress = null;
     }
 
-    public TopicEnterMessage(String topic, String sender) {
-        super(MessageType.TOPIC_ENTER_MESSAGE, topic, sender);
+    public TopicEnterMessage(String sender, String topic) {
+        super(MessageType.TOPIC_ENTER_MESSAGE, sender);
+        this.topic = topic;
         this.chatServerAddress = null;
     }
 
-    public TopicEnterMessage(String topic, String sender, String chatServerAddress) {
-        super(MessageType.TOPIC_ENTER_MESSAGE, topic, sender);
+    public TopicEnterMessage(String sender, String topic, String chatServerAddress) {
+        super(MessageType.TOPIC_ENTER_MESSAGE, sender);
+        this.topic = topic;
         this.chatServerAddress = chatServerAddress;
+    }
+
+    public String getTopic() {
+        return this.topic;
     }
 
     public String getChatServerAddress() {

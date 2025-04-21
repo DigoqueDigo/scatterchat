@@ -45,9 +45,5 @@ public class CyclonError extends Message{
         input.close();
 
         return cyclonError;
-    }
-
-    public String toString() {
-        return super.toString();
     }  
 }

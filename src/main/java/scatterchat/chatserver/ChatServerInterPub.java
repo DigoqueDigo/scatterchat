@@ -30,18 +30,16 @@ public class ChatServerInterPub implements Runnable {
     }
 
 
-    private void forwardAsCausalMessage(Message message, ZMQCarrier carrier) {
+    private void forwardAsCausalMessage(Message message, String topic, ZMQCarrier carrier) {
 
         synchronized (state){
-
-            final String topic = message.getTopic();
-            final String nodeId = state.getNodeId();
-
-            message.setSender(nodeId);
+;
+            String nodeId = state.getNodeId();
             VectorClock vectorClock = state.getVectorClockOf(topic);
             CausalMessage causalMessage = new CausalMessage(message, vectorClock);
 
-            carrier.sendCausalMessageWithTopic(causalMessage);
+            message.setSender(nodeId);
+            carrier.sendCausalMessageWithTopic(topic, causalMessage);
             vectorClock.putTimeOf(nodeId, vectorClock.getTimeOf(nodeId) + 1);
             state.setVectorClockOf(topic, vectorClock);
         }
@@ -49,12 +47,9 @@ public class ChatServerInterPub implements Runnable {
 
 
     private void handleServeTopicRequest(ServeTopicRequest message, ZMQCarrier carrier){
-
         synchronized (state){
-
-            message.setTopic("[internal]" + state.getNodeId() + message.getTopic());
             CausalMessage causalMessage = new CausalMessage(message, null);
-            carrier.sendCausalMessageWithTopic(causalMessage);
+            carrier.sendCausalMessageWithTopic("[internal]", causalMessage);
         }
     }
 
@@ -82,8 +77,8 @@ public class ChatServerInterPub implements Runnable {
                 System.out.println("[SC interPub] Reveived: " + message.toString());
 
                 switch (message) {
-                    case ChatMessage m -> forwardAsCausalMessage(m, carrier);
-                    case UserORSetMessage m -> forwardAsCausalMessage(m, carrier);
+                    case ChatMessage m -> forwardAsCausalMessage(m, m.getTopic(), carrier);
+                    case UserORSetMessage m -> forwardAsCausalMessage(m, m.getTopic(), carrier);
                     case ServeTopicRequest m -> handleServeTopicRequest(m, carrier);
                     default -> System.out.println("[SC interPub] Unknown: " + message);
                 }
@@ -91,7 +86,9 @@ public class ChatServerInterPub implements Runnable {
 
             socket.close();
             context.close();
-        } catch (Exception e) {
+        }
+
+        catch (Exception e) {
             e.printStackTrace();
         }
     }

@@ -11,20 +11,27 @@ import java.io.ByteArrayOutputStream;
 
 public class TopicExitMessage extends Message {
 
+    private String topic;
     private String chatServerAddress;
 
     public TopicExitMessage() {
         super(MessageType.TOPIC_EXIT_MESSAGE);
     }
 
-    public TopicExitMessage(String topic, String sender) {
-        super(MessageType.TOPIC_EXIT_MESSAGE, topic, sender);
+    public TopicExitMessage(String sender, String topic) {
+        super(MessageType.TOPIC_EXIT_MESSAGE, sender);
+        this.topic = topic;
         this.chatServerAddress = null;
     }
 
-    public TopicExitMessage(String topic, String sender, String chatServerAddress) {
-        super(MessageType.TOPIC_EXIT_MESSAGE, topic, sender);
+    public TopicExitMessage(String sender, String topic, String chatServerAddress) {
+        super(MessageType.TOPIC_EXIT_MESSAGE, sender);
+        this.topic = topic;
         this.chatServerAddress = chatServerAddress;
+    }
+
+    public String getTopic() {
+        return this.topic;
     }
 
     public String getChatServerAddress() {

@@ -53,8 +53,8 @@ public final class ZMQCarrier {
         return deserializers.get(type).apply(socket.recv(0));
     }
 
-    public void sendMessageWithTopic(Message message) {
-        socket.sendMore(message.getTopic());
+    public void sendMessageWithTopic(String topic, Message message) {
+        socket.sendMore(topic);
         sendMessage(message);
     }
 
@@ -71,8 +71,8 @@ public final class ZMQCarrier {
         return CausalMessage.deserialize(socket.recv(0));
     }
 
-    public void sendCausalMessageWithTopic(CausalMessage message) {
-        socket.sendMore(message.getMessage().getTopic());
+    public void sendCausalMessageWithTopic(String topic, CausalMessage message) {
+        socket.sendMore(topic);
         sendCausalMessage(message);
     }
 

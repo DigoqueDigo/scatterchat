@@ -66,13 +66,13 @@ public class AggrServerProp implements Runnable{
 
             else {
 
-                String senderIdentity = message.getIdentity();
+                String senderIdentity = message.getSenderIdentity();
                 List<CyclonEntry> neighbours = state.getNeighbours();
                 int subSetLength = Math.min(neighbours.size(), state.getShuffleLength());
 
                 Collections.shuffle(neighbours);
-                List<CyclonEntry> subSet = neighbours.subList(0, subSetLength);
 
+                List<CyclonEntry> subSet = neighbours.subList(0, subSetLength);
                 CyclonOk cyclonOk = new CyclonOk(new HashSet<>(subSet));
 
                 carrier.sendMessageWithIdentity(senderIdentity, cyclonOk);

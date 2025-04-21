@@ -11,6 +11,7 @@ import java.io.ByteArrayOutputStream;
 
 public class ServeTopicResponse extends Message {
 
+    private String topic;
     private boolean success;
 
     public ServeTopicResponse(){
@@ -18,9 +19,14 @@ public class ServeTopicResponse extends Message {
         this.success = false;
     }
 
-    public ServeTopicResponse(boolean success) {
+    public ServeTopicResponse(String topic, boolean success) {
         super(MessageType.SERVE_TOPIC_RESPONSE);
+        this.topic = topic;
         this.success = success;
+    }
+
+    public String getTopic() {
+        return this.topic;
     }
 
     public boolean getSuccess() {
@@ -59,6 +65,10 @@ public class ServeTopicResponse extends Message {
     }
 
     public String toString() {
-        return super.toString() + "\t success: " + success;
+        StringBuilder buffer = new StringBuilder();
+        buffer.append(super.toString());
+        buffer.append("\t topic: " + this.topic);
+        buffer.append("\t success" + this.success);
+        return buffer.toString();
     }
 }

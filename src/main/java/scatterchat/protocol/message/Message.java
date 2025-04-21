@@ -15,45 +15,31 @@ public abstract class Message {
         CYCLON,
         CYCLON_OK,
         CYCLON_ERROR,
+        AGGR_REQ,
+        AGGR_REP,
+        AGGR,
     }
 
     private MessageType type;
-    private String topic;
     private String sender;
 
 
     public Message(MessageType type) {
         this.type = type;
-        this.topic = null;
         this.sender = null;
     }
 
-    public Message(MessageType type, String topic) {
+    public Message(MessageType type, String sender) {
         this.type = type;
-        this.topic = topic;
         this.sender = null;
-    }
-
-    public Message(MessageType type, String topic, String sender) {
-        this.type = type;
-        this.topic = topic;
-        this.sender = sender;
     }
 
     public MessageType getType() {
         return this.type;
     }
 
-    public String getTopic() {
-        return this.topic;
-    }
-
     public String getSender() {
         return this.sender;
-    }
-
-    public void setTopic(String topic) {
-        this.topic = topic;
     }
 
     public void setSender(String sender){
@@ -65,7 +51,6 @@ public abstract class Message {
     public String toString() {
         StringBuilder buffer = new StringBuilder();
         buffer.append("type: " + type.name());
-        buffer.append("\t topic: " + topic);
         buffer.append("\t sender: " + this.sender);
         return buffer.toString();
     }

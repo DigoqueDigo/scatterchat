@@ -12,6 +12,7 @@ import java.util.HashMap;
 
 public class ChatMessage extends Message {
 
+    private String topic;
     private final String message;
 
     public ChatMessage() {
@@ -19,14 +20,14 @@ public class ChatMessage extends Message {
         this.message = null;
     }
 
-    public ChatMessage(String topic, String message) {
-        super(MessageType.CHAT_MESSAGE, topic);
+    public ChatMessage(String sender, String topic, String message) {
+        super(MessageType.CHAT_MESSAGE, sender);
+        this.topic = topic;
         this.message = message;
     }
 
-    public ChatMessage(String topic, String sender, String message) {
-        super(MessageType.CHAT_MESSAGE, topic, sender);
-        this.message = message;
+    public String getTopic() {
+        return this.topic;
     }
 
     public String getMessage() {
@@ -65,6 +66,10 @@ public class ChatMessage extends Message {
     }
 
     public String toString() {
-        return super.toString() + "\t message: " + message;
+        StringBuilder buffer = new StringBuilder();
+        buffer.append(super.toString());
+        buffer.append("\t topic: " + this.topic);
+        buffer.append("\t message" + this.message);
+        return buffer.toString();
     }
 }

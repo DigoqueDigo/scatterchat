@@ -21,15 +21,18 @@ public class ChatServerExtPub implements Runnable {
     private JSONObject config;
     private BlockingQueue<Message> delivered;
 
+
     public ChatServerExtPub(JSONObject config, State state, BlockingQueue<Message> delivered) {
         this.state = state;
         this.config = config;
         this.delivered = delivered;
     }
 
+
     private void handleChatMessage(ChatMessage message, ZMQCarrier carrier) {
-        carrier.sendMessageWithTopic(message);
+        carrier.sendMessageWithTopic(message.getTopic(), message);
     }
+
 
     private void handleUsersORSetMessage(UserORSetMessage message) {
         synchronized (state) {
@@ -38,6 +41,7 @@ public class ChatServerExtPub implements Runnable {
             orSet.effect(orSetAction);
         }
     }
+
 
     @Override
     public void run() {

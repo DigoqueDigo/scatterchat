@@ -61,8 +61,8 @@ public class AggrServerCyclonTimer implements Runnable {
                 subSet.add(mCyclonEntry);
 
                 CyclonMessage cyclonMessage = new CyclonMessage(
-                    mCyclonEntry.identity(),
                     mCyclonEntry.address(),
+                    mCyclonEntry.identity(),
                     new HashSet<>(subSet)
                 );
 

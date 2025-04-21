@@ -3,6 +3,8 @@ package scatterchat.chatserver.state;
 import scatterchat.clock.VectorClock;
 import scatterchat.protocol.message.CausalMessage;
 import scatterchat.protocol.message.Message;
+import scatterchat.protocol.message.chat.ChatMessage;
+import scatterchat.protocol.message.crtd.UserORSetMessage;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,8 +27,7 @@ public class Deliver implements Runnable {
         this.pending = new HashMap<>();
     }
 
-    private void addCausalMessage(CausalMessage message) {
-        String topic = message.getMessage().getTopic();
+    private void addCausalMessage(String topic, CausalMessage message) {
         this.pending.putIfAbsent(topic, new ArrayList<>());
         this.pending.get(topic).add(message);
     }
@@ -74,12 +75,20 @@ public class Deliver implements Runnable {
     public void run() {
         try {
             while (true) {
-                CausalMessage message = this.received.take();
-                final String topic = message.getMessage().getTopic();
-                addCausalMessage(message);
+
+                CausalMessage causalMessage = this.received.take();
+                String topic = switch (causalMessage.getMessage()) {
+                    case ChatMessage m -> m.getTopic();
+                    case UserORSetMessage m -> m.getTopic();
+                    default -> throw new Exception("Unknown message");
+                };
+
+                addCausalMessage(topic, causalMessage);
                 deliver(topic);
             }
-        } catch (Exception e) {
+        }
+
+        catch (Exception e) {
             e.printStackTrace();
         }
     }

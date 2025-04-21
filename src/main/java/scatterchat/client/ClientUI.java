@@ -94,11 +94,11 @@ public class ClientUI implements Runnable{
                 reqSocket.connect(chatServerRepAddress);
                 pushSocket.connect(chatServerPullAddress);
 
-                Message topicEnterMessageToPull = new TopicEnterMessage(topic, sender);
-                Message topicEnterMessageToSub = new TopicEnterMessage("[internal]" + topic, sender, chatServerPubAddress);
+                Message topicEnterMessageToPull = new TopicEnterMessage(sender, topic);
+                Message topicEnterMessageToSub = new TopicEnterMessage(sender, topic, chatServerPubAddress);
 
                 pushCarrier.sendMessage(topicEnterMessageToPull);
-                pubCarrier.sendMessageWithTopic(topicEnterMessageToSub);                
+                pubCarrier.sendMessageWithTopic("[internal]", topicEnterMessageToSub);                
 
                 while (!(message = readMessage()).equals("/exit")){
 
@@ -108,16 +108,16 @@ public class ClientUI implements Runnable{
                     }
 
                     else {
-                        Message chatMessage = new ChatMessage(topic, sender, message);
+                        Message chatMessage = new ChatMessage(sender, topic, message);
                         pushCarrier.sendMessage(chatMessage);
                     }
                 }
 
-                Message topicExitMessageToPull = new TopicExitMessage(topic, sender);
-                Message topicExitMessageToSub = new TopicExitMessage(topic, sender, chatServerPubAddress);
+                Message topicExitMessageToPull = new TopicExitMessage(sender, topic);
+                Message topicExitMessageToSub = new TopicExitMessage(sender, topic, chatServerPubAddress);
 
                 pushCarrier.sendMessage(topicExitMessageToPull);
-                pubCarrier.sendMessageWithTopic(topicExitMessageToSub);
+                pubCarrier.sendMessageWithTopic("[internal]", topicExitMessageToSub);
 
                 reqSocket.disconnect(chatServerRepAddress);
                 pushSocket.disconnect(chatServerPullAddress);
@@ -126,8 +126,8 @@ public class ClientUI implements Runnable{
 
         catch (EndOfFileException e){
 
-            Message topicExitMessageToSub = new TopicExitMessage(null, sender);
-            pubCarrier.sendMessageWithTopic(topicExitMessageToSub);
+            Message topicExitMessageToSub = new TopicExitMessage(sender, null);
+            pubCarrier.sendMessageWithTopic("[internal]", topicExitMessageToSub);
 
             pushSocket.close();
             reqSocket.close();

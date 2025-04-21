@@ -20,28 +20,31 @@ public class ChatServerInterSub implements Runnable {
     private final JSONObject config;
     private final BlockingQueue<CausalMessage> received;
 
+
     public ChatServerInterSub(JSONObject config, State state, BlockingQueue<CausalMessage> received) {
         this.state = state;
         this.config = config;
         this.received = received;
     }
 
+
     private void forwardCausalMessage(CausalMessage message) throws InterruptedException {
         this.received.put(message);
     }
+
 
     private void handleServeTopicRequest(ServeTopicRequest message, ZMQ.Socket socket) {
 
         synchronized (state) {
 
-            String topic = message.getTopic().replace("[internal]" + state.getNodeId(), "");
-            socket.subscribe(topic);
-
             for (String nodeInterPubAddres : message.getNodes()) {
                 socket.connect(nodeInterPubAddres);
             }
+
+            socket.subscribe(message.getTopic());
         }
     }
+
 
     @Override
     public void run() {
@@ -79,7 +82,9 @@ public class ChatServerInterSub implements Runnable {
 
             socket.close();
             context.close();
-        } catch (Exception e) {
+        }
+
+        catch (Exception e) {
             e.printStackTrace();
         }
     }

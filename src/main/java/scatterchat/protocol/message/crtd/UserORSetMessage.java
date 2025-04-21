@@ -15,6 +15,7 @@ import java.util.HashSet;
 
 public class UserORSetMessage extends Message{
 
+    private String topic;
     private ORSetAction orSetAction;
 
     public UserORSetMessage() {
@@ -22,9 +23,14 @@ public class UserORSetMessage extends Message{
         this.orSetAction = null;
     }
 
-    public UserORSetMessage(String topic, String sender, ORSetAction orSetAction) {
-        super(MessageType.USERS_ORSET_MESSAGE, topic, sender);
+    public UserORSetMessage(String sender, String topic, ORSetAction orSetAction) {
+        super(MessageType.USERS_ORSET_MESSAGE, sender);
+        this.topic = topic;
         this.orSetAction = orSetAction;
+    }
+
+    public String getTopic() {
+        return this.topic;
     }
 
     public ORSetAction getORSetAction(){
@@ -73,6 +79,7 @@ public class UserORSetMessage extends Message{
     public String toString(){
         StringBuffer buffer = new StringBuffer();
         buffer.append(super.toString());
+        buffer.append("\t topic: " + this.topic);
         buffer.append(this.orSetAction);
         return buffer.toString();
     }
