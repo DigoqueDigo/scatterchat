@@ -21,8 +21,8 @@ public class ServeTopicRequest extends Message {
         this.nodes = new HashSet<>();
     }
 
-    public ServeTopicRequest(String sender, String topic, Set<String> nodes) {
-        super(MessageType.SERVE_TOPIC_REQUEST, sender);
+    public ServeTopicRequest(String topic, Set<String> nodes) {
+        super(MessageType.SERVE_TOPIC_REQUEST);
         this.topic = topic;
         this.nodes = new HashSet<>(nodes);
     }

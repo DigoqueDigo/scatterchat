@@ -18,23 +18,19 @@ public class CyclonOk extends Message {
 
     private Set<CyclonEntry> subSet;
 
-
     public CyclonOk(){
         super(MessageType.CYCLON_OK);
         this.subSet = null;
     }
-
 
     public CyclonOk(Set<CyclonEntry> subSet) {
         super(MessageType.CYCLON_OK);
         this.subSet = new HashSet<>(subSet);
     }
 
-
     public List<CyclonEntry> getSubSet() {
         return new ArrayList<>(this.subSet);
     }
-
 
     public byte[] serialize() {
 
@@ -54,7 +50,6 @@ public class CyclonOk extends Message {
         return byteArrayOutputStream.toByteArray();
     }
 
-
     public static CyclonOk deserialize(byte[] data) {
 
         Kryo kryo = new Kryo();
@@ -71,7 +66,6 @@ public class CyclonOk extends Message {
 
         return cyclonOk;
     }
-
 
     public String toString() {
         StringBuffer buffer = new StringBuffer();

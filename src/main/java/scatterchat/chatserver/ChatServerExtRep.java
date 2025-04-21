@@ -33,7 +33,7 @@ public class ChatServerExtRep implements Runnable {
     private void handleServeTopicRequest(ServeTopicRequest message, ZMQCarrier carrier) throws InterruptedException {
 
         synchronized (state){
-            final String topic = message.getTopic();
+            String topic = message.getTopic();
             state.addUsersORSetOf(topic);
             state.setNodesOf(topic, message.getNodes());
             state.setVectorClockOf(topic, new VectorClock(message.getNodes()));

@@ -12,7 +12,7 @@ import scatterchat.protocol.message.Message;
 
 public class CyclonError extends Message{
 
-    public CyclonError(){
+    public CyclonError() {
         super(MessageType.CYCLON_ERROR);
     }
 

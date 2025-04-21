@@ -19,7 +19,7 @@ public class CyclonMessage extends Message {
     private String senderIdentity;
     private Set<CyclonEntry> subSet;
 
-    public CyclonMessage(){
+    public CyclonMessage() {
         super(MessageType.CYCLON);
         this.subSet = null;
     }

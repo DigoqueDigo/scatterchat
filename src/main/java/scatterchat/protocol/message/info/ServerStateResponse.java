@@ -64,6 +64,9 @@ public class ServerStateResponse extends Message {
     }
 
     public String toString() {
-        return super.toString() + "\t serverState: " + this.serverState;
+        StringBuilder buffer = new StringBuilder();
+        buffer.append(super.toString());
+        buffer.append("\t serverState: " + this.serverState);
+        return buffer.toString();
     }
 }
