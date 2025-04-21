@@ -10,19 +10,21 @@ import com.esotericsoftware.kryo.io.Output;
 import scatterchat.protocol.message.Message;
 
 
-public class AggrReq extends Message {
+public class AggrRep extends Message {
 
     private String topic;
     private String senderIdentity;
+    private boolean success;
 
-    public AggrReq() {
-        super(MessageType.AGGR_REQ);
+    public AggrRep() {
+        super(MessageType.AGGR_REP);
     }
 
-    public AggrReq(String senderIdentity, String topic) {
-        super(MessageType.AGGR_REQ);
+    public AggrRep(String senderIdentity, String topic, boolean success) {
+        super(MessageType.AGGR_REP);
         this.senderIdentity = senderIdentity;
         this.topic = topic;
+        this.success = success;
     }
 
     public String getSenderIdentity() {
@@ -33,13 +35,17 @@ public class AggrReq extends Message {
         return this.topic;
     }
 
+    public boolean getSuccess() {
+        return this.success;
+    }
+
     public byte[] serialize() {
         Kryo kryo = new Kryo();
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         Output output = new Output(byteArrayOutputStream);
 
         kryo.register(MessageType.class);
-        kryo.register(AggrReq.class);
+        kryo.register(AggrRep.class);
         kryo.writeObject(output, this);
 
         output.flush();
@@ -48,18 +54,18 @@ public class AggrReq extends Message {
         return byteArrayOutputStream.toByteArray();
     }
 
-    public static AggrReq deserialize(byte[] data) {
+    public static AggrRep deserialize(byte[] data) {
         Kryo kryo = new Kryo();
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
         Input input = new Input(byteArrayInputStream);
 
         kryo.register(MessageType.class);
-        kryo.register(AggrReq.class);
+        kryo.register(AggrRep.class);
 
-        AggrReq aggrReq = kryo.readObject(input, AggrReq.class);
+        AggrRep aggrRep = kryo.readObject(input, AggrRep.class);
         input.close();
 
-        return aggrReq;
+        return aggrRep;
     }
 
     public String toString() {
@@ -67,6 +73,7 @@ public class AggrReq extends Message {
         buffer.append(super.toString());
         buffer.append("\t senderIdentity: " + this.senderIdentity);
         buffer.append("\t topic: " + this.topic);
+        buffer.append("\t success: " + this.success);
         return buffer.toString();
-    }    
+    }
 }
