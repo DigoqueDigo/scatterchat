@@ -39,8 +39,8 @@ public final class ZMQCarrier {
         this.socket = socket;
     }
 
-    public void register(ZMQ.Socket socket) {
-        this.socket = socket;
+    public void connect(String connection) {
+        this.socket.connect(connection);
     }
 
     public void sendMessage(Message message) {

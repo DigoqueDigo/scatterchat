@@ -47,7 +47,8 @@ public class ChatServerExtRep implements Runnable {
 
     private void handleServerStateRequest(ServerStateRequest message, ZMQCarrier carrier) {
         synchronized (state) {
-            ServerStateResponse response = new ServerStateResponse(state.getState());
+            String sender = config.getString("tcpExtRep");
+            ServerStateResponse response = new ServerStateResponse(sender, state.getState());
             carrier.sendMessage(response);
         }
     }
@@ -59,7 +60,7 @@ public class ChatServerExtRep implements Runnable {
             ZContext context = new ZContext();
             ZMQ.Socket socket = context.createSocket(SocketType.REP);
 
-            String address = config.getString("extRepTCPAddress");
+            String address = config.getString("tcpExtRep");
             socket.bind(address);
 
             Message message = null;

@@ -9,16 +9,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.json.JSONObject;
+
 
 public final class State {
 
-    private final String nodeId;
+    private String nodeId;
     private final Map<String, ORSet> usersORSetPerTopic;
     private final Map<String, VectorClock> clockPerTopic;
     private final Map<String, Set<String>> nodesPerTopic;
 
-    public State(String nodeId) {
-        this.nodeId = nodeId;
+    public State(JSONObject config) {
+        this.nodeId = config.getString("identity");
         this.clockPerTopic = new HashMap<>();
         this.nodesPerTopic = new HashMap<>();
         this.usersORSetPerTopic = new HashMap<>();
@@ -49,7 +51,7 @@ public final class State {
     }
 
     public void addUsersORSetOf(String topic) {
-        this.usersORSetPerTopic.put(topic, new ORSet(nodeId));
+        this.usersORSetPerTopic.putIfAbsent(topic, new ORSet(nodeId));
     }
 
     public Map<String, Set<String>> getState() {

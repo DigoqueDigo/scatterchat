@@ -77,7 +77,7 @@ public class ChatServerExtPull implements Runnable {
             ZContext context = new ZContext();
             ZMQ.Socket socket = context.createSocket(SocketType.PULL);
 
-            String address = config.getString("extPullTCPAddress");
+            String address = config.getString("tcpExtPull");
             socket.bind(address);
 
             Message message = null;

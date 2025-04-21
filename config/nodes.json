@@ -1,97 +1,106 @@
 {
-    "client1": {
-        "id": "client1",
-        "interPubProcAddress": "inproc://exitenter"
+    "cli1": {
+        "identity": "cli1",
+        "inprocPubSub": "inproc://pubsub"
     },
 
-    "client2": {
-        "id": "client2",
-        "interPubProcAddress": "inproc://exitenter"
+    "cli2": {
+        "identity": "cli2",
+        "inprocPubSub": "inproc://pubsub"
     },
 
-    "client3": {
-        "id": "client3",
-        "interPubProcAddress": "inproc://exitenter"
+    "cli3": {
+        "identity": "cli3",
+        "inprocPubSub": "inproc://pubsub"
     },
 
-    "chatserver1": {
-        "extPullTCPAddress": "tcp://localhost:3000",
-        "interPubTCPAddress": "tcp://localhost:3001",
-        "extPubTCPAddress": "tcp://localhost:3002",
-        "extRepTCPAddress": "tcp://localhost:3003",
-        "interPubProcAddress": "inproc://info",
-        "logPort": "3004"
+    "sc1": {
+        "identity": "sc1",
+        "tcpExtRep": "tcp://localhost:3100",
+        "tcpExtPull": "tcp://localhost:3101",
+        "tcpExtPub": "tcp://localhost:3102",
+        "tcpInterPub": "tcp://localhost:3103",
+        "inprocPubSub": "inproc://pubsub",
+        "logPort": "3104"
     },
 
-    "chatserver2": {
-        "extPullTCPAddress": "tcp://localhost:4000",
-        "interPubTCPAddress": "tcp://localhost:4001",
-        "extPubTCPAddress": "tcp://localhost:4002",
-        "extRepTCPAddress": "tcp://localhost:4003",
-        "interPubProcAddress": "inproc://info",
-        "logPort": "4004"
+    "sc2": {
+        "identity": "sc1",
+        "tcpExtRep": "tcp://localhost:3200",
+        "tcpExtPull": "tcp://localhost:3201",
+        "tcpExtPub": "tcp://localhost:3202",
+        "tcpInterPub": "tcp://localhost:3203",
+        "inprocPubSub": "inproc://pubsub",
+        "logPort": "3204"
     },
 
-    "chatserver3": {
-        "extPullTCPAddress": "tcp://localhost:5000",
-        "interPubTCPAddress": "tcp://localhost:5001",
-        "extPubTCPAddress": "tcp://localhost:5002",
-        "extRepTCPAddress": "tcp://localhost:5003",
-        "interPubProcAddress": "inproc://info",
-        "logPort": "5004"
+    "sc3": {
+        "identity": "sa3",
+        "tcpExtRep": "tcp://localhost:3300",
+        "tcpExtPull": "tcp://localhost:3301",
+        "tcpExtPub": "tcp://localhost:3302",
+        "tcpInterPub": "tcp://localhost:3303",
+        "inprocPubSub": "inproc://pubsub",
+        "logPort": "3304"
     },
 
-    "chatserver4": {
-        "extPullTCPAddress": "tcp://localhost:6000",
-        "interPubTCPAddress": "tcp://localhost:6001",
-        "extPubTCPAddress": "tcp://localhost:6002",
-        "extRepTCPAddress": "tcp://localhost:6003",
-        "interPubProcAddress": "inproc://info",
-        "logPort": "6004"
+    "sc4": {
+        "identity": "sa4",
+        "tcpExtRep": "tcp://localhost:3400",
+        "tcpExtPull": "tcp://localhost:3401",
+        "tcpExtPub": "tcp://localhost:3402",
+        "tcpInterPub": "tcp://localhost:3403",
+        "inprocPubSub": "inproc://pubsub",
+        "logPort": "3404"
     },
 
-    "chatserver5": {
-        "extPullTCPAddress": "tcp://localhost:7000",
-        "interPubTCPAddress": "tcp://localhost:7001",
-        "extPubTCPAddress": "tcp://localhost:7002",
-        "extRepTCPAddress": "tcp://localhost:7003",
-        "interPubProcAddress": "inproc://info",
-        "logPort": "7004"
+    "sc5": {
+        "identity": "sa5",
+        "tcpExtRep": "tcp://localhost:3500",
+        "tcpExtPull": "tcp://localhost:3501",
+        "tcpExtPub": "tcp://localhost:3502",
+        "tcpInterPub": "tcp://localhost:3503",
+        "inprocPubSub": "inproc://pubsub",
+        "logPort": "3504"
     },
 
-    "aggregationserver1": {
+    "sa1": {
         "identity": "sa1",
         "entryPointIdentity": "",
-        "entryPointTCPAddress": "",
-        "extRepTCPAddress": "tcp://localhost:20000",
-        "extRouterTCPAddress": "tcp://localhost:20001",
-        "interRouterProcAddress": "inproc://interrouter"
+        "entryPointAddress": "",
+        "tcpExtRouter": "tcp://localhost:20001",
+        "tcpExtRep": "tcp://localhost:3100"
     },
 
-    "aggregationserver2": {
+    "sa2": {
         "identity": "sa2",
         "entryPointIdentity": "sa1",
-        "entryPointTCPAddress": "tcp://localhost:20001",
-        "extRepTCPAddress": "tcp://localhost:20002",
-        "extRouterTCPAddress": "tcp://localhost:20003",
-        "interRouterProcAddress": "inproc://interrouter"
+        "entryPointAddress": "tcp://localhost:20001",
+        "tcpExtRouter": "tcp://localhost:20002",
+        "tcpExtRep": "tcp://localhost:3200"
     },
 
-    "aggregationserver3": {
+    "sa3": {
         "identity": "sa3",
         "entryPointIdentity": "sa1",
-        "entryPointTCPAddress": "tcp://localhost:20001",
-        "extRepTCPAddress": "tcp://localhost:20004",
-        "extRouterTCPAddress": "tcp://localhost:20005",
-        "interRouterProcAddress": "inproc://interrouter"
+        "tcpExtRouter": "tcp://localhost:20003",
+        "entryPointAddress": "tcp://localhost:20001",
+        "tcpExtRep": "tcp://localhost:3300"
     },
 
-    "aggregationserver4": {
+    "sa4": {
         "identity": "sa4",
         "entryPointIdentity": "sa1",
-        "entryPointTCPAddress": "tcp://localhost:20001",
-        "extRepTCPAddress": "tcp://localhost:20006",
-        "extRouterTCPAddress": "tcp://localhost:20007",
-        "interRouterProcAddress": "inproc://interrouter"
+        "entryPointAddress": "tcp://localhost:20001",
+        "tcpExtRouter": "tcp://localhost:20004",
+        "tcpExtRep": "tcp://localhost:3400"
+    },
+
+    "sa5": {
+        "identity": "sa5",
+        "entryPointIdentity": "sa1",
+        "entryPointAddress": "tcp://localhost:20001",
+        "tcpExtRouter": "tcp://localhost:20005",
+        "tcpExtRep": "tcp://localhost:3500"
     }
 }

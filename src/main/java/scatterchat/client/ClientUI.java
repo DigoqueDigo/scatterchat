@@ -77,8 +77,8 @@ public class ClientUI implements Runnable{
         ZMQCarrier pubCarrier = new ZMQCarrier(pubSocket);
         ZMQCarrier reqCarrier = new ZMQCarrier(reqSocket);
 
-        pubSocket.bind(config.getString("interPubProcAddress"));
-        final String sender = config.getString("id");
+        final String sender = config.getString("identity");
+        pubSocket.bind(config.getString("inprocPubSub"));
 
         try{
 

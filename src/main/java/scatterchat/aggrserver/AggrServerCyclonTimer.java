@@ -66,7 +66,7 @@ public class AggrServerCyclonTimer implements Runnable {
                     new HashSet<>(subSet)
                 );
 
-                socket.connect(target.address());
+                carrier.connect(target.address());
                 carrier.sendMessageWithIdentity(target.identity(), cyclonMessage);
                 state.setNodesSent(subSet);
             }

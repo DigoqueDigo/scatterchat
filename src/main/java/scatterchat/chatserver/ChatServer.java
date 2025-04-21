@@ -27,7 +27,7 @@ public class ChatServer {
         final String configFileContent = new String(Files.readAllBytes(Paths.get(configFilePath)));
         final JSONObject config = new JSONObject(configFileContent).getJSONObject(nodeId);
 
-        State state = new State(nodeId);
+        State state = new State(config);
         BlockingQueue<Message> broadcast = new ArrayBlockingQueue<>(10);
         BlockingQueue<Message> delivered = new ArrayBlockingQueue<>(10);
         BlockingQueue<CausalMessage> received = new ArrayBlockingQueue<>(10);

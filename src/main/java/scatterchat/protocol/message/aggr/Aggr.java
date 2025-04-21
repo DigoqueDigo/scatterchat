@@ -14,7 +14,6 @@ import scatterchat.protocol.message.Message;
 
 public class Aggr extends Message {
 
-    private int c;
     private String topic;
     private List<AggrEntry> entries;
 
@@ -22,16 +21,11 @@ public class Aggr extends Message {
         super(MessageType.AGGR);
     }
 
-    public Aggr(String topic, int c, List<AggrEntry> entries) {
+    public Aggr(String topic, List<AggrEntry> entries) {
         super(MessageType.AGGR);
         this.topic = topic;
-        this.c = c;
         this.entries = entries;
 
-    }
-
-    public int getC() {
-        return this.c;
     }
 
     public String getTopic() {
@@ -76,7 +70,6 @@ public class Aggr extends Message {
     public String toString() {
         StringBuilder buffer = new StringBuilder();
         buffer.append(super.toString());
-        buffer.append("\t C: " + this.c);
         buffer.append("\t topic: " + this.topic);
         buffer.append("\t entries: " + this.entries);
         return buffer.toString();

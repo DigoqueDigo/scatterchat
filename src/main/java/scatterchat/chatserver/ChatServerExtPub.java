@@ -49,7 +49,7 @@ public class ChatServerExtPub implements Runnable {
             ZContext context = new ZContext();
             ZMQ.Socket socket = context.createSocket(SocketType.PUB);
 
-            String address = config.getString("extPubTCPAddress");
+            String address = config.getString("tcpExtPub");
             socket.bind(address);
 
             Message message = null;

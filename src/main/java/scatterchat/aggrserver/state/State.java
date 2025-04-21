@@ -25,7 +25,7 @@ public class State{
         this.neighbours = new ArrayList<>();
         this.cyclonEntry = new CyclonEntry(
             config.getString("identity"),
-            config.getString("extRouterTCPAddress"));
+            config.getString("tcpExtRouter"));
     }
 
     public int getCapacity() {

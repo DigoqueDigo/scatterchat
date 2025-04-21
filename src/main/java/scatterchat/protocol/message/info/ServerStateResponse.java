@@ -21,8 +21,8 @@ public class ServerStateResponse extends Message {
         super(MessageType.SERVER_STATE_RESPONSE);
     }
 
-    public ServerStateResponse(Map<String, Set<String>> serverState) {
-        super(MessageType.SERVER_STATE_RESPONSE);
+    public ServerStateResponse(String sender, Map<String, Set<String>> serverState) {
+        super(MessageType.SERVER_STATE_RESPONSE, sender);
         this.serverState = serverState;
     }
 

@@ -60,8 +60,8 @@ public class ChatServerInterPub implements Runnable {
             ZContext context = new ZContext();
             ZMQ.Socket socket = context.createSocket(SocketType.PUB);
 
-            String tcpAddress = config.getString("interPubTCPAddress");
-            String inprocAddress = config.getString("interPubProcAddress");
+            String tcpAddress = config.getString("tcpInterPub");
+            String inprocAddress = config.getString("inprocPubSub");
 
             socket.bind(tcpAddress);
             socket.bind(inprocAddress);

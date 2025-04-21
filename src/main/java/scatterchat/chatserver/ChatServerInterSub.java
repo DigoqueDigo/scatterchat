@@ -53,15 +53,9 @@ public class ChatServerInterSub implements Runnable {
             ZContext context = new ZContext();
             ZMQ.Socket socket = context.createSocket(SocketType.SUB);
 
-            String tcpAddress = config.getString("interPubTCPAddress");
-            String inprocAddress = config.getString("interPubProcAddress");
-
-            socket.connect(tcpAddress);
+            String inprocAddress = config.getString("inprocPubSub");
             socket.connect(inprocAddress);
-
-            synchronized (state){
-                socket.subscribe("[internal]" + state.getNodeId());
-            }
+            socket.subscribe("[internal]" + config.getString("identity"));
 
             CausalMessage causalMessage = null;
             ZMQCarrier carrier = new ZMQCarrier(socket);

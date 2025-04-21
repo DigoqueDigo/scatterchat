@@ -54,7 +54,7 @@ public class ClientSub implements Runnable{
 
         Message message = null;
         ZMQCarrier carrier = new ZMQCarrier(socket);
-        String pubAddress = config.getString("interPubProcAddress");
+        String pubAddress = config.getString("inprocPubSub");
 
         socket.connect(pubAddress);
         socket.subscribe("[internal]");
