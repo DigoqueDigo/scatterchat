@@ -66,41 +66,66 @@
 
     "sa1": {
         "identity": "sa1",
-        "entryPointIdentity": "",
-        "entryPointAddress": "",
-        "tcpExtRouter": "tcp://localhost:20001",
-        "tcpExtRep": "tcp://localhost:3100"
+        "tcpExtRep": "tcp://localhost:21001",
+        "tcpExtPub": "tcp://localhost:21002",
+        "tcpExtPubTimer": "tcp://localhost:21003",
+        "tcpSCExtRep": "tcp://localhost:3100",
+        "inprocPubSub": "inproc://pubsub"
     },
 
     "sa2": {
         "identity": "sa2",
-        "entryPointIdentity": "sa1",
-        "entryPointAddress": "tcp://localhost:20001",
-        "tcpExtRouter": "tcp://localhost:20002",
-        "tcpExtRep": "tcp://localhost:3200"
+        "tcpExtRep": "tcp://localhost:22001",
+        "tcpExtPub": "tcp://localhost:22002",
+        "tcpExtPubTimer": "tcp://localhost:22003",
+        "tcpSCExtRep": "tcp://localhost:3200",
+        "inprocPubSub": "inproc://pubsub",
+        "entryPoint": {
+            "identity": "sa1",
+            "tcpExtPub": "tcp://localhost:21002",
+            "tcpExtPubTimer": "tcp://localhost:21003"
+        }
     },
 
     "sa3": {
         "identity": "sa3",
-        "entryPointIdentity": "sa1",
-        "tcpExtRouter": "tcp://localhost:20003",
-        "entryPointAddress": "tcp://localhost:20001",
-        "tcpExtRep": "tcp://localhost:3300"
+        "tcpExtRep": "tcp://localhost:23001",
+        "tcpExtPub": "tcp://localhost:23002",
+        "tcpExtPubTimer": "tcp://localhost:23003",
+        "tcpSCExtRep": "tcp://localhost:3300",
+        "inprocPubSub": "inproc://pubsub",
+        "entryPoint": {
+            "identity": "sa1",
+            "tcpExtPub": "tcp://localhost:21002",
+            "tcpExtPubTimer": "tcp://localhost:21003"
+        }
     },
 
     "sa4": {
         "identity": "sa4",
-        "entryPointIdentity": "sa1",
-        "entryPointAddress": "tcp://localhost:20001",
-        "tcpExtRouter": "tcp://localhost:20004",
-        "tcpExtRep": "tcp://localhost:3400"
+        "tcpExtRep": "tcp://localhost:24001",
+        "tcpExtPub": "tcp://localhost:24002",
+        "tcpExtPubTimer": "tcp://localhost:24003",
+        "tcpSCExtRep": "tcp://localhost:3400",
+        "inprocPubSub": "inproc://pubsub",
+        "entryPoint": {
+            "identity": "sa1",
+            "tcpExtPub": "tcp://localhost:21002",
+            "tcpExtPubTimer": "tcp://localhost:21003"
+        }
     },
 
     "sa5": {
         "identity": "sa5",
-        "entryPointIdentity": "sa1",
-        "entryPointAddress": "tcp://localhost:20001",
-        "tcpExtRouter": "tcp://localhost:20005",
-        "tcpExtRep": "tcp://localhost:3500"
+        "tcpExtRep": "tcp://localhost:25001",
+        "tcpExtPub": "tcp://localhost:25002",
+        "tcpExtPubTimer": "tcp://localhost:25003",
+        "tcpSCExtRep": "tcp://localhost:3500",
+        "inprocPubSub": "inproc://pubsub",
+        "entryPoint": {
+            "identity": "sa1",
+            "tcpExtPub": "tcp://localhost:21002",
+            "tcpExtPubTimer": "tcp://localhost:21003"
+        }
     }
 }

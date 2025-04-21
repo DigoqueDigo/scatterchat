@@ -6,15 +6,16 @@ import java.util.List;
 import org.json.JSONObject;
 
 import scatterchat.protocol.message.cyclon.CyclonEntry;
+import scatterchat.utils.PrettyPrint;
 
 
 public class State{
 
-    private static final Integer capacity = 8;
-    private static final Integer shuffleLength = 4;
+    public static final Integer CyclonCapacity = 8;
+    public static final Integer CyclonShuffleLength = 4;
 
     private boolean cyclonOnGoing;
-    private CyclonEntry cyclonEntry;
+    private CyclonEntry myCyclonEntry;
 
     private List<CyclonEntry> nodesSent;
     private List<CyclonEntry> neighbours;
@@ -23,33 +24,26 @@ public class State{
         this.cyclonOnGoing = false;
         this.nodesSent = new ArrayList<>();
         this.neighbours = new ArrayList<>();
-        this.cyclonEntry = new CyclonEntry(
+        this.myCyclonEntry = new CyclonEntry(
             config.getString("identity"),
-            config.getString("tcpExtRouter"));
-    }
-
-    public int getCapacity() {
-        return State.capacity;
-    }
-
-    public int getShuffleLength() {
-        return State.shuffleLength;
+            config.getString("tcpExtPub"),
+            config.getString("tcpExtPubTimer"));
     }
 
     public boolean getCyclonOnGoing() {
         return this.cyclonOnGoing;
     }
 
-    public CyclonEntry getCyclonEntry() {
-        return this.cyclonEntry;
+    public CyclonEntry getMyCyclonEntry() {
+        return this.myCyclonEntry;
     }
 
     public List<CyclonEntry> getNeighbours() {
-        return this.neighbours;
+        return new ArrayList<>(this.neighbours);
     }
 
     public List<CyclonEntry> getNodesSent() {
-        return this.nodesSent;
+        return new ArrayList<>(this.nodesSent);
     }
 
     public void setCyclonOnGoing(boolean cyclonOnGoing) {
@@ -62,5 +56,14 @@ public class State{
 
     public void setNodesSent(List<CyclonEntry> nodesSent) {
         this.nodesSent = nodesSent;
+    }
+
+    public String toString() {
+        StringBuilder buffer = new StringBuilder();
+        buffer.append("CyclonOnGoing: " + this.cyclonOnGoing);
+        buffer.append("\n" + "MyCyclonEntry: " + this.myCyclonEntry);
+        buffer.append("\n" + PrettyPrint.CyclonEntriestoString(this.neighbours, "Identity", "Neighbour Pub", "Neighbour PubTimer"));
+        buffer.append("\n" + PrettyPrint.CyclonEntriestoString(this.nodesSent, "Identity", "Node Sent Pub", "Neighbour PubTImer"));
+        return buffer.toString();
     }
 }

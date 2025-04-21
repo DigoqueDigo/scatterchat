@@ -21,4 +21,13 @@ public record AggrEntry(String sc, int totalTopics, int totalClients) {
     public int hashCode() {
         return sc != null ? sc.hashCode() : 0;
     }
+
+    @Override
+    public String toString() {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("SC: " + sc);
+        buffer.append("\t totalClients: " + totalClients);
+        buffer.append("\t totalTopics: " + totalTopics);
+        return buffer.toString();
+    }
 }

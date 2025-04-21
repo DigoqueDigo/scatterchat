@@ -5,12 +5,12 @@ public abstract class Message {
 
     public enum MessageType {
         CHAT_MESSAGE,
-        TOPIC_ENTER_MESSAGE,
-        TOPIC_EXIT_MESSAGE,
         SERVER_STATE_REQUEST,
         SERVER_STATE_RESPONSE,
         SERVE_TOPIC_REQUEST,
         SERVE_TOPIC_RESPONSE,
+        TOPIC_ENTER_MESSAGE,
+        TOPIC_EXIT_MESSAGE,
         USERS_ORSET_MESSAGE,
         CYCLON,
         CYCLON_OK,

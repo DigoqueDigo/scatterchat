@@ -13,22 +13,16 @@ import scatterchat.protocol.message.Message;
 public class AggrRep extends Message {
 
     private String topic;
-    private String senderIdentity;
     private boolean success;
 
     public AggrRep() {
         super(MessageType.AGGR_REP);
     }
 
-    public AggrRep(String senderIdentity, String topic, boolean success) {
+    public AggrRep(String topic, boolean success) {
         super(MessageType.AGGR_REP);
-        this.senderIdentity = senderIdentity;
         this.topic = topic;
         this.success = success;
-    }
-
-    public String getSenderIdentity() {
-        return this.senderIdentity;
     }
 
     public String getTopic() {
@@ -71,7 +65,6 @@ public class AggrRep extends Message {
     public String toString() {
         StringBuilder buffer = new StringBuilder();
         buffer.append(super.toString());
-        buffer.append("\t senderIdentity: " + this.senderIdentity);
         buffer.append("\t topic: " + this.topic);
         buffer.append("\t success: " + this.success);
         return buffer.toString();

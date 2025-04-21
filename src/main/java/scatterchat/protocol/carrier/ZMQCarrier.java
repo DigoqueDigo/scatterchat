@@ -4,10 +4,15 @@ import org.zeromq.ZMQ;
 import scatterchat.protocol.message.CausalMessage;
 import scatterchat.protocol.message.Message;
 import scatterchat.protocol.message.Message.MessageType;
+import scatterchat.protocol.message.aggr.Aggr;
+import scatterchat.protocol.message.aggr.AggrReq;
 import scatterchat.protocol.message.chat.ChatMessage;
 import scatterchat.protocol.message.chat.TopicEnterMessage;
 import scatterchat.protocol.message.chat.TopicExitMessage;
 import scatterchat.protocol.message.crtd.UserORSetMessage;
+import scatterchat.protocol.message.cyclon.CyclonError;
+import scatterchat.protocol.message.cyclon.CyclonMessage;
+import scatterchat.protocol.message.cyclon.CyclonOk;
 import scatterchat.protocol.message.info.ServeTopicRequest;
 import scatterchat.protocol.message.info.ServeTopicResponse;
 import scatterchat.protocol.message.info.ServerStateRequest;
@@ -31,16 +36,18 @@ public final class ZMQCarrier {
         deserializers.put(MessageType.TOPIC_ENTER_MESSAGE, TopicEnterMessage::deserialize);
         deserializers.put(MessageType.TOPIC_EXIT_MESSAGE, TopicExitMessage::deserialize);
         deserializers.put(MessageType.USERS_ORSET_MESSAGE, UserORSetMessage::deserialize);
+        deserializers.put(MessageType.CYCLON, CyclonMessage::deserialize);
+        deserializers.put(MessageType.CYCLON_OK, CyclonOk::deserialize);
+        deserializers.put(MessageType.CYCLON_ERROR, CyclonError::deserialize);
+        deserializers.put(MessageType.AGGR, Aggr::deserialize);
+        deserializers.put(MessageType.AGGR_REQ, AggrReq::deserialize);
+        deserializers.put(MessageType.AGGR_REP, AggrReq::deserialize);
     }
 
     private ZMQ.Socket socket;
 
     public ZMQCarrier(ZMQ.Socket socket) {
         this.socket = socket;
-    }
-
-    public void connect(String connection) {
-        this.socket.connect(connection);
     }
 
     public void sendMessage(Message message) {
@@ -79,17 +86,5 @@ public final class ZMQCarrier {
     public CausalMessage receiveCausalMessageWithTopic() {
         socket.recv(0);
         return receiveCausalMessage();
-    }
-
-    public void sendMessageWithIdentity(String identity, Message message) {
-        socket.sendMore(identity.getBytes(ZMQ.CHARSET));
-        socket.sendMore("".getBytes(ZMQ.CHARSET));
-        sendMessage(message);
-    }
-
-    public Message receiveMessageWithIdentity() {
-        socket.recv(0);
-        socket.recv(0);
-        return receiveMessage();
     }
 }
