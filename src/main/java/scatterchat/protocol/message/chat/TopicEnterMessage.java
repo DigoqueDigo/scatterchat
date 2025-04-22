@@ -41,6 +41,7 @@ public class TopicEnterMessage extends Message {
 
         kryo.register(MessageType.class);
         kryo.register(TopicEnterMessage.class);
+        kryo.register(ChatServerEntry.class);
         kryo.writeObject(output, this);
 
         output.flush();
@@ -57,6 +58,7 @@ public class TopicEnterMessage extends Message {
 
         kryo.register(MessageType.class);
         kryo.register(TopicEnterMessage.class);
+        kryo.register(ChatServerEntry.class);
 
         TopicEnterMessage topicEnterMessage = kryo.readObject(input, TopicEnterMessage.class);
         input.close();

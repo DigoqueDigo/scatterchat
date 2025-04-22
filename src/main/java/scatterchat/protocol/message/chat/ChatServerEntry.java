@@ -15,7 +15,7 @@ public record ChatServerEntry(String repAddress, String pullAddress, String inte
     private static String incrementPort(String baseAddress, int increment) {
         String[] parts = baseAddress.split(":");
         int basePort = Integer.parseInt(parts[2]);
-        return parts[0] + parts[1] + (basePort + increment);
+        return String.join(":", parts[0], parts[1], String.valueOf(basePort + increment));
 
     }
 

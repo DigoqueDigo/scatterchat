@@ -11,24 +11,24 @@ import java.util.Set;
 
 public class ORSet {
 
-    private OrSetEntry clock;
-    private Map<String, Set<OrSetEntry>> store;
+    private ORSetEntry clock;
+    private Map<String, Set<ORSetEntry>> store;
 
     public ORSet(ChatServerEntry nodeId) {
         this.store = new HashMap<>();
-        this.clock = new OrSetEntry(nodeId, 0);
+        this.clock = new ORSetEntry(nodeId, 0);
     }
 
     private ORSetAction prepareAdd(Operation operation, String element) {
         this.clock = this.clock.increment();
         this.store.putIfAbsent(element, new HashSet<>());
-        Set<OrSetEntry> entries = new HashSet<>(this.store.get(element));
+        Set<ORSetEntry> entries = new HashSet<>(this.store.get(element));
         return new ORSetAction(element, clock, operation, entries);
     }
 
     private ORSetAction prepareRemove(Operation operation, String element) {
         this.store.putIfAbsent(element, new HashSet<>());
-        Set<OrSetEntry> entries = new HashSet<>(this.store.get(element));
+        Set<ORSetEntry> entries = new HashSet<>(this.store.get(element));
         return new ORSetAction(element, null, operation, entries);
     }
 
@@ -36,14 +36,14 @@ public class ORSet {
         String element = message.element();
         this.store.putIfAbsent(element, new HashSet<>());
 
-        Set<OrSetEntry> entries = this.store.get(element);
+        Set<ORSetEntry> entries = this.store.get(element);
         entries.removeAll(message.entries());
         entries.add(message.clock());
     }
 
     private void effectRemove(ORSetAction message) {
         String element = message.element();
-        Set<OrSetEntry> entries = this.store.get(element);
+        Set<ORSetEntry> entries = this.store.get(element);
         entries.removeAll(message.entries());
 
         if (entries.isEmpty()) {

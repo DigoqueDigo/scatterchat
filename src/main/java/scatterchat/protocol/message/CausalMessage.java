@@ -4,11 +4,12 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import scatterchat.clock.VectorClock;
-import scatterchat.crdt.OrSetEntry;
+import scatterchat.crdt.ORSetEntry;
 import scatterchat.crdt.ORSetAction;
 import scatterchat.crdt.ORSetAction.Operation;
 import scatterchat.protocol.message.Message.MessageType;
 import scatterchat.protocol.message.chat.ChatMessage;
+import scatterchat.protocol.message.chat.ChatServerEntry;
 import scatterchat.protocol.message.chat.TopicEnterMessage;
 import scatterchat.protocol.message.chat.TopicExitMessage;
 import scatterchat.protocol.message.crtd.UserORSetMessage;
@@ -72,8 +73,9 @@ public class CausalMessage {
         kryo.register(ServeTopicResponse.class);
 
         kryo.register(ORSetAction.class);
-        kryo.register(OrSetEntry.class);
+        kryo.register(ORSetEntry.class);
         kryo.register(Operation.class);
+        kryo.register(ChatServerEntry.class);
         kryo.register(MessageType.class);
 
         kryo.register(HashMap.class);
@@ -105,8 +107,9 @@ public class CausalMessage {
         kryo.register(ServeTopicResponse.class);
 
         kryo.register(ORSetAction.class);
-        kryo.register(OrSetEntry.class);
+        kryo.register(ORSetEntry.class);
         kryo.register(Operation.class);
+        kryo.register(ChatServerEntry.class);
         kryo.register(MessageType.class);
 
         kryo.register(HashMap.class);

@@ -40,6 +40,7 @@ public class TopicExitMessage extends Message {
 
         kryo.register(MessageType.class);
         kryo.register(TopicExitMessage.class);
+        kryo.register(ChatServerEntry.class);
         kryo.writeObject(output, this);
 
         output.flush();
@@ -56,6 +57,7 @@ public class TopicExitMessage extends Message {
 
         kryo.register(MessageType.class);
         kryo.register(TopicExitMessage.class);
+        kryo.register(ChatServerEntry.class);
 
         TopicExitMessage topicExitMessage = kryo.readObject(input, TopicExitMessage.class);
         input.close();

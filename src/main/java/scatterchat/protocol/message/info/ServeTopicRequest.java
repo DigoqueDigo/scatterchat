@@ -43,6 +43,7 @@ public class ServeTopicRequest extends Message {
 
         kryo.register(MessageType.class);
         kryo.register(ServeTopicRequest.class);
+        kryo.register(ChatServerEntry.class);
         kryo.register(HashSet.class);
         kryo.writeObject(output, this);
 
@@ -59,6 +60,7 @@ public class ServeTopicRequest extends Message {
 
         kryo.register(MessageType.class);
         kryo.register(ServeTopicRequest.class);
+        kryo.register(ChatServerEntry.class);
         kryo.register(HashSet.class);
 
         ServeTopicRequest serveTopicRequest = kryo.readObject(input, ServeTopicRequest.class);
