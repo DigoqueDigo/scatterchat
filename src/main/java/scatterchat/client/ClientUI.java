@@ -7,8 +7,6 @@ import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
-import org.jline.utils.AttributedString;
-import org.jline.utils.AttributedStyle;
 import org.json.JSONObject;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
@@ -17,9 +15,11 @@ import org.zeromq.ZMQ;
 import scatterchat.protocol.carrier.ZMQCarrier;
 import scatterchat.protocol.message.Message;
 import scatterchat.protocol.message.chat.ChatMessage;
+import scatterchat.protocol.message.chat.ChatServerEntry;
 import scatterchat.protocol.message.chat.TopicEnterMessage;
 import scatterchat.protocol.message.chat.TopicExitMessage;
 import scatterchat.protocol.message.info.ServerStateRequest;
+import scatterchat.protocol.message.info.ServerStateResponse;
 
 
 public class ClientUI implements Runnable{
@@ -36,13 +36,13 @@ public class ClientUI implements Runnable{
     }
 
 
-    private String readTopic(String prompt){
+    private String readTopic(){
 
         String topic = null;
 
         while (topic == null){
 
-            topic = this.lineReader.readLine(prompt);
+            topic = this.lineReader.readLine("Enter topic >> ");
             topic = topic.strip();
 
             if (topic.equals("[internal]") || topic.startsWith("/")){
@@ -62,12 +62,6 @@ public class ClientUI implements Runnable{
 
     public void run(){
 
-        final String topicPrompt = new AttributedString("Enter Topic >> ",
-            AttributedStyle.DEFAULT.bold().foreground(AttributedStyle.WHITE)).toAnsi();
-
-        final String bye = new AttributedString("Bye!",
-            AttributedStyle.DEFAULT.bold().foreground(AttributedStyle.WHITE)).toAnsi();
-
         ZContext context = new ZContext();
         ZMQ.Socket pushSocket = context.createSocket(SocketType.PUSH);
         ZMQ.Socket reqSocket = context.createSocket(SocketType.REQ);
@@ -77,7 +71,7 @@ public class ClientUI implements Runnable{
         ZMQCarrier pubCarrier = new ZMQCarrier(pubSocket);
         ZMQCarrier reqCarrier = new ZMQCarrier(reqSocket);
 
-        final String sender = config.getString("identity");
+        String sender = config.getString("username");
         pubSocket.bind(config.getString("inprocPubSub"));
 
         try{
@@ -85,17 +79,16 @@ public class ClientUI implements Runnable{
             while (true){
 
                 String message;
-                String topic = readTopic(topicPrompt);
+                String topic = readTopic();
 
-                String chatServerPullAddress = "";
-                String chatServerPubAddress = "";
-                String chatServerRepAddress = "";
+                String chatServerExtRepAddress = "";
+                ChatServerEntry chatServerEntry = new ChatServerEntry(chatServerExtRepAddress);
 
-                reqSocket.connect(chatServerRepAddress);
-                pushSocket.connect(chatServerPullAddress);
+                reqSocket.connect(chatServerEntry.repAddress());
+                pushSocket.connect(chatServerEntry.pullAddress());
 
-                Message topicEnterMessageToPull = new TopicEnterMessage(sender, topic);
-                Message topicEnterMessageToSub = new TopicEnterMessage(sender, topic, chatServerPubAddress);
+                Message topicEnterMessageToSub = new TopicEnterMessage(sender, "client sub", topic, chatServerEntry);
+                Message topicEnterMessageToPull = new TopicEnterMessage(sender, chatServerEntry.pullAddress(), topic, chatServerEntry);
 
                 pushCarrier.sendMessage(topicEnterMessageToPull);
                 pubCarrier.sendMessageWithTopic("[internal]", topicEnterMessageToSub);                
@@ -103,30 +96,32 @@ public class ClientUI implements Runnable{
                 while (!(message = readMessage()).equals("/exit")){
 
                     if (message.startsWith("/info")){
-                        reqCarrier.sendMessage(new ServerStateRequest());
-                        System.out.println(reqCarrier.receiveMessage());
+                        Message serverStateRequest = new ServerStateRequest(sender, chatServerEntry.repAddress());
+                        reqCarrier.sendMessage(serverStateRequest);
+                        Message serverStateResponse = (ServerStateResponse) reqCarrier.receiveMessage();
+                        System.out.println(serverStateResponse);
                     }
 
                     else {
-                        Message chatMessage = new ChatMessage(sender, topic, message);
+                        Message chatMessage = new ChatMessage(sender, chatServerEntry.pullAddress(), topic, message, sender);
                         pushCarrier.sendMessage(chatMessage);
                     }
                 }
 
-                Message topicExitMessageToPull = new TopicExitMessage(sender, topic);
-                Message topicExitMessageToSub = new TopicExitMessage(sender, topic, chatServerPubAddress);
+                Message topicExitMessageToSub = new TopicExitMessage(sender, "client sub", topic, chatServerEntry);
+                Message topicExitMessageToPull = new TopicExitMessage(sender, chatServerEntry.pullAddress(), topic, chatServerEntry);
 
                 pushCarrier.sendMessage(topicExitMessageToPull);
                 pubCarrier.sendMessageWithTopic("[internal]", topicExitMessageToSub);
 
-                reqSocket.disconnect(chatServerRepAddress);
-                pushSocket.disconnect(chatServerPullAddress);
+                reqSocket.disconnect(chatServerEntry.repAddress());
+                pushSocket.disconnect(chatServerEntry.pullAddress());
             }
         }
 
         catch (EndOfFileException e){
 
-            Message topicExitMessageToSub = new TopicExitMessage(sender, null);
+            Message topicExitMessageToSub = new TopicExitMessage(sender, "client sub", null, null);
             pubCarrier.sendMessageWithTopic("[internal]", topicExitMessageToSub);
 
             pushSocket.close();
@@ -134,7 +129,7 @@ public class ClientUI implements Runnable{
             pubSocket.close();
             context.close();
 
-            System.out.println(bye);
+            System.out.println("Bye");
         }
 
         catch (Exception e){

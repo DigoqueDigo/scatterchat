@@ -2,6 +2,7 @@ package scatterchat.chatserver.state;
 
 import scatterchat.clock.VectorClock;
 import scatterchat.crdt.ORSet;
+import scatterchat.protocol.message.chat.ChatServerEntry;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,26 +15,34 @@ import org.json.JSONObject;
 
 public final class State {
 
-    private String nodeId;
+    private ChatServerEntry nodeId;
     private final Map<String, ORSet> usersORSetPerTopic;
     private final Map<String, VectorClock> clockPerTopic;
-    private final Map<String, Set<String>> nodesPerTopic;
+    private final Map<String, Set<ChatServerEntry>> nodesPerTopic;
 
     public State(JSONObject config) {
-        this.nodeId = config.getString("identity");
+        this.nodeId = new ChatServerEntry(config.getString("tcpExtRep"));
         this.clockPerTopic = new HashMap<>();
         this.nodesPerTopic = new HashMap<>();
         this.usersORSetPerTopic = new HashMap<>();
     }
 
-    public String getNodeId() {
+    public ChatServerEntry getNodeId() {
         return this.nodeId;
+    }
+
+    public String getInternaTopic() {
+        return "[internal]" + this.nodeId.hashCode();
+    }
+
+    public boolean hasTopic(String topic) {
+        return this.nodesPerTopic.containsKey(topic);
     }
 
     public VectorClock getVectorClockOf(String topic) {
         return this.clockPerTopic.get(topic).clone();
     }
-    
+
     public ORSet getUsersORSetOf(String topic) {
         return this.usersORSetPerTopic.get(topic);
     }
@@ -46,12 +55,16 @@ public final class State {
         this.clockPerTopic.put(topic, vectorClock);
     }
 
-    public void setNodesOf(String topic, Set<String> nodes){
-        this.nodesPerTopic.put(topic, nodes);
+    public void registerServerNodes(String topic, Set<ChatServerEntry> nodes){
+        this.nodesPerTopic.putIfAbsent(topic, nodes);
     }
 
-    public void addUsersORSetOf(String topic) {
-        this.usersORSetPerTopic.putIfAbsent(topic, new ORSet(nodeId));
+    public void registerUsersORSet(String topic, ORSet orSet) {
+        this.usersORSetPerTopic.putIfAbsent(topic, orSet);
+    }
+
+    public void registerVectorClock(String topic, VectorClock vectorClock) {
+        this.clockPerTopic.putIfAbsent(topic, vectorClock);
     }
 
     public Map<String, Set<String>> getState() {

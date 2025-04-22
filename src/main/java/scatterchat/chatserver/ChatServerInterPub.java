@@ -10,6 +10,7 @@ import scatterchat.protocol.carrier.ZMQCarrier;
 import scatterchat.protocol.message.CausalMessage;
 import scatterchat.protocol.message.Message;
 import scatterchat.protocol.message.chat.ChatMessage;
+import scatterchat.protocol.message.chat.ChatServerEntry;
 import scatterchat.protocol.message.crtd.UserORSetMessage;
 import scatterchat.protocol.message.info.ServeTopicRequest;
 
@@ -18,9 +19,9 @@ import java.util.concurrent.BlockingQueue;
 
 public class ChatServerInterPub implements Runnable {
 
-    private final State state;
-    private final JSONObject config;
-    private final BlockingQueue<Message> broadcast;
+    private State state;
+    private JSONObject config;
+    private BlockingQueue<Message> broadcast;
 
 
     public ChatServerInterPub(JSONObject config, State state, BlockingQueue<Message> broadcast) {
@@ -29,58 +30,73 @@ public class ChatServerInterPub implements Runnable {
         this.broadcast = broadcast;
     }
 
+    private void forwardAsCausal(Message message, String topic, ZMQCarrier carrier) {
 
-    private void forwardAsCausalMessage(Message message, String topic, ZMQCarrier carrier) {
+        ChatServerEntry nodeId = state.getNodeId();
+        VectorClock vectorClock = state.getVectorClockOf(topic);
 
-        synchronized (state){
-;
-            String nodeId = state.getNodeId();
-            VectorClock vectorClock = state.getVectorClockOf(topic);
-            CausalMessage causalMessage = new CausalMessage(message, vectorClock);
+        message.setSender(nodeId.interPubAddress());
+        vectorClock.putTimeOf(nodeId, vectorClock.getTimeOf(nodeId) + 1);
+        CausalMessage causalMessage = new CausalMessage(topic, message, vectorClock);
 
-            message.setSender(nodeId);
-            carrier.sendCausalMessageWithTopic(topic, causalMessage);
-            vectorClock.putTimeOf(nodeId, vectorClock.getTimeOf(nodeId) + 1);
-            state.setVectorClockOf(topic, vectorClock);
+        this.state.setVectorClockOf(topic, vectorClock);
+        carrier.sendCausalMessageWithTopic(topic, causalMessage);
+    }
+
+
+    private void handleChatMessage(ChatMessage message, ZMQCarrier carrier) {
+        synchronized (this.state) {
+            forwardAsCausal(message, message.getTopic(), carrier);
+        }
+    }
+
+
+    private void handleUserORSetMessage(UserORSetMessage message, ZMQCarrier carrier) {
+        synchronized (this.state) {
+            forwardAsCausal(message, message.getTopic(), carrier);
         }
     }
 
 
     private void handleServeTopicRequest(ServeTopicRequest message, ZMQCarrier carrier){
-        synchronized (state){
-            CausalMessage causalMessage = new CausalMessage(message, null);
-            carrier.sendCausalMessageWithTopic("[internal]", causalMessage);
+        synchronized (this.state) {
+            String internalTopic = this.state.getInternaTopic();
+            CausalMessage causalMessage = new CausalMessage(message.getTopic(), message, null);
+            carrier.sendCausalMessageWithTopic(internalTopic, causalMessage);
         }
     }
 
 
     @Override
     public void run() {
+
         try {
+
             ZContext context = new ZContext();
             ZMQ.Socket socket = context.createSocket(SocketType.PUB);
+            ZMQCarrier carrier = new ZMQCarrier(socket);
 
             String tcpAddress = config.getString("tcpInterPub");
             String inprocAddress = config.getString("inprocPubSub");
-
+            
             socket.bind(tcpAddress);
             socket.bind(inprocAddress);
-
+            
+            System.out.println("[SC interPub] started");
+            System.out.println("[SC interPub] bind: " + tcpAddress);
+            System.out.println("[SC interPub] bind: " + inprocAddress);
+            
             Message message = null;
-            ZMQCarrier carrier = new ZMQCarrier(socket);
-
-            System.out.println("[SC interPub] started on: " + tcpAddress);
-            System.out.println("[SC interPub] started on: " + inprocAddress);
 
             while ((message = broadcast.take()) != null) {
 
-                System.out.println("[SC interPub] Reveived: " + message.toString());
+                System.out.println("[SC interPub] reveived: " + message.toString());
 
                 switch (message) {
-                    case ChatMessage m -> forwardAsCausalMessage(m, m.getTopic(), carrier);
-                    case UserORSetMessage m -> forwardAsCausalMessage(m, m.getTopic(), carrier);
+                    case ChatMessage m -> handleChatMessage(m, carrier);
+                    case UserORSetMessage m -> handleUserORSetMessage(m, carrier);
                     case ServeTopicRequest m -> handleServeTopicRequest(m, carrier);
-                    default -> System.out.println("[SC interPub] Unknown: " + message);
+                    default -> System.out.println("[SC interPub] unknown: " + message);
                 }
             }
 

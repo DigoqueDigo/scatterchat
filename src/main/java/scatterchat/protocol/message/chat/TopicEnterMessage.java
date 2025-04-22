@@ -12,31 +12,25 @@ import java.io.ByteArrayOutputStream;
 public class TopicEnterMessage extends Message {
 
     private String topic;
-    private String chatServerAddress;
+    private ChatServerEntry chatServerEntry;
 
     public TopicEnterMessage() {
         super(MessageType.TOPIC_ENTER_MESSAGE);
-        this.chatServerAddress = null;
+        this.chatServerEntry = null;
     }
 
-    public TopicEnterMessage(String sender, String topic) {
-        super(MessageType.TOPIC_ENTER_MESSAGE, sender);
+    public TopicEnterMessage(String sender, String receiver, String topic, ChatServerEntry chatServerEntry) {
+        super(MessageType.TOPIC_ENTER_MESSAGE, sender, receiver);
         this.topic = topic;
-        this.chatServerAddress = null;
-    }
-
-    public TopicEnterMessage(String sender, String topic, String chatServerAddress) {
-        super(MessageType.TOPIC_ENTER_MESSAGE, sender);
-        this.topic = topic;
-        this.chatServerAddress = chatServerAddress;
+        this.chatServerEntry = chatServerEntry;
     }
 
     public String getTopic() {
         return this.topic;
     }
 
-    public String getChatServerAddress() {
-        return this.chatServerAddress;
+    public ChatServerEntry getChatServerEntry() {
+        return this.chatServerEntry;
     }
 
     public byte[] serialize() {
@@ -68,5 +62,13 @@ public class TopicEnterMessage extends Message {
         input.close();
 
         return topicEnterMessage;
+    }
+
+    public String toString() {
+        StringBuilder buffer = new StringBuilder();
+        buffer.append(super.toString());
+        buffer.append(", ").append(this.topic);
+        buffer.append(", ").append(this.chatServerEntry);
+        return buffer.toString();
     }
 }

@@ -4,15 +4,20 @@ import org.json.JSONObject;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
-import scatterchat.chatserver.state.State;
+
+import scatterchat.crdt.ORSet;
 import scatterchat.clock.VectorClock;
+import scatterchat.chatserver.state.State;
 import scatterchat.protocol.carrier.ZMQCarrier;
 import scatterchat.protocol.message.Message;
+import scatterchat.protocol.message.chat.ChatServerEntry;
 import scatterchat.protocol.message.info.ServeTopicRequest;
 import scatterchat.protocol.message.info.ServeTopicResponse;
 import scatterchat.protocol.message.info.ServerStateRequest;
 import scatterchat.protocol.message.info.ServerStateResponse;
 
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 
 
@@ -32,23 +37,43 @@ public class ChatServerExtRep implements Runnable {
 
     private void handleServeTopicRequest(ServeTopicRequest message, ZMQCarrier carrier) throws InterruptedException {
 
-        synchronized (state){
-            String topic = message.getTopic();
-            state.addUsersORSetOf(topic);
-            state.setNodesOf(topic, message.getNodes());
-            state.setVectorClockOf(topic, new VectorClock(message.getNodes()));
-        }
+        synchronized (this.state) {
 
-        broadcast.put(message);
-        ServeTopicResponse response = new ServeTopicResponse(message.getTopic(), true);
-        carrier.sendMessage(response);
+            String topic = message.getTopic();
+            ChatServerEntry nodeId = this.state.getNodeId();
+
+            if (!this.state.hasTopic(topic)) {
+                this.state.registerUsersORSet(topic, new ORSet(nodeId));
+                this.state.registerServerNodes(topic, message.getNodes());
+                this.state.registerVectorClock(topic, new VectorClock(nodeId, message.getNodes()));
+            }
+
+            ServeTopicResponse response = new ServeTopicResponse(
+                nodeId.extPubAddress(),
+                message.getSender(),
+                topic,
+                true
+            );
+
+            broadcast.put(message);
+            carrier.sendMessage(response);
+        }
     }
 
 
     private void handleServerStateRequest(ServerStateRequest message, ZMQCarrier carrier) {
-        synchronized (state) {
-            String sender = config.getString("tcpExtRep");
-            ServerStateResponse response = new ServerStateResponse(sender, state.getState());
+
+        synchronized (this.state) {
+
+            ChatServerEntry nodeId = this.state.getNodeId();
+            Map<String, Set<String>> serverState = this.state.getState();
+
+            ServerStateResponse response = new ServerStateResponse(
+                nodeId.extPubAddress(),
+                message.getSender(),
+                serverState
+            );
+
             carrier.sendMessage(response);
         }
     }
@@ -56,26 +81,29 @@ public class ChatServerExtRep implements Runnable {
 
     @Override
     public void run() {
+
         try {
+
             ZContext context = new ZContext();
             ZMQ.Socket socket = context.createSocket(SocketType.REP);
-
-            String address = config.getString("tcpExtRep");
-            socket.bind(address);
-
-            Message message = null;
             ZMQCarrier carrier = new ZMQCarrier(socket);
 
-            System.out.println("[SC extRep] started on: " + address);
+            String bindAddress = config.getString("tcpExtRep");
+            socket.bind(bindAddress);
+
+            System.out.println("[SC extRep] started");            
+            System.out.println("[SC extRep] bind: " + bindAddress);
+
+            Message message = null;
 
             while ((message = carrier.receiveMessage()) != null) {
 
-                System.out.println("[SC extRep] Received: " + message);
+                System.out.println("[SC extRep] received: " + message);
 
                 switch (message) {
                     case ServeTopicRequest m -> handleServeTopicRequest(m, carrier);
                     case ServerStateRequest m -> handleServerStateRequest(m, carrier);
-                    default -> System.out.println("[SC extRep] Unknown: " + message);
+                    default -> System.out.println("[SC extRep] unknown: " + message);
                 }
             }
 

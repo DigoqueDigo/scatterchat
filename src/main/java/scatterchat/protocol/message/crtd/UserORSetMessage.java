@@ -23,8 +23,8 @@ public class UserORSetMessage extends Message{
         this.orSetAction = null;
     }
 
-    public UserORSetMessage(String sender, String topic, ORSetAction orSetAction) {
-        super(MessageType.USERS_ORSET_MESSAGE, sender);
+    public UserORSetMessage(String sender, String receiver, String topic, ORSetAction orSetAction) {
+        super(MessageType.USERS_ORSET_MESSAGE, sender, receiver);
         this.topic = topic;
         this.orSetAction = orSetAction;
     }
@@ -79,8 +79,8 @@ public class UserORSetMessage extends Message{
     public String toString(){
         StringBuffer buffer = new StringBuffer();
         buffer.append(super.toString());
-        buffer.append("\t topic: " + this.topic);
-        buffer.append(this.orSetAction);
+        buffer.append(", ").append(this.topic);
+        buffer.append(", ").append(this.orSetAction);
         return buffer.toString();
     }
 }

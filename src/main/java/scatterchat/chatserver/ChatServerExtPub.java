@@ -35,7 +35,7 @@ public class ChatServerExtPub implements Runnable {
 
 
     private void handleUsersORSetMessage(UserORSetMessage message) {
-        synchronized (state) {
+        synchronized (this.state) {
             ORSet orSet = state.getUsersORSetOf(message.getTopic());
             ORSetAction orSetAction = message.getORSetAction();
             orSet.effect(orSetAction);
@@ -45,26 +45,29 @@ public class ChatServerExtPub implements Runnable {
 
     @Override
     public void run() {
+
         try{
+
             ZContext context = new ZContext();
             ZMQ.Socket socket = context.createSocket(SocketType.PUB);
-
-            String address = config.getString("tcpExtPub");
-            socket.bind(address);
-
-            Message message = null;
             ZMQCarrier carrier = new ZMQCarrier(socket);
 
-            System.out.println("[SC extPub] started on: " + address);
+            String bindAddress = config.getString("tcpExtPub");
+            socket.bind(bindAddress);
+
+            System.out.println("[SC extPub] started");
+            System.out.println("[SC extPub] bind: " + bindAddress);
+
+            Message message = null;
 
             while ((message = this.delivered.take()) != null) {
 
-                System.out.println("[SC extPub] Received: " + message);
+                System.out.println("[SC extPub] received: " + message);
 
                 switch (message) {
                     case ChatMessage m -> handleChatMessage(m, carrier);
                     case UserORSetMessage m -> handleUsersORSetMessage(m);
-                    default -> System.out.println("[SC extPuB] Unknown: " + message);
+                    default -> System.out.println("[SC extPuB] unknown: " + message);
                 }
             }
 

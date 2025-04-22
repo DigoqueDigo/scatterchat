@@ -82,7 +82,7 @@ public class AggrServerHandler implements Runnable{
 
     private void handleCyclonMessage(CyclonMessage message) throws InterruptedException{
 
-        synchronized (state) {
+        synchronized (this.state) {
 
             System.out.println("Handling CyclonOK");
             System.out.println(state);
@@ -140,7 +140,7 @@ public class AggrServerHandler implements Runnable{
 
 
     private void handleCyclonError(CyclonError message) {
-        synchronized (state) {
+        synchronized (this.state) {
             state.setCyclonOnGoing(false);
         }
     }
@@ -148,7 +148,7 @@ public class AggrServerHandler implements Runnable{
 
     private void handleAggrReq(AggrReq message, ZMQCarrier carrier) throws InterruptedException{
 
-        synchronized (state) {
+        synchronized (this.state) {
 
             String topic = message.getTopic();
             AggrEntry scState = getChatServerState(carrier);
@@ -169,7 +169,7 @@ public class AggrServerHandler implements Runnable{
 
     private void handleAggr(Aggr message, ZMQCarrier carrier) throws InterruptedException{
 
-        synchronized (state) {
+        synchronized (this.state) {
 
             String topic = message.getTopic();
             CyclonEntry sender = this.state.getMyCyclonEntry();

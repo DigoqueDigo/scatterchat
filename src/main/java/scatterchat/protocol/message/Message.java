@@ -31,12 +31,6 @@ public abstract class Message {
         this.receiver = null;
     }
 
-    public Message(MessageType type, String sender) {
-        this.type = type;
-        this.sender = null;
-        this.receiver = null;
-    }
-
     public Message(MessageType type, String sender, String receiver) {
         this.type = type;
         this.sender = sender;
@@ -57,10 +51,6 @@ public abstract class Message {
 
     public void setSender(String sender) {
         this.sender = sender;
-    }
-
-    public void setReceiver(String receiver) {
-        this.receiver = receiver;
     }
 
     public abstract byte[] serialize();

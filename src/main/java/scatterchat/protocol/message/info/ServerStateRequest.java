@@ -15,6 +15,10 @@ public class ServerStateRequest extends Message {
         super(MessageType.SERVER_STATE_REQUEST);
     }
 
+    public ServerStateRequest(String sender, String receiver) {
+        super(MessageType.SERVER_STATE_REQUEST, sender, receiver);
+    }
+
     public byte[] serialize() {
 
         Kryo kryo = new Kryo();

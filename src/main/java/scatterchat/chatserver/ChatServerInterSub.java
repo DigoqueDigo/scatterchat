@@ -4,6 +4,7 @@ import org.json.JSONObject;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
+
 import scatterchat.chatserver.state.State;
 import scatterchat.protocol.carrier.ZMQCarrier;
 import scatterchat.protocol.message.CausalMessage;
@@ -16,9 +17,9 @@ import java.util.concurrent.BlockingQueue;
 
 public class ChatServerInterSub implements Runnable {
 
-    private final State state;
-    private final JSONObject config;
-    private final BlockingQueue<CausalMessage> received;
+    private State state;
+    private JSONObject config;
+    private BlockingQueue<CausalMessage> received;
 
 
     public ChatServerInterSub(JSONObject config, State state, BlockingQueue<CausalMessage> received) {
@@ -34,15 +35,8 @@ public class ChatServerInterSub implements Runnable {
 
 
     private void handleServeTopicRequest(ServeTopicRequest message, ZMQ.Socket socket) {
-
-        synchronized (state) {
-
-            for (String nodeInterPubAddres : message.getNodes()) {
-                socket.connect(nodeInterPubAddres);
-            }
-
-            socket.subscribe(message.getTopic());
-        }
+        message.getNodes().forEach(entry -> socket.connect(entry.interPubAddress()));
+        socket.subscribe(message.getTopic());
     }
 
 
@@ -50,27 +44,36 @@ public class ChatServerInterSub implements Runnable {
     public void run() {
 
         try {
+
             ZContext context = new ZContext();
             ZMQ.Socket socket = context.createSocket(SocketType.SUB);
-
-            String inprocAddress = config.getString("inprocPubSub");
-            socket.connect(inprocAddress);
-            socket.subscribe("[internal]" + config.getString("identity"));
-
-            CausalMessage causalMessage = null;
             ZMQCarrier carrier = new ZMQCarrier(socket);
 
+            String internalTopic;
+            String inprocAddress = config.getString("inprocPubSub");  
+
+            synchronized (this.state) {
+                internalTopic = "[internal]" + this.state.getInternaTopic();
+            }
+
+            socket.connect(inprocAddress);
+            socket.subscribe(internalTopic);
+
             System.out.println("[SC interSub] started");
+            System.out.println("[SC interSub] connect: " + inprocAddress);
+            System.out.println("[SC interSub] subscribe: [internal]" + internalTopic);
+
+            CausalMessage causalMessage = null;
 
             while ((causalMessage = carrier.receiveCausalMessageWithTopic()) != null) {
 
-                System.out.println("[SC interSub] Received: " + causalMessage.getMessage());
+                System.out.println("[SC interSub] received: " + causalMessage);
 
                 switch (causalMessage.getMessage()) {
                     case ChatMessage m -> forwardCausalMessage(causalMessage);
                     case UserORSetMessage m -> forwardCausalMessage(causalMessage);
                     case ServeTopicRequest m -> handleServeTopicRequest(m, socket);
-                    default -> System.out.println("[SC interSub] Unknown: " + causalMessage.getMessage());
+                    default -> System.out.println("[SC interSub] unknown: " + causalMessage);
                 }
             }
 

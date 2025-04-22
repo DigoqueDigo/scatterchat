@@ -20,9 +20,9 @@ import java.util.concurrent.BlockingQueue;
 
 public class ChatServerExtPull implements Runnable {
 
-    private final State state;
-    private final JSONObject config;
-    private final BlockingQueue<Message> broadcast;
+    private State state;
+    private JSONObject config;
+    private BlockingQueue<Message> broadcast;
 
 
     public ChatServerExtPull(JSONObject config, State state, BlockingQueue<Message> broadcast) {
@@ -39,14 +39,15 @@ public class ChatServerExtPull implements Runnable {
 
     private void handleTopicEnterMessage(TopicEnterMessage message) throws InterruptedException {
 
-        synchronized (state) {
+        synchronized (this.state) {
 
-            final String topic = message.getTopic();
-            final String sender = message.getSender();
+            String topic = message.getTopic();
+            String sender = message.getSender();
+            String receiver = message.getReceiver();
 
             ORSet orSet = state.getUsersORSetOf(topic);
             ORSetAction orSetAction = orSet.prepare(Operation.ADD, sender);
-            UserORSetMessage userORSetMessage = new UserORSetMessage(sender, topic, orSetAction);
+            UserORSetMessage userORSetMessage = new UserORSetMessage(sender, receiver, topic, orSetAction);
 
             orSet.effect(orSetAction);
             broadcast.put(userORSetMessage);
@@ -56,14 +57,15 @@ public class ChatServerExtPull implements Runnable {
 
     private void handleTopicExitMessage(TopicExitMessage message) throws InterruptedException {
 
-        synchronized (state) {
+        synchronized (this.state) {
 
-            final String topic = message.getTopic();
-            final String sender = message.getSender();
+            String topic = message.getTopic();
+            String sender = message.getSender();
+            String receiver = message.getReceiver();
 
             ORSet orSet = state.getUsersORSetOf(topic);
             ORSetAction orSetAction = orSet.prepare(Operation.REMOVE, sender);
-            UserORSetMessage usersORSetMessage = new UserORSetMessage(sender, topic, orSetAction);
+            UserORSetMessage usersORSetMessage = new UserORSetMessage(sender, receiver, topic, orSetAction);
 
             orSet.effect(orSetAction);
             broadcast.put(usersORSetMessage);
@@ -73,27 +75,30 @@ public class ChatServerExtPull implements Runnable {
 
     @Override
     public void run() {
+
         try {
+
             ZContext context = new ZContext();
             ZMQ.Socket socket = context.createSocket(SocketType.PULL);
+            ZMQCarrier carrier = new ZMQCarrier(socket);
 
             String address = config.getString("tcpExtPull");
             socket.bind(address);
 
-            Message message = null;
-            ZMQCarrier carrier = new ZMQCarrier(socket);
+            System.out.println("[SC extPull] started");
+            System.out.println("[SC extPull] bind: " + address);
 
-            System.out.println("[SC extPull] started on: " + address);
+            Message message = null;
 
             while ((message = carrier.receiveMessage()) != null) {
 
-                System.out.println("[SC extPull] Received: " + message);
+                System.out.println("[SC extPull] received: " + message);
 
                 switch (message) {
                     case ChatMessage m -> handleChatMessage(m);
                     case TopicExitMessage m -> handleTopicExitMessage(m);
                     case TopicEnterMessage m -> handleTopicEnterMessage(m);
-                    default -> System.out.println("[SC extPull] Unknown: " + message);
+                    default -> System.out.println("[SC extPull] unknown: " + message);
                 }
             }
 

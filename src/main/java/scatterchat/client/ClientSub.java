@@ -8,6 +8,7 @@ import org.zeromq.ZMQ;
 import scatterchat.protocol.carrier.ZMQCarrier;
 import scatterchat.protocol.message.Message;
 import scatterchat.protocol.message.chat.ChatMessage;
+import scatterchat.protocol.message.chat.ChatServerEntry;
 import scatterchat.protocol.message.chat.TopicEnterMessage;
 import scatterchat.protocol.message.chat.TopicExitMessage;
 
@@ -28,9 +29,9 @@ public class ClientSub implements Runnable{
 
 
     private void handleTopicEnterMessage(TopicEnterMessage message, ZMQ.Socket socket){
-        String topic = message.getTopic().replace("[internal]", "");
-        socket.connect(message.getChatServerAddress());
-        socket.subscribe(topic);
+        ChatServerEntry chatServerEntry = message.getChatServerEntry();
+        socket.connect(chatServerEntry.extPubAddress());
+        socket.subscribe(message.getTopic());
     }
 
 
@@ -40,9 +41,9 @@ public class ClientSub implements Runnable{
             throw new NullPointerException("client exit");
         }
 
-        String topic = message.getTopic().replace("[internal]", "");
-        socket.unsubscribe(topic);
-        socket.disconnect(message.getChatServerAddress());
+        ChatServerEntry chatServerEntry = message.getChatServerEntry();
+        socket.unsubscribe(message.getTopic());
+        socket.disconnect(chatServerEntry.extPubAddress());
     }
 
 
@@ -52,25 +53,28 @@ public class ClientSub implements Runnable{
         ZContext context = new ZContext();
         ZMQ.Socket socket = context.createSocket(SocketType.SUB);
 
-        Message message = null;
         ZMQCarrier carrier = new ZMQCarrier(socket);
         String pubAddress = config.getString("inprocPubSub");
 
         socket.connect(pubAddress);
         socket.subscribe("[internal]");
+
         System.out.println("[Client SUB] started");
+        System.out.println("[Client SUB] connected: " + pubAddress);
 
         try{
 
+            Message message = null;
+
             while ((message = carrier.receiveMessageWithTopic()) != null){
 
-                System.out.println("[Client SUB] received " + message);
+                System.out.println("[Client SUB] received: " + message);
 
                 switch (message){
                     case ChatMessage m -> handleChatMessage(m);
                     case TopicExitMessage m -> handleTopicExitMessage(m, socket);
                     case TopicEnterMessage m -> handleTopicEnterMessage(m, socket);
-                    default -> System.out.println("[Client SUB] Unknown " );
+                    default -> System.out.println("[Client SUB] unknown: " + message);
                 }
             }
         }

@@ -3,8 +3,7 @@ package scatterchat.chatserver.state;
 import scatterchat.clock.VectorClock;
 import scatterchat.protocol.message.CausalMessage;
 import scatterchat.protocol.message.Message;
-import scatterchat.protocol.message.chat.ChatMessage;
-import scatterchat.protocol.message.crtd.UserORSetMessage;
+import scatterchat.protocol.message.chat.ChatServerEntry;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,6 +19,7 @@ public class Deliver implements Runnable {
     private final BlockingQueue<CausalMessage> received;
     private final Map<String, List<CausalMessage>> pending;
 
+
     public Deliver(State state, BlockingQueue<CausalMessage> received, BlockingQueue<Message> delivered) {
         this.state = state;
         this.received = received;
@@ -27,42 +27,45 @@ public class Deliver implements Runnable {
         this.pending = new HashMap<>();
     }
 
-    private void addCausalMessage(String topic, CausalMessage message) {
+
+    private void addCausalMessage(CausalMessage message) {
+        String topic = message.getTopic();
         this.pending.putIfAbsent(topic, new ArrayList<>());
         this.pending.get(topic).add(message);
     }
 
+
     private void deliver(String topic) throws InterruptedException {
 
-        synchronized (state) {
+        synchronized (this.state) {
 
             int index = 0;
-            final VectorClock vectorClock = state.getVectorClockOf(topic);
-            final List<CausalMessage> pendingBuffer = pending.get(topic);
+            List<CausalMessage> pendingTopicBuffer = pending.get(topic);
 
-            while (index < pendingBuffer.size()) {
+            while (index < pendingTopicBuffer.size()) {
 
-                boolean deliverable = true;
-                final CausalMessage pendingMessage = pendingBuffer.get(index);
+                CausalMessage pendingMessage = pendingTopicBuffer.get(index);
+                VectorClock localVectorClock = state.getVectorClockOf(topic);
+                VectorClock senderVectorClock = pendingMessage.getVectorClock();
 
-                final String sender = pendingMessage.getMessage().getSender();
-                final VectorClock senderVectorClock = pendingMessage.getVectorClock();
+                ChatServerEntry localId = state.getNodeId();
+                ChatServerEntry senderId = senderVectorClock.getOwner();
 
-                if (vectorClock.getTimeOf(sender) + 1 == senderVectorClock.getTimeOf(sender)) {
+                boolean imSender = localId.equals(senderId);
+                boolean immediatelyPrev = localVectorClock.getTimeOf(senderId) + 1 == senderVectorClock.getTimeOf(senderId);
+                boolean allUpdate = localVectorClock.getNodes()
+                    .stream()
+                    .allMatch(node -> localVectorClock.getTimeOf(node) >= senderVectorClock.getTimeOf(node));
 
-                    for (String node : vectorClock.getNodes()) {
-                        if (!node.equals(sender) && vectorClock.getTimeOf(node) < vectorClock.getTimeOf(node)) {
-                            deliverable = false;
-                            break;
-                        }
-                    }
+                if (imSender || (immediatelyPrev && allUpdate)) {
 
-                    if (deliverable) {
-                        pendingBuffer.remove(index);
-                        delivered.put(pendingMessage.getMessage());
-                        vectorClock.putTimeOf(sender, vectorClock.getTimeOf(sender));
-                        state.setVectorClockOf(topic, vectorClock);
-                        index = 0;
+                    pendingMessage = pendingTopicBuffer.remove(index);
+                    this.delivered.put(pendingMessage.getMessage());
+                    index = 0;
+
+                    if (!imSender) {
+                        localVectorClock.putTimeOf(senderId, senderVectorClock.getTimeOf(senderId));
+                        this.state.setVectorClockOf(topic, localVectorClock);
                     }
                 }
 
@@ -71,20 +74,18 @@ public class Deliver implements Runnable {
         }
     }
 
+
     @Override
     public void run() {
+
         try {
-            while (true) {
 
-                CausalMessage causalMessage = this.received.take();
-                String topic = switch (causalMessage.getMessage()) {
-                    case ChatMessage m -> m.getTopic();
-                    case UserORSetMessage m -> m.getTopic();
-                    default -> throw new Exception("Unknown message");
-                };
+            CausalMessage causalMessage = null;
+            System.out.println("[SC deviler] started");
 
-                addCausalMessage(topic, causalMessage);
-                deliver(topic);
+            while ((causalMessage = this.received.take()) != null) {
+                addCausalMessage(causalMessage);
+                deliver(causalMessage.getTopic());
             }
         }
 

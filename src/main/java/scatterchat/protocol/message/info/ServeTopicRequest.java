@@ -4,6 +4,7 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import scatterchat.protocol.message.Message;
+import scatterchat.protocol.message.chat.ChatServerEntry;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -14,15 +15,15 @@ import java.util.Set;
 public class ServeTopicRequest extends Message {
 
     private String topic;
-    private Set<String> nodes;
+    private Set<ChatServerEntry> nodes;
 
     public ServeTopicRequest() {
         super(MessageType.SERVE_TOPIC_REQUEST);
         this.nodes = new HashSet<>();
     }
 
-    public ServeTopicRequest(String topic, Set<String> nodes) {
-        super(MessageType.SERVE_TOPIC_REQUEST);
+    public ServeTopicRequest(String sender, String receiver, String topic, Set<ChatServerEntry> nodes) {
+        super(MessageType.SERVE_TOPIC_REQUEST, sender, receiver);
         this.topic = topic;
         this.nodes = new HashSet<>(nodes);
     }
@@ -31,8 +32,8 @@ public class ServeTopicRequest extends Message {
         return this.topic;
     }
 
-    public Set<String> getNodes() {
-        return this.nodes;
+    public Set<ChatServerEntry> getNodes() {
+        return new HashSet<>(this.nodes);
     }
 
     public byte[] serialize() {
@@ -69,8 +70,8 @@ public class ServeTopicRequest extends Message {
     public String toString() {
         StringBuilder buffer = new StringBuilder();
         buffer.append(super.toString());
-        buffer.append("\t topic: " + this.topic);
-        buffer.append("\t nodes" + this.nodes);
+        buffer.append(", ").append(this.topic);
+        buffer.append(", ").append(this.nodes);
         return buffer.toString();
     }
 }

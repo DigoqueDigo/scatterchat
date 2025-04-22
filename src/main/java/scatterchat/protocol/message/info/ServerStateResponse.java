@@ -21,8 +21,8 @@ public class ServerStateResponse extends Message {
         super(MessageType.SERVER_STATE_RESPONSE);
     }
 
-    public ServerStateResponse(String sender, Map<String, Set<String>> serverState) {
-        super(MessageType.SERVER_STATE_RESPONSE, sender);
+    public ServerStateResponse(String sender, String receiver, Map<String, Set<String>> serverState) {
+        super(MessageType.SERVER_STATE_RESPONSE, sender, receiver);
         this.serverState = serverState;
     }
 
@@ -66,7 +66,7 @@ public class ServerStateResponse extends Message {
     public String toString() {
         StringBuilder buffer = new StringBuilder();
         buffer.append(super.toString());
-        buffer.append("\t serverState: " + this.serverState);
+        buffer.append(", ").append(this.serverState);
         return buffer.toString();
     }
 }

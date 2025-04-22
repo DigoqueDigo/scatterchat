@@ -25,17 +25,24 @@ import java.util.HashSet;
 
 public class CausalMessage {
 
+    private String topic;
     private Message message;
     private VectorClock vectorClock;
 
     public CausalMessage() {
         this.message = null;
         this.vectorClock = null;
+        this.topic = null;
     }
 
-    public CausalMessage(Message message, VectorClock vectorClock) {
+    public CausalMessage(String topic, Message message, VectorClock vectorClock) {
+        this.topic = topic;
         this.message = message;
         this.vectorClock = vectorClock;
+    }
+
+    public String getTopic() {
+        return this.topic;
     }
 
     public Message getMessage() {
@@ -114,7 +121,8 @@ public class CausalMessage {
     public String toString() {
         StringBuffer buffer = new StringBuffer();
         buffer.append(this.message);
-        buffer.append("\t clock: " + this.vectorClock);
+        buffer.append(", ").append(topic);
+        buffer.append(", ").append(this.vectorClock);
         return buffer.toString();
     }
 }

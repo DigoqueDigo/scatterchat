@@ -1,6 +1,7 @@
 package scatterchat.crdt;
 
 import scatterchat.crdt.ORSetAction.Operation;
+import scatterchat.protocol.message.chat.ChatServerEntry;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -11,9 +12,9 @@ import java.util.Set;
 public class ORSet {
 
     private OrSetEntry clock;
-    private final Map<String, Set<OrSetEntry>> store;
+    private Map<String, Set<OrSetEntry>> store;
 
-    public ORSet(String nodeId) {
+    public ORSet(ChatServerEntry nodeId) {
         this.store = new HashMap<>();
         this.clock = new OrSetEntry(nodeId, 0);
     }

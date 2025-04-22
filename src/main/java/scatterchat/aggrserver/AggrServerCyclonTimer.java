@@ -33,7 +33,7 @@ public class AggrServerCyclonTimer implements Runnable {
 
         try {
 
-            synchronized (state) {
+            synchronized (this.state) {
 
                 System.out.println("[AggrServeCyclonTimer] start");
                 System.out.println(state);

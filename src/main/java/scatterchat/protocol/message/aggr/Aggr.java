@@ -71,8 +71,8 @@ public class Aggr extends Message {
     public String toString() {
         StringBuilder buffer = new StringBuilder();
         buffer.append(super.toString());
-        buffer.append("\t topic: " + this.topic);
-        buffer.append("\t entries: " + this.entries);
+        buffer.append(", ").append(this.topic);
+        buffer.append(", ").append(this.entries);
         return buffer.toString();
     }   
 }
