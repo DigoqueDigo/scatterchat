@@ -11,8 +11,8 @@ import scatterchat.utils.PrettyPrint;
 
 public class State{
 
-    public static final Integer CyclonCapacity = 8;
-    public static final Integer CyclonShuffleLength = 4;
+    public static final int CYCLON_CAPACITY = 8;
+    public static final int CYCLON_SHUFFLE_LENGTH = 4;
 
     private boolean cyclonOnGoing;
     private CyclonEntry myCyclonEntry;
@@ -24,10 +24,7 @@ public class State{
         this.cyclonOnGoing = false;
         this.nodesSent = new ArrayList<>();
         this.neighbours = new ArrayList<>();
-        this.myCyclonEntry = new CyclonEntry(
-            config.getString("identity"),
-            config.getString("tcpExtPub"),
-            config.getString("tcpExtPubTimer"));
+        this.myCyclonEntry = new CyclonEntry(config.getString("tcpExtPull"));
     }
 
     public boolean getCyclonOnGoing() {
@@ -60,10 +57,10 @@ public class State{
 
     public String toString() {
         StringBuilder buffer = new StringBuilder();
-        buffer.append("CyclonOnGoing: " + this.cyclonOnGoing);
-        buffer.append("\n" + "MyCyclonEntry: " + this.myCyclonEntry);
-        buffer.append("\n" + PrettyPrint.CyclonEntriestoString(this.neighbours, "Identity", "Neighbour Pub", "Neighbour PubTimer"));
-        buffer.append("\n" + PrettyPrint.CyclonEntriestoString(this.nodesSent, "Identity", "Node Sent Pub", "Neighbour PubTImer"));
+        buffer.append(this.cyclonOnGoing);
+        buffer.append(", ").append(this.myCyclonEntry);
+        buffer.append("\n").append(PrettyPrint.CyclonEntriestoString(this.neighbours));
+        buffer.append("\n").append(PrettyPrint.CyclonEntriestoString(this.nodesSent));
         return buffer.toString();
     }
 }

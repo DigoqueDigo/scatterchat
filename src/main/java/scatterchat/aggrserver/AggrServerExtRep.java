@@ -16,31 +16,41 @@ public class AggrServerExtRep implements Runnable {
 
     private JSONObject config;
     private BlockingQueue<Message> received;
-    private BlockingQueue<AggrRep> response;
+    private BlockingQueue<AggrRep> responded;
 
 
-    public AggrServerExtRep(JSONObject config, BlockingQueue<Message> received, BlockingQueue<AggrRep> response) {
+    public AggrServerExtRep(JSONObject config, BlockingQueue<Message> received, BlockingQueue<AggrRep> responded) {
         this.config = config;
         this.received = received;
-        this.response = response;
+        this.responded = responded;
     }
 
 
     @Override
     public void run() {
+
         try {
+
             ZContext context = new ZContext();
             ZMQ.Socket socket = context.createSocket(SocketType.REP);
-            ZMQCarrier carrier = new ZMQCarrier(socket);
 
-            socket.bind(config.getString("tcpExtRep"));
-            System.out.println("[AggrServerExtRep] bind: " + config.getString("tcpExtRep"));
+            ZMQCarrier carrier = new ZMQCarrier(socket);
+            String bindAddress = config.getString("tcpExtRep");
+
+            socket.bind(bindAddress);
+            System.out.println("[AggrServerExtRep] started");
+            System.out.println("[AggrServerExtRep] bind: " + bindAddress);
 
             Message message = null;
 
             while ((message = carrier.receiveMessage()) != null) {
+
                 received.put(message);
-                carrier.sendMessage(response.take());
+                System.out.println("[AggrServerExtRep] received: " + message);
+
+                message = responded.take();
+                carrier.sendMessage(message);
+                System.out.println("[AggrServerExtRep] sent: " + message);
             }
 
             socket.close();

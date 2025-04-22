@@ -13,20 +13,14 @@ import scatterchat.protocol.message.Message;
 public class AggrReq extends Message {
 
     private String topic;
-    private String senderIdentity;
 
     public AggrReq() {
         super(MessageType.AGGR_REQ);
     }
 
-    public AggrReq(String senderIdentity, String topic) {
-        super(MessageType.AGGR_REQ);
-        this.senderIdentity = senderIdentity;
+    public AggrReq(String sender, String receiver, String topic) {
+        super(MessageType.AGGR_REQ, sender, receiver);
         this.topic = topic;
-    }
-
-    public String getSenderIdentity() {
-        return this.senderIdentity;
     }
 
     public String getTopic() {
@@ -65,8 +59,7 @@ public class AggrReq extends Message {
     public String toString() {
         StringBuilder buffer = new StringBuilder();
         buffer.append(super.toString());
-        buffer.append("\t senderIdentity: " + this.senderIdentity);
-        buffer.append("\t topic: " + this.topic);
+        buffer.append(", ").append(topic);
         return buffer.toString();
     }    
 }

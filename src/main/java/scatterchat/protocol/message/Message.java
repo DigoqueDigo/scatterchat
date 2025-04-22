@@ -22,16 +22,25 @@ public abstract class Message {
 
     private MessageType type;
     private String sender;
+    private String receiver;
 
 
     public Message(MessageType type) {
         this.type = type;
         this.sender = null;
+        this.receiver = null;
     }
 
     public Message(MessageType type, String sender) {
         this.type = type;
         this.sender = null;
+        this.receiver = null;
+    }
+
+    public Message(MessageType type, String sender, String receiver) {
+        this.type = type;
+        this.sender = sender;
+        this.receiver = receiver;
     }
 
     public MessageType getType() {
@@ -42,16 +51,25 @@ public abstract class Message {
         return this.sender;
     }
 
-    public void setSender(String sender){
+    public String getReceiver() {
+        return this.receiver;
+    }
+
+    public void setSender(String sender) {
         this.sender = sender;
+    }
+
+    public void setReceiver(String receiver) {
+        this.receiver = receiver;
     }
 
     public abstract byte[] serialize();
 
     public String toString() {
         StringBuilder buffer = new StringBuilder();
-        buffer.append("type: " + type.name());
-        buffer.append("\t sender: " + this.sender);
+        buffer.append(type.name());
+        buffer.append(", ").append(this.sender);
+        buffer.append(", ").append(this.receiver);
         return buffer.toString();
     }
 }

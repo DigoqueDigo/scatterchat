@@ -3,31 +3,31 @@ package scatterchat.protocol.message.aggr;
 import java.util.Comparator;
 
 
-public record AggrEntry(String sc, int totalTopics, int totalClients) {
+public record AggrEntry(String scRepAddress, int totalTopics, int totalClients) {
 
     public static final Comparator<AggrEntry> CompareByTopicsClientsName = Comparator
         .comparingInt(AggrEntry::totalTopics)
         .thenComparingInt(AggrEntry::totalClients)
-        .thenComparing(AggrEntry::sc);
+        .thenComparing(AggrEntry::scRepAddress);
 
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (!(obj instanceof AggrEntry other)) return false;
-        return sc != null && sc.equals(other.sc);
+        return scRepAddress != null && scRepAddress.equals(other.scRepAddress);
     }
 
     @Override
     public int hashCode() {
-        return sc != null ? sc.hashCode() : 0;
+        return scRepAddress != null ? scRepAddress.hashCode() : 0;
     }
 
     @Override
     public String toString() {
         StringBuffer buffer = new StringBuffer();
-        buffer.append("SC: " + sc);
-        buffer.append("\t totalClients: " + totalClients);
-        buffer.append("\t totalTopics: " + totalTopics);
+        buffer.append(scRepAddress);
+        buffer.append(", ").append(totalClients);
+        buffer.append(", ").append(totalTopics);
         return buffer.toString();
     }
 }

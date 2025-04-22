@@ -9,16 +9,12 @@ import scatterchat.protocol.message.cyclon.CyclonEntry;
 
 public final class PrettyPrint {
 
-    public static String CyclonEntriestoString(List<CyclonEntry> data, String header1, String header2, String header3) {
+    public static String CyclonEntriestoString(List<CyclonEntry> data) {
 
-        PrettyTable pt = PrettyTable.fieldNames(header1, header2, header3);
+        PrettyTable pt = PrettyTable.fieldNames("Neighbour Pull Address");
 
         for (CyclonEntry entry : data) {
-            pt.addRow(
-                entry.identity(),
-                entry.pubAddress(),
-                entry.pubTimerAddress()
-            );
+            pt.addRow(entry.pullAddress());
         }
 
         return pt.toString();

@@ -8,7 +8,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import org.json.JSONObject;
 
@@ -28,32 +31,37 @@ public class AggrServer{
         final String configFileContent = new String(Files.readAllBytes(Paths.get(configFilePath)));
         final JSONObject config = new JSONObject(configFileContent).getJSONObject(nodeId);
 
-        CyclonEntry entryPoint = null;
         State state = new State(config);
 
         if (config.has("entryPoint")) {
-            entryPoint = new CyclonEntry(
-                config.getJSONObject("entryPoint").getString("identity"),
-                config.getJSONObject("entryPoint").getString("tcpExtPub"),
-                config.getJSONObject("entryPoint").getString("tcpExtPubTimer"));
+            CyclonEntry entryPoint = new CyclonEntry(
+                config.getJSONObject("entryPoint").getString("tcpExtPull"));
             state.setNeighbours(Arrays.asList(entryPoint));
         }
 
-        BlockingQueue<AggrRep> response = new ArrayBlockingQueue<>(10);
         BlockingQueue<Message> received = new ArrayBlockingQueue<>(10);
+        BlockingQueue<AggrRep> responded = new ArrayBlockingQueue<>(10);
 
-        Runnable aggrServerReq = new AggrServerExtRep(config, received, response);
-        Runnable aggrServerSub = new AggrServerExtSub(config, entryPoint, received);
-        Runnable aggrServerPub = new AggrServerExtPub(config, state, received, response);
-        Runnable aggrServerPubTimer = new AggrServerExtPubTimer(config, state);
+        Runnable aggrServerExtPush = new AggrServerExtPush(received);
+        Runnable aggrServerExtPull = new AggrServerExtPull(config, received);
+        Runnable aggrServerExtRep = new AggrServerExtRep(config, received, responded);
+        Runnable aggrServerCyclonTimer = new AggrServerCyclonTimer(state, received);
+
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        scheduler.scheduleAtFixedRate(
+            aggrServerCyclonTimer,
+            AggrServerCyclonTimer.DELAY,
+            AggrServerCyclonTimer.PERIOD,
+            TimeUnit.MILLISECONDS
+        );
 
         List<Thread> workers = new ArrayList<>();
         ThreadFactory threadFactory = Thread.ofVirtual().factory();
 
-        workers.add(threadFactory.newThread(aggrServerReq));
-        workers.add(threadFactory.newThread(aggrServerPub));
-        workers.add(threadFactory.newThread(aggrServerSub));
-        workers.add(threadFactory.newThread(aggrServerPubTimer));
+        workers.add(threadFactory.newThread(aggrServerExtPush));
+        workers.add(threadFactory.newThread(aggrServerExtPull));
+        workers.add(threadFactory.newThread(aggrServerExtRep));
+        
 
         for (Thread worker : workers) {
             worker.start();

@@ -37,9 +37,9 @@ public class ChatServerExtPull implements Runnable {
     }
 
 
-    private void handleTopicEnterMessage(TopicEnterMessage message) throws InterruptedException{
+    private void handleTopicEnterMessage(TopicEnterMessage message) throws InterruptedException {
 
-        synchronized (state){
+        synchronized (state) {
 
             final String topic = message.getTopic();
             final String sender = message.getSender();

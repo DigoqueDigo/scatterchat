@@ -19,8 +19,8 @@ public class AggrRep extends Message {
         super(MessageType.AGGR_REP);
     }
 
-    public AggrRep(String topic, boolean success) {
-        super(MessageType.AGGR_REP);
+    public AggrRep(String sender, String receiver, String topic, boolean success) {
+        super(MessageType.AGGR_REP, sender, receiver);
         this.topic = topic;
         this.success = success;
     }
@@ -65,8 +65,8 @@ public class AggrRep extends Message {
     public String toString() {
         StringBuilder buffer = new StringBuilder();
         buffer.append(super.toString());
-        buffer.append("\t topic: " + this.topic);
-        buffer.append("\t success: " + this.success);
+        buffer.append(", ").append(this.topic);
+        buffer.append(", ").append(this.success);
         return buffer.toString();
     }
 }

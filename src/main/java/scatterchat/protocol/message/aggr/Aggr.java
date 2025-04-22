@@ -21,11 +21,10 @@ public class Aggr extends Message {
         super(MessageType.AGGR);
     }
 
-    public Aggr(String topic, List<AggrEntry> entries) {
-        super(MessageType.AGGR);
+    public Aggr(String sender, String receiver, String topic, List<AggrEntry> entries) {
+        super(MessageType.AGGR, sender, receiver);
         this.topic = topic;
-        this.entries = entries;
-
+        this.entries = new ArrayList<>(entries);
     }
 
     public String getTopic() {
@@ -33,10 +32,11 @@ public class Aggr extends Message {
     }
 
     public List<AggrEntry> getEntries() {
-        return this.entries;
+        return new ArrayList<>(this.entries);
     }
 
     public byte[] serialize() {
+
         Kryo kryo = new Kryo();
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         Output output = new Output(byteArrayOutputStream);
@@ -53,6 +53,7 @@ public class Aggr extends Message {
     }
 
     public static Aggr deserialize(byte[] data) {
+
         Kryo kryo = new Kryo();
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
         Input input = new Input(byteArrayInputStream);

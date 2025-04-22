@@ -1,26 +1,22 @@
 package scatterchat.protocol.message.cyclon;
 
 
-public record CyclonEntry(String identity, String pubAddress, String pubTimerAddress) {
+public record CyclonEntry(String pullAddress) {
 
     @Override
     public boolean equals(Object object) {
         if (this == object) return true;
         if (!(object instanceof CyclonEntry other)) return false;
-        return identity.equals(other.identity);
+        return pullAddress.equals(other.pullAddress);
     }
 
     @Override
     public int hashCode() {
-        return identity.hashCode();
+        return pullAddress.hashCode();
     }
 
     @Override
     public String toString() {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("Identity: " + identity);
-        buffer.append("\t pubAddress: " + pubAddress);
-        buffer.append("\t pubTimerAddress: " + pubTimerAddress);
-        return buffer.toString();
+        return this.pullAddress;
     }
 }

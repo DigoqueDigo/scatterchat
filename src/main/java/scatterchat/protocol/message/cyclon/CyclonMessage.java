@@ -3,9 +3,7 @@ package scatterchat.protocol.message.cyclon;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
@@ -16,22 +14,16 @@ import scatterchat.protocol.message.Message;
 
 public class CyclonMessage extends Message {
 
-    private String senderIdentity;
-    private Set<CyclonEntry> subSet;
+    private List<CyclonEntry> subSet;
 
     public CyclonMessage() {
         super(MessageType.CYCLON);
         this.subSet = null;
     }
 
-    public CyclonMessage(String sender, String senderIdentity, Set<CyclonEntry> subSet) {
-        super(MessageType.CYCLON, sender);
-        this.senderIdentity = senderIdentity;
-        this.subSet = new HashSet<>(subSet);
-    }
-
-    public String getSenderIdentity() {
-        return this.senderIdentity;
+    public CyclonMessage(String sender, String receiver, List<CyclonEntry> subSet) {
+        super(MessageType.CYCLON, sender, receiver);
+        this.subSet = new ArrayList<>(subSet);
     }
 
     public List<CyclonEntry> getSubSet() {
@@ -46,7 +38,7 @@ public class CyclonMessage extends Message {
 
         kryo.register(MessageType.class);
         kryo.register(CyclonMessage.class);
-        kryo.register(HashSet.class);
+        kryo.register(ArrayList.class);
         kryo.register(CyclonEntry.class);
         kryo.writeObject(output, this);
 
@@ -64,7 +56,7 @@ public class CyclonMessage extends Message {
 
         kryo.register(MessageType.class);
         kryo.register(CyclonMessage.class);
-        kryo.register(HashSet.class);
+        kryo.register(ArrayList.class);
         kryo.register(CyclonEntry.class);
 
         CyclonMessage cyclonMessage = kryo.readObject(input, CyclonMessage.class);
@@ -76,8 +68,7 @@ public class CyclonMessage extends Message {
     public String toString() {
         StringBuffer buffer = new StringBuffer();
         buffer.append(super.toString());
-        buffer.append("\t senderIdentity: " + this.senderIdentity);
-        buffer.append("\t subset: " + this.subSet);
+        buffer.append(", ").append(this.subSet);
         return buffer.toString();
     }
 }

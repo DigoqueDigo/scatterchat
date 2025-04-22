@@ -16,6 +16,10 @@ public class CyclonError extends Message{
         super(MessageType.CYCLON_ERROR);
     }
 
+    public CyclonError(String sender, String receiver) {
+        super(MessageType.CYCLON_ERROR, sender, receiver);
+    }
+
     public byte[] serialize() {
 
         Kryo kryo = new Kryo();
