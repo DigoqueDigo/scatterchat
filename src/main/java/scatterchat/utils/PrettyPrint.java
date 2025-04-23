@@ -9,9 +9,9 @@ import scatterchat.protocol.message.cyclon.CyclonEntry;
 
 public final class PrettyPrint {
 
-    public static String CyclonEntriestoString(List<CyclonEntry> data) {
+    public static String CyclonEntriestoString(List<CyclonEntry> data, String header) {
 
-        PrettyTable pt = PrettyTable.fieldNames("Neighbour Pull Address");
+        PrettyTable pt = PrettyTable.fieldNames(header);
 
         for (CyclonEntry entry : data) {
             pt.addRow(entry.pullAddress());

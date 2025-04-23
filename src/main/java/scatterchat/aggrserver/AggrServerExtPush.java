@@ -33,14 +33,19 @@ public class AggrServerExtPush implements Runnable {
 
             while ((message = this.outBuffer.take()) != null) {
 
-                if (!this.carriers.containsKey(message.getReceiver())) {
+                System.out.println("[AggrServerExtPush] received: " + message);
+                String connection = message.getReceiver();
+
+                if (!this.carriers.containsKey(connection)) {
                     ZMQ.Socket socket = context.createSocket(SocketType.PUSH);
-                    socket.connect(message.getReceiver());
-                    this.carriers.put(message.getReceiver(), new ZMQCarrier(socket));
+                    socket.connect(connection);
+                    this.carriers.put(connection, new ZMQCarrier(socket));
+                    System.out.println("[AggrServerExtPush] connect: " + message.getReceiver());
                 }
 
                 ZMQCarrier carrier = this.carriers.get(message.getReceiver());
                 carrier.sendMessage(message);
+                System.out.println("[AggrServerExtPush] sent: " + message);
             }
 
             context.close();

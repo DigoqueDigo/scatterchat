@@ -11,8 +11,8 @@ import scatterchat.utils.PrettyPrint;
 
 public class State{
 
-    public static final int CYCLON_CAPACITY = 8;
-    public static final int CYCLON_SHUFFLE_LENGTH = 4;
+    public static final int CYCLON_CAPACITY = 3;
+    public static final int CYCLON_SHUFFLE_LENGTH = 2;
 
     private boolean cyclonOnGoing;
     private CyclonEntry myCyclonEntry;
@@ -59,8 +59,8 @@ public class State{
         StringBuilder buffer = new StringBuilder();
         buffer.append(this.cyclonOnGoing);
         buffer.append(", ").append(this.myCyclonEntry);
-        buffer.append("\n").append(PrettyPrint.CyclonEntriestoString(this.neighbours));
-        buffer.append("\n").append(PrettyPrint.CyclonEntriestoString(this.nodesSent));
+        buffer.append("\n").append(PrettyPrint.CyclonEntriestoString(this.neighbours, "Neighbour Pull Address"));
+        buffer.append("\n").append(PrettyPrint.CyclonEntriestoString(this.nodesSent, "Node Sent Pull Address"));
         return buffer.toString();
     }
 }

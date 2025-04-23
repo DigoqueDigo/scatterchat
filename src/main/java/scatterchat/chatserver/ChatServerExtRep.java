@@ -49,7 +49,7 @@ public class ChatServerExtRep implements Runnable {
             }
 
             ServeTopicResponse response = new ServeTopicResponse(
-                nodeId.extPubAddress(),
+                nodeId.repAddress(),
                 message.getSender(),
                 topic,
                 true
@@ -69,7 +69,7 @@ public class ChatServerExtRep implements Runnable {
             Map<String, Set<String>> serverState = this.state.getState();
 
             ServerStateResponse response = new ServerStateResponse(
-                nodeId.extPubAddress(),
+                nodeId.repAddress(),
                 message.getSender(),
                 serverState
             );

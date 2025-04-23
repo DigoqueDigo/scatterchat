@@ -65,10 +65,10 @@ public class AggrServerCyclonTimer implements Runnable {
 
                     state.setNodesSent(subSet);
                     state.setCyclonOnGoing(true);
-                    this.outBuffer.put(cyclonMessage);
 
-                    System.out.println(state);
                     System.out.println("[AggrServeCyclonTimer] sent: " + cyclonMessage);
+                    this.outBuffer.put(cyclonMessage);
+                    System.out.println(state);
                 }
             }
         }

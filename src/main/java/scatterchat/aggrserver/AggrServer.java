@@ -41,11 +41,13 @@ public class AggrServer{
 
         BlockingQueue<Message> received = new ArrayBlockingQueue<>(10);
         BlockingQueue<AggrRep> responded = new ArrayBlockingQueue<>(10);
+        BlockingQueue<Message> outBuffer = new ArrayBlockingQueue<>(10);
 
-        Runnable aggrServerExtPush = new AggrServerExtPush(received);
+        Runnable aggrServerExtPush = new AggrServerExtPush(outBuffer);
         Runnable aggrServerExtPull = new AggrServerExtPull(config, received);
         Runnable aggrServerExtRep = new AggrServerExtRep(config, received, responded);
-        Runnable aggrServerCyclonTimer = new AggrServerCyclonTimer(state, received);
+        Runnable aggrServerHandler = new AggrServerHandler(config, state, received, responded, outBuffer);
+        Runnable aggrServerCyclonTimer = new AggrServerCyclonTimer(state, outBuffer);
 
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         scheduler.scheduleAtFixedRate(
@@ -61,6 +63,7 @@ public class AggrServer{
         workers.add(threadFactory.newThread(aggrServerExtPush));
         workers.add(threadFactory.newThread(aggrServerExtPull));
         workers.add(threadFactory.newThread(aggrServerExtRep));
+        workers.add(threadFactory.newThread(aggrServerHandler));
         
 
         for (Thread worker : workers) {

@@ -84,7 +84,7 @@ public class AggrServerHandler implements Runnable{
 
         synchronized (this.state) {
 
-            System.out.println("Handling CyclonOK");
+            System.out.println("Handling Cyclon");
             System.out.println(state);
 
             state.setCyclonOnGoing(false);
@@ -105,11 +105,11 @@ public class AggrServerHandler implements Runnable{
 
                 CyclonOk cyclonOk = new CyclonOk(
                     sender.pullAddress(),
-                    message.getReceiver(),
+                    message.getSender(),
                     subSet
                 );
 
-                System.out.println("[SA AggrServerExtPub] Sent: " + cyclonOk);
+                System.out.println("[SA AggrServerExtPub] sent: " + cyclonOk);
 
                 this.outBuffer.put(cyclonOk);
                 state.setNeighbours(mergeCyclonSubsets(
@@ -141,6 +141,7 @@ public class AggrServerHandler implements Runnable{
 
     private void handleCyclonError(CyclonError message) {
         synchronized (this.state) {
+            System.out.println("Handling Cyclon ERROR");
             state.setCyclonOnGoing(false);
         }
     }
@@ -225,11 +226,11 @@ public class AggrServerHandler implements Runnable{
         carrier.sendMessage(new ServerStateRequest());
         ServerStateResponse serverStateResponse = (ServerStateResponse) carrier.receiveMessage();
 
-        String scAddress = serverStateResponse.getSender();
+        String scRepAddress = serverStateResponse.getSender();
         Map<String, Set<String>> serveState = serverStateResponse.getServerState();
 
         return new AggrEntry(
-            scAddress,
+            scRepAddress,
             serveState.size(),
             serveState.values().stream().mapToInt(Collection::size).sum());
     }
