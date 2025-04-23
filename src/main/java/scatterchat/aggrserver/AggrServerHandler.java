@@ -1,12 +1,13 @@
 package scatterchat.aggrserver;
 
 import java.util.Arrays;
-import java.util.Collection;
+//import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.stream.Collectors;
@@ -25,8 +26,8 @@ import scatterchat.protocol.message.aggr.AggrRep;
 import scatterchat.protocol.message.aggr.AggrReq;
 import scatterchat.protocol.message.cyclon.CyclonMessage;
 import scatterchat.protocol.message.cyclon.CyclonOk;
-import scatterchat.protocol.message.info.ServerStateRequest;
-import scatterchat.protocol.message.info.ServerStateResponse;
+//import scatterchat.protocol.message.info.ServerStateRequest;
+//import scatterchat.protocol.message.info.ServerStateResponse;
 import scatterchat.protocol.message.cyclon.CyclonEntry;
 import scatterchat.protocol.message.cyclon.CyclonError;
 import scatterchat.protocol.carrier.ZMQCarrier;
@@ -157,14 +158,20 @@ public class AggrServerHandler implements Runnable{
             AggrEntry scState = getChatServerState(carrier);
             CyclonEntry sender = this.state.getMyCyclonEntry();
 
-            this.startedAggrs.add(topic);
-            this.bestEntries.put(topic, Arrays.asList(scState));
+            if (this.bestEntries.containsKey(message.getTopic())) {
+                AggrRep aggrRep = new AggrRep(sender.pullAddress(), message.getSender(), topic, false);
+                this.responded.put(aggrRep);
+            }
 
-            List<AggrEntry> entries = this.bestEntries.get(topic);
+            else {
+                this.startedAggrs.add(topic);
+                this.bestEntries.put(topic, Arrays.asList(scState));
+                List<AggrEntry> entries = this.bestEntries.get(topic);
 
-            for (CyclonEntry neighbour : state.getNeighbours()) {
-                Aggr aggrMessage = new Aggr(sender.pullAddress(), neighbour.pullAddress(), topic, entries);
-                this.outBuffer.put(aggrMessage);
+                for (CyclonEntry neighbour : state.getNeighbours()) {
+                    Aggr aggrMessage = new Aggr(sender.pullAddress(), neighbour.pullAddress(), topic, entries);
+                    this.outBuffer.put(aggrMessage);
+                }
             }
         }
     }
@@ -192,7 +199,7 @@ public class AggrServerHandler implements Runnable{
                 receivedEntries.stream(),
                 oldEntries.stream())
                     .distinct()
-                    .sorted(AggrEntry.CompareByTopicsClientsName)
+                    .sorted()
                     .limit(AggrServerHandler.C)
                     .collect(Collectors.toList());
 
@@ -225,16 +232,24 @@ public class AggrServerHandler implements Runnable{
 
     private AggrEntry getChatServerState(ZMQCarrier carrier) {
 
-        carrier.sendMessage(new ServerStateRequest());
-        ServerStateResponse serverStateResponse = (ServerStateResponse) carrier.receiveMessage();
+        // carrier.sendMessage(new ServerStateRequest());
+        // ServerStateResponse serverStateResponse = (ServerStateResponse) carrier.receiveMessage();
 
-        String scRepAddress = serverStateResponse.getSender();
-        Map<String, Set<String>> serveState = serverStateResponse.getServerState();
+        // String scRepAddress = serverStateResponse.getSender();
+        // Map<String, Set<String>> serveState = serverStateResponse.getServerState();
+
+        // return new AggrEntry(
+        //     scRepAddress,
+        //     serveState.size(),
+        //     serveState.values().stream().mapToInt(Collection::size).sum()
+        // );
+
+        Random random = new Random();
 
         return new AggrEntry(
-            scRepAddress,
-            serveState.size(),
-            serveState.values().stream().mapToInt(Collection::size).sum()
+            this.state.getMyCyclonEntry().pullAddress(),
+            random.nextInt(10),
+            random.nextInt(10)
         );
     }
 
@@ -260,7 +275,7 @@ public class AggrServerHandler implements Runnable{
 
             while ((message = this.received.take()) != null) {
 
-                System.out.println("[AggrServerHandler] received: " + message);
+        //        System.out.println("[AggrServerHandler] received: " + message);
 
                 switch (message) {
                     case CyclonOk m -> handleCyclonOk(m);

@@ -5,6 +5,7 @@ import scatterchat.protocol.message.CausalMessage;
 import scatterchat.protocol.message.Message;
 import scatterchat.protocol.message.Message.MessageType;
 import scatterchat.protocol.message.aggr.Aggr;
+import scatterchat.protocol.message.aggr.AggrRep;
 import scatterchat.protocol.message.aggr.AggrReq;
 import scatterchat.protocol.message.chat.ChatMessage;
 import scatterchat.protocol.message.chat.TopicEnterMessage;
@@ -41,7 +42,7 @@ public final class ZMQCarrier {
         deserializers.put(MessageType.CYCLON_ERROR, CyclonError::deserialize);
         deserializers.put(MessageType.AGGR, Aggr::deserialize);
         deserializers.put(MessageType.AGGR_REQ, AggrReq::deserialize);
-        deserializers.put(MessageType.AGGR_REP, AggrReq::deserialize);
+        deserializers.put(MessageType.AGGR_REP, AggrRep::deserialize);
     }
 
     private ZMQ.Socket socket;

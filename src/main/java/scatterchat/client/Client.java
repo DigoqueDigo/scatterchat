@@ -12,7 +12,7 @@ import org.json.JSONObject;
 
 public class Client{
 
-    public static void main(String[] args) throws IOException, InterruptedException{
+    public static void main(String[] args) throws IOException, InterruptedException {
 
         final String configFilePath = args[0];
         final String nodeId = args[1];
@@ -29,11 +29,11 @@ public class Client{
         workers.add(threadFactory.newThread(clientUI));
         workers.add(threadFactory.newThread(clientSub));
 
-        for (Thread worker : workers){
+        for (Thread worker : workers) {
             worker.start();
         }
 
-        for (Thread worker : workers){
+        for (Thread worker : workers) {
             worker.join();
         }
     }

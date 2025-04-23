@@ -43,6 +43,7 @@ public class Aggr extends Message {
 
         kryo.register(MessageType.class);
         kryo.register(Aggr.class);
+        kryo.register(AggrEntry.class);
         kryo.register(ArrayList.class);
         kryo.writeObject(output, this);
 
@@ -60,6 +61,7 @@ public class Aggr extends Message {
 
         kryo.register(MessageType.class);
         kryo.register(Aggr.class);
+        kryo.register(AggrEntry.class);
         kryo.register(ArrayList.class);
 
         Aggr aggr = kryo.readObject(input, Aggr.class);

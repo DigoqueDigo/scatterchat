@@ -2,6 +2,7 @@
     "cli1": {
         "username": "cli1",
         "inprocPubSub": "inproc://pubsub",
+        "internalTopic": "cli1",
         "sa": {
             "tcpExtRep": "tcp://localhost:21001"
         }
@@ -10,6 +11,7 @@
     "cli2": {
         "username": "cli2",
         "inprocPubSub": "inproc://pubsub",
+        "internalTopic": "cli2",
         "sa": {
             "tcpExtRep": "tcp://localhost:22001"
         }
@@ -18,6 +20,7 @@
     "cli3": {
         "username": "cli3",
         "inprocPubSub": "inproc://pubsub",
+        "internalTopic": "cli3",
         "sa": {
             "tcpExtRep": "tcp://localhost:23001"
         }

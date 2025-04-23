@@ -1,6 +1,9 @@
 package scatterchat.client;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
@@ -14,12 +17,9 @@ import org.zeromq.ZMQ;
 
 import scatterchat.protocol.carrier.ZMQCarrier;
 import scatterchat.protocol.message.Message;
-import scatterchat.protocol.message.chat.ChatMessage;
-import scatterchat.protocol.message.chat.ChatServerEntry;
-import scatterchat.protocol.message.chat.TopicEnterMessage;
+import scatterchat.protocol.message.aggr.AggrRep;
+import scatterchat.protocol.message.aggr.AggrReq;
 import scatterchat.protocol.message.chat.TopicExitMessage;
-import scatterchat.protocol.message.info.ServerStateRequest;
-import scatterchat.protocol.message.info.ServerStateResponse;
 
 
 public class ClientUI implements Runnable{
@@ -36,16 +36,16 @@ public class ClientUI implements Runnable{
     }
 
 
-    private String readTopic(){
+    private String readTopic(Set<String> invalidTopics){
 
         String topic = null;
 
         while (topic == null){
 
-            topic = this.lineReader.readLine("Enter topic >> ");
+            topic = this.lineReader.readLine("client >>> ");
             topic = topic.strip();
 
-            if (topic.equals("[internal]") || topic.startsWith("/")){
+            if (invalidTopics.contains(topic)){
                 System.out.println("Invalid topic: " + topic);
                 topic = null;
             }
@@ -55,9 +55,9 @@ public class ClientUI implements Runnable{
     }
 
 
-    private String readMessage(){
-        return this.lineReader.readLine().strip();
-    }
+    // private String readMessage(){
+    //     return this.lineReader.readLine().strip();
+    // }
 
 
     public void run(){
@@ -67,62 +67,85 @@ public class ClientUI implements Runnable{
         ZMQ.Socket reqSocket = context.createSocket(SocketType.REQ);
         ZMQ.Socket pubSocket = context.createSocket(SocketType.PUB);
 
-        ZMQCarrier pushCarrier = new ZMQCarrier(pushSocket);
+     //   ZMQCarrier pushCarrier = new ZMQCarrier(pushSocket);
         ZMQCarrier pubCarrier = new ZMQCarrier(pubSocket);
         ZMQCarrier reqCarrier = new ZMQCarrier(reqSocket);
 
         String sender = config.getString("username");
-        pubSocket.bind(config.getString("inprocPubSub"));
+        String inprocAddress = config.getString("inprocPubSub");
+        String internalTopic = config.getString("internalTopic");
+        String saRepAddress = config.getJSONObject("sa").getString("tcpExtRep");
+
+        pubSocket.bind(inprocAddress);
+        reqSocket.connect(saRepAddress);
+
+        System.out.println("[Client UI] bind: " + inprocAddress);
+        System.out.println("[Client UI] connect: " + saRepAddress);
+
+        Set<String> invalidTopic = new HashSet<>(Arrays.asList(
+            internalTopic, "/log", "/info", "/exit", ""
+        ));
 
         try{
 
             while (true){
 
-                String message;
-                String topic = readTopic();
+             //   String message;
 
-                String chatServerExtRepAddress = "";
-                ChatServerEntry chatServerEntry = new ChatServerEntry(chatServerExtRepAddress);
+                String topic = readTopic(invalidTopic);
 
-                reqSocket.connect(chatServerEntry.repAddress());
-                pushSocket.connect(chatServerEntry.pullAddress());
+                AggrReq aggrReq = new AggrReq(sender, saRepAddress, topic);
+                reqCarrier.sendMessage(aggrReq);
 
-                Message topicEnterMessageToSub = new TopicEnterMessage(sender, "client sub", topic, chatServerEntry);
-                Message topicEnterMessageToPull = new TopicEnterMessage(sender, chatServerEntry.pullAddress(), topic, chatServerEntry);
+                Message message = reqCarrier.receiveMessage();
+                System.out.println(message);
+                AggrRep aggrRep = (AggrRep) message;
+                System.out.println("[Client UI] received: " + aggrRep);
 
-                pushCarrier.sendMessage(topicEnterMessageToPull);
-                pubCarrier.sendMessageWithTopic("[internal]", topicEnterMessageToSub);                
+                break;
 
-                while (!(message = readMessage()).equals("/exit")){
+                // String chatServerExtRepAddress = "";
+                // ChatServerEntry chatServerEntry = new ChatServerEntry(chatServerExtRepAddress);
 
-                    if (message.startsWith("/info")){
-                        Message serverStateRequest = new ServerStateRequest(sender, chatServerEntry.repAddress());
-                        reqCarrier.sendMessage(serverStateRequest);
-                        Message serverStateResponse = (ServerStateResponse) reqCarrier.receiveMessage();
-                        System.out.println(serverStateResponse);
-                    }
+                // reqSocket.connect(chatServerEntry.repAddress());
+                // pushSocket.connect(chatServerEntry.pullAddress());
 
-                    else {
-                        Message chatMessage = new ChatMessage(sender, chatServerEntry.pullAddress(), topic, message, sender);
-                        pushCarrier.sendMessage(chatMessage);
-                    }
-                }
+                // Message topicEnterMessageToSub = new TopicEnterMessage(sender, "client sub", topic, chatServerEntry);
+                // Message topicEnterMessageToPull = new TopicEnterMessage(sender, chatServerEntry.pullAddress(), topic, chatServerEntry);
 
-                Message topicExitMessageToSub = new TopicExitMessage(sender, "client sub", topic, chatServerEntry);
-                Message topicExitMessageToPull = new TopicExitMessage(sender, chatServerEntry.pullAddress(), topic, chatServerEntry);
+                // pushCarrier.sendMessage(topicEnterMessageToPull);
+                // pubCarrier.sendMessageWithTopic(internalTopic, topicEnterMessageToSub);                
 
-                pushCarrier.sendMessage(topicExitMessageToPull);
-                pubCarrier.sendMessageWithTopic("[internal]", topicExitMessageToSub);
+                // while (!(message = readMessage()).equals("/exit")){
 
-                reqSocket.disconnect(chatServerEntry.repAddress());
-                pushSocket.disconnect(chatServerEntry.pullAddress());
+                //     if (message.startsWith("/info")){
+                //         Message serverStateRequest = new ServerStateRequest(sender, chatServerEntry.repAddress());
+                //         reqCarrier.sendMessage(serverStateRequest);
+                //         Message serverStateResponse = (ServerStateResponse) reqCarrier.receiveMessage();
+                //         System.out.println(serverStateResponse);
+                //     }
+
+                //     else {
+                //         Message chatMessage = new ChatMessage(sender, chatServerEntry.pullAddress(), topic, message, sender);
+                //         pushCarrier.sendMessage(chatMessage);
+                //     }
+                // }
+
+                // Message topicExitMessageToSub = new TopicExitMessage(sender, "client sub", topic, chatServerEntry);
+                // Message topicExitMessageToPull = new TopicExitMessage(sender, chatServerEntry.pullAddress(), topic, chatServerEntry);
+
+                // pushCarrier.sendMessage(topicExitMessageToPull);
+                // pubCarrier.sendMessageWithTopic(internalTopic, topicExitMessageToSub);
+
+                // reqSocket.disconnect(chatServerEntry.repAddress());
+                // pushSocket.disconnect(chatServerEntry.pullAddress());
             }
         }
 
         catch (EndOfFileException e){
 
             Message topicExitMessageToSub = new TopicExitMessage(sender, "client sub", null, null);
-            pubCarrier.sendMessageWithTopic("[internal]", topicExitMessageToSub);
+            pubCarrier.sendMessageWithTopic(internalTopic, topicExitMessageToSub);
 
             pushSocket.close();
             reqSocket.close();

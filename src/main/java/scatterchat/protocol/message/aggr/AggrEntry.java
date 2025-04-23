@@ -3,12 +3,7 @@ package scatterchat.protocol.message.aggr;
 import java.util.Comparator;
 
 
-public record AggrEntry(String scRepAddress, int totalTopics, int totalClients) {
-
-    public static final Comparator<AggrEntry> CompareByTopicsClientsName = Comparator
-        .comparingInt(AggrEntry::totalTopics)
-        .thenComparingInt(AggrEntry::totalClients)
-        .thenComparing(AggrEntry::scRepAddress);
+public record AggrEntry(String scRepAddress, int totalTopics, int totalClients) implements Comparable<AggrEntry> {
 
     @Override
     public boolean equals(Object obj) {
@@ -23,11 +18,20 @@ public record AggrEntry(String scRepAddress, int totalTopics, int totalClients) 
     }
 
     @Override
+    public int compareTo(AggrEntry other) {
+        return Comparator
+            .comparingInt(AggrEntry::totalTopics)
+            .thenComparingInt(AggrEntry::totalClients)
+            .thenComparing(AggrEntry::scRepAddress)
+            .compare(this, other);
+    }
+
+    @Override
     public String toString() {
         StringBuffer buffer = new StringBuffer();
         buffer.append(scRepAddress);
-        buffer.append(", ").append(totalClients);
         buffer.append(", ").append(totalTopics);
+        buffer.append(", ").append(totalClients);
         return buffer.toString();
     }
 }

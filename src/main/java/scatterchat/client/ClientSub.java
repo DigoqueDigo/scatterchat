@@ -52,15 +52,16 @@ public class ClientSub implements Runnable{
 
         ZContext context = new ZContext();
         ZMQ.Socket socket = context.createSocket(SocketType.SUB);
-
         ZMQCarrier carrier = new ZMQCarrier(socket);
-        String pubAddress = config.getString("inprocPubSub");
 
-        socket.connect(pubAddress);
-        socket.subscribe("[internal]");
+        String inprocAddres = config.getString("inprocPubSub");
+        String internalTopic = config.getString("internalTopic");
 
-        System.out.println("[Client SUB] started");
-        System.out.println("[Client SUB] connected: " + pubAddress);
+        socket.connect(inprocAddres);
+        socket.subscribe(internalTopic);
+
+        System.out.println("[Client SUB] connected: " + inprocAddres);
+        System.out.println("[Client SUB] subscribe: " + internalTopic);
 
         try{
 
