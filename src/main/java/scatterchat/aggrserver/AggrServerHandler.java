@@ -88,9 +88,8 @@ public class AggrServerHandler implements Runnable{
             System.out.println("Handling Cyclon");
             System.out.println(state);
 
-            state.setCyclonOnGoing(false);
             CyclonEntry sender = this.state.getMyCyclonEntry();
-            
+
             if (state.getCyclonOnGoing()){
                 CyclonError cyclonError = new CyclonError(sender.pullAddress(), message.getSender());
                 this.outBuffer.put(cyclonError);
@@ -235,7 +234,8 @@ public class AggrServerHandler implements Runnable{
         return new AggrEntry(
             scRepAddress,
             serveState.size(),
-            serveState.values().stream().mapToInt(Collection::size).sum());
+            serveState.values().stream().mapToInt(Collection::size).sum()
+        );
     }
 
 

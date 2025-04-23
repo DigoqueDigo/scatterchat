@@ -44,9 +44,9 @@ public class AggrServerCyclonTimer implements Runnable {
                     Collections.shuffle(neighbours);                
 
                     int subSetLength = Math.min(neighbours.size(), State.CYCLON_SHUFFLE_LENGTH);
-                    int targetIndex = random.nextInt(subSetLength);
-
                     List<CyclonEntry> subSet = neighbours.subList(0, subSetLength);
+
+                    int targetIndex = random.nextInt(subSetLength);
                     CyclonEntry target = subSet.remove(targetIndex);
                     CyclonEntry sender = state.getMyCyclonEntry();
 
