@@ -35,7 +35,7 @@ public class ChatServer {
         Runnable chatServerExtRep = new ChatServerExtRep(config, state, broadcast);
         Runnable chatServerExtPull = new ChatServerExtPull(config, state, broadcast);
         Runnable chatServerInterPub = new ChatServerInterPub(config, state, broadcast);
-        Runnable chatServerInterSub = new ChatServerInterSub(config, state, received);
+        Runnable chatServerInterSub = new ChatServerInterSub(config, received);
         Runnable chatServerExtPub = new ChatServerExtPub(config, state, delivered);
         Runnable deliver = new Deliver(state, received, delivered);
         Runnable logServer = new LogServer(config); 

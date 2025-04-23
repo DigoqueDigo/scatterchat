@@ -60,7 +60,7 @@ public class ChatServerInterPub implements Runnable {
 
     private void handleServeTopicRequest(ServeTopicRequest message, ZMQCarrier carrier){
         synchronized (this.state) {
-            String internalTopic = this.state.getInternaTopic();
+            String internalTopic = this.config.getString("internalTopic");
             CausalMessage causalMessage = new CausalMessage(message.getTopic(), message, null);
             carrier.sendCausalMessageWithTopic(internalTopic, causalMessage);
         }

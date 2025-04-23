@@ -5,7 +5,6 @@ import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
-import scatterchat.chatserver.state.State;
 import scatterchat.protocol.carrier.ZMQCarrier;
 import scatterchat.protocol.message.CausalMessage;
 import scatterchat.protocol.message.chat.ChatMessage;
@@ -17,13 +16,11 @@ import java.util.concurrent.BlockingQueue;
 
 public class ChatServerInterSub implements Runnable {
 
-    private State state;
     private JSONObject config;
     private BlockingQueue<CausalMessage> received;
 
 
-    public ChatServerInterSub(JSONObject config, State state, BlockingQueue<CausalMessage> received) {
-        this.state = state;
+    public ChatServerInterSub(JSONObject config, BlockingQueue<CausalMessage> received) {
         this.config = config;
         this.received = received;
     }
@@ -49,12 +46,8 @@ public class ChatServerInterSub implements Runnable {
             ZMQ.Socket socket = context.createSocket(SocketType.SUB);
             ZMQCarrier carrier = new ZMQCarrier(socket);
 
-            String internalTopic;
+            String internalTopic = config.getString("internalTopic");
             String inprocAddress = config.getString("inprocPubSub");  
-
-            synchronized (this.state) {
-                internalTopic = "[internal]" + this.state.getInternaTopic();
-            }
 
             socket.connect(inprocAddress);
             socket.subscribe(internalTopic);

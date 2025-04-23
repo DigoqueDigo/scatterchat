@@ -31,10 +31,6 @@ public final class State {
         return this.nodeId;
     }
 
-    public String getInternaTopic() {
-        return "[internal]" + this.nodeId.hashCode();
-    }
-
     public boolean hasTopic(String topic) {
         return this.nodesPerTopic.containsKey(topic);
     }
