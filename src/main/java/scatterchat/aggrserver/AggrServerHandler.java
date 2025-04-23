@@ -1,6 +1,5 @@
 package scatterchat.aggrserver;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -62,7 +61,7 @@ public class AggrServerHandler implements Runnable{
     }
 
 
-    private List<CyclonEntry> mergeCyclonSubsets(List<CyclonEntry> neighbours, List<CyclonEntry> subset, List<CyclonEntry> nodesSent) {
+    private List<CyclonEntry> mergeCyclonSubsets(List<CyclonEntry> neighbours, List<CyclonEntry> subset, List<CyclonEntry> excludeNodes) {
 
         Set<CyclonEntry> newNeighbours = new HashSet<>();
         CyclonEntry myCyclonEntry = this.state.getMyCyclonEntry();
@@ -71,12 +70,14 @@ public class AggrServerHandler implements Runnable{
         newNeighbours.addAll(subset);
         newNeighbours.remove(myCyclonEntry);
 
-        while (newNeighbours.size() > State.CYCLON_CAPACITY && !nodesSent.isEmpty()){
-            CyclonEntry nodeSent = nodesSent.remove(0);
+        while (newNeighbours.size() > State.CYCLON_CAPACITY && !excludeNodes.isEmpty()){
+            CyclonEntry nodeSent = excludeNodes.remove(0);
             newNeighbours.remove(nodeSent);
         }
 
-        return new ArrayList<>(newNeighbours);
+        return newNeighbours.stream()
+            .limit(State.CYCLON_CAPACITY)
+            .collect(Collectors.toList());
     }
 
 
@@ -96,7 +97,6 @@ public class AggrServerHandler implements Runnable{
             }
 
             else {
-
                 List<CyclonEntry> neighbours = state.getNeighbours();
                 Collections.shuffle(neighbours);
 
@@ -109,7 +109,7 @@ public class AggrServerHandler implements Runnable{
                     subSet
                 );
 
-                System.out.println("[SA AggrServerExtPub] sent: " + cyclonOk);
+                System.out.println("[SA AggrServerHandler] sent: " + cyclonOk);
 
                 this.outBuffer.put(cyclonOk);
                 state.setNeighbours(mergeCyclonSubsets(
@@ -126,11 +126,14 @@ public class AggrServerHandler implements Runnable{
         synchronized (this.state) {
 
             System.out.println("Handling CyclonOK");
+            List<CyclonEntry> excludeNodes = this.state.getNodesSent();
+            excludeNodes.add(0, new CyclonEntry(message.getSender()));
 
             List<CyclonEntry> newNeighbours = mergeCyclonSubsets(
                 this.state.getNeighbours(),
                 message.getSubSet(),
-                this.state.getNodesSent());
+                excludeNodes
+            );
 
             this.state.setCyclonOnGoing(false);
             this.state.setNeighbours(newNeighbours);

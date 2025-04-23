@@ -49,7 +49,7 @@ public class AggrServerCyclonTimer implements Runnable {
                     List<CyclonEntry> subSet = neighbours.subList(0, subSetLength);
                     CyclonEntry target = subSet.remove(targetIndex);
                     CyclonEntry sender = state.getMyCyclonEntry();
-                    
+
                     subSet.add(0, sender);
                     System.out.println(subSetLength);
                     System.out.println(subSet);

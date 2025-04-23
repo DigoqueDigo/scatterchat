@@ -124,5 +124,16 @@
         "sc": {
             "tcpExtRep": "tcp://localhost:3500"
         }
+    },
+
+    "sa6": {
+        "tcpExtRep": "tcp://localhost:26001",
+        "tcpExtPull": "tcp://localhost:26002",
+        "entryPoint": {
+            "tcpExtPull": "tcp://localhost:21002"
+        },
+        "sc": {
+            "tcpExtRep": "tcp://localhost:3600"
+        }
     }
 }
