@@ -110,7 +110,7 @@ public class AggrServerHandler implements Runnable{
                     subSet
                 );
 
-                System.out.println("[SA AggrServerHandler] sent: " + cyclonOk);
+                System.out.println("[AggrServerHandler] sent: " + cyclonOk);
 
                 this.outBuffer.put(cyclonOk);
                 state.setNeighbours(mergeCyclonSubsets(
@@ -223,8 +223,7 @@ public class AggrServerHandler implements Runnable{
             }
 
             else if (starter && repeatedRounds == currentT) {
-                List<AggrEntry> selectedNodes = this.bestEntries.get(topic);
-                AggrRep response = new AggrRep(sender.pullAddress(), "client", topic, true, selectedNodes);
+                AggrRep response = new AggrRep(sender.pullAddress(), "client", topic, true, newEntries);
                 this.responded.put(response);
             }
 
