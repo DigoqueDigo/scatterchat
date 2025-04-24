@@ -1,7 +1,9 @@
 package scatterchat.protocol.message.chat;
 
+import java.util.Comparator;
 
-public record ChatServerEntry(String repAddress, String pullAddress, String interPubAddress, String extPubAddress) {
+
+public record ChatServerEntry(String repAddress, String pullAddress, String interPubAddress, String extPubAddress) implements Comparable<ChatServerEntry> {
 
     public ChatServerEntry(String repAddress) {
         this(
@@ -16,7 +18,6 @@ public record ChatServerEntry(String repAddress, String pullAddress, String inte
         String[] parts = baseAddress.split(":");
         int basePort = Integer.parseInt(parts[2]);
         return String.join(":", parts[0], parts[1], String.valueOf(basePort + increment));
-
     }
 
     @Override
@@ -32,12 +33,19 @@ public record ChatServerEntry(String repAddress, String pullAddress, String inte
     }
 
     @Override
+    public int compareTo(ChatServerEntry other) {
+        return Comparator
+            .comparing(ChatServerEntry::repAddress)
+            .compare(this, other);
+    }
+
+    @Override
     public String toString() {
         StringBuilder buffer = new StringBuilder();
         buffer.append(this.repAddress);
-        buffer.append(", ").append(this.pullAddress);
-        buffer.append(", ").append(this.interPubAddress);
-        buffer.append(", ").append(this.extPubAddress);
+        // buffer.append(", ").append(this.pullAddress);
+        // buffer.append(", ").append(this.interPubAddress);
+        // buffer.append(", ").append(this.extPubAddress);
         return buffer.toString();
     }
 }

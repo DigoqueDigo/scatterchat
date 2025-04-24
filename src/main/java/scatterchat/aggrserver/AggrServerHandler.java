@@ -24,6 +24,7 @@ import scatterchat.protocol.message.aggr.Aggr;
 import scatterchat.protocol.message.aggr.AggrEntry;
 import scatterchat.protocol.message.aggr.AggrRep;
 import scatterchat.protocol.message.aggr.AggrReq;
+import scatterchat.protocol.message.chat.ChatServerEntry;
 import scatterchat.protocol.message.cyclon.CyclonMessage;
 import scatterchat.protocol.message.cyclon.CyclonOk;
 //import scatterchat.protocol.message.info.ServerStateRequest;
@@ -159,8 +160,9 @@ public class AggrServerHandler implements Runnable{
             CyclonEntry sender = this.state.getMyCyclonEntry();
 
             if (this.bestEntries.containsKey(message.getTopic())) {
-                AggrRep aggrRep = new AggrRep(sender.pullAddress(), message.getSender(), topic, false);
-                this.responded.put(aggrRep);
+                List<AggrEntry> selectedNodes = this.bestEntries.get(topic);
+                AggrRep response = new AggrRep(sender.pullAddress(), message.getSender(), topic, false, selectedNodes);
+                this.responded.put(response);
             }
 
             else {
@@ -221,8 +223,9 @@ public class AggrServerHandler implements Runnable{
             }
 
             else if (starter && repeatedRounds == currentT) {
-                AggrRep aggrRep = new AggrRep(sender.pullAddress(), "client", topic, true);
-                this.responded.put(aggrRep);
+                List<AggrEntry> selectedNodes = this.bestEntries.get(topic);
+                AggrRep response = new AggrRep(sender.pullAddress(), "client", topic, true, selectedNodes);
+                this.responded.put(response);
             }
 
             this.repeatedRounds.put(topic, repeatedRounds);
@@ -247,7 +250,7 @@ public class AggrServerHandler implements Runnable{
         Random random = new Random();
 
         return new AggrEntry(
-            this.state.getMyCyclonEntry().pullAddress(),
+            new ChatServerEntry(this.state.getMyCyclonEntry().pullAddress()),
             random.nextInt(10),
             random.nextInt(10)
         );

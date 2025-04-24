@@ -102,7 +102,7 @@ public class ClientUI implements Runnable{
                 AggrRep aggrRep = (AggrRep) message;
                 System.out.println("[Client UI] received: " + aggrRep);
 
-                break;
+                continue;
 
                 // String chatServerExtRepAddress = "";
                 // ChatServerEntry chatServerEntry = new ChatServerEntry(chatServerExtRepAddress);

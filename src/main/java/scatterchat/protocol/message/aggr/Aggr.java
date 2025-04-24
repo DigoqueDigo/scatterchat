@@ -10,6 +10,7 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 
 import scatterchat.protocol.message.Message;
+import scatterchat.protocol.message.chat.ChatServerEntry;
 
 
 public class Aggr extends Message {
@@ -44,6 +45,7 @@ public class Aggr extends Message {
         kryo.register(MessageType.class);
         kryo.register(Aggr.class);
         kryo.register(AggrEntry.class);
+        kryo.register(ChatServerEntry.class);
         kryo.register(ArrayList.class);
         kryo.writeObject(output, this);
 
@@ -62,6 +64,7 @@ public class Aggr extends Message {
         kryo.register(MessageType.class);
         kryo.register(Aggr.class);
         kryo.register(AggrEntry.class);
+        kryo.register(ChatServerEntry.class);
         kryo.register(ArrayList.class);
 
         Aggr aggr = kryo.readObject(input, Aggr.class);

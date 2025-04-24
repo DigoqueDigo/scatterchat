@@ -46,13 +46,16 @@ public class ChatServerInterSub implements Runnable {
             ZMQ.Socket socket = context.createSocket(SocketType.SUB);
             ZMQCarrier carrier = new ZMQCarrier(socket);
 
+            String tcpAddress = config.getString("tcpInterPub");
+            String inprocAddress = config.getString("inprocPubSub");
             String internalTopic = config.getString("internalTopic");
-            String inprocAddress = config.getString("inprocPubSub");  
 
+            socket.connect(tcpAddress);
             socket.connect(inprocAddress);
             socket.subscribe(internalTopic);
 
             System.out.println("[SC interSub] started");
+            System.out.println("[SC interSub] connect: " + tcpAddress);
             System.out.println("[SC interSub] connect: " + inprocAddress);
             System.out.println("[SC interSub] subscribe: [internal]" + internalTopic);
 
