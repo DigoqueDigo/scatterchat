@@ -212,6 +212,8 @@ public class AggrServerHandler implements Runnable{
                 this.bestEntries.put(topic, newEntries);
             }
 
+            System.out.println("RECEBEU");
+
             boolean starter = this.startedAggrs.contains(topic);
             int currentT = (starter) ? AggrServerHandler.T : AggrServerHandler.T + AggrServerHandler.T / 2; 
 
@@ -219,6 +221,7 @@ public class AggrServerHandler implements Runnable{
                 for (CyclonEntry neighbour : state.getNeighbours()) {
                     Aggr aggrMessage = new Aggr(sender.pullAddress(), neighbour.pullAddress(), topic, newEntries);                
                     this.outBuffer.put(aggrMessage);
+                    System.out.println("ENVIOU");
                 }
             }
 
@@ -234,7 +237,8 @@ public class AggrServerHandler implements Runnable{
 
     private AggrEntry getChatServerState(ZMQCarrier carrier) {
 
-        carrier.sendMessage(new ServerStateRequest());
+        CyclonEntry sender = this.state.getMyCyclonEntry();
+        carrier.sendMessage(new ServerStateRequest(sender.pullAddress(), "sc"));
         ServerStateResponse serverStateResponse = (ServerStateResponse) carrier.receiveMessage();
 
         String scRepAddress = serverStateResponse.getSender();
@@ -257,13 +261,13 @@ public class AggrServerHandler implements Runnable{
             ZMQ.Socket socket = context.createSocket(SocketType.REQ);
             ZMQCarrier carrier = new ZMQCarrier(socket);
 
-            String connectionAddress = this.config
+            String scRepAddress = this.config
                 .getJSONObject("sc")
                 .getString("tcpExtRep");
 
-            socket.connect(connectionAddress);
+            socket.connect(scRepAddress);
             System.out.println("[AggrServerHandler] started");
-            System.out.println("[AggrServerHandler] connected: " + connectionAddress);
+            System.out.println("[AggrServerHandler] connected: " + scRepAddress);
 
             Message message = null;;
 

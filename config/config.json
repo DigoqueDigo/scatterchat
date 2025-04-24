@@ -5,6 +5,10 @@
         "internalTopic": "cli1",
         "sa": {
             "tcpExtRep": "tcp://localhost:21001"
+        },
+        "dht": {
+            "address": "localhost",
+            "port": 12345
         }
     },
 
@@ -14,6 +18,10 @@
         "internalTopic": "cli2",
         "sa": {
             "tcpExtRep": "tcp://localhost:22001"
+        },
+        "dht": {
+            "address": "localhost",
+            "port": 12345
         }
     },
 
@@ -23,6 +31,10 @@
         "internalTopic": "cli3",
         "sa": {
             "tcpExtRep": "tcp://localhost:23001"
+        },
+        "dht": {
+            "address": "localhost",
+            "port": 12345
         }
     },
 
@@ -81,6 +93,10 @@
         "tcpExtPull": "tcp://localhost:21002",
         "sc": {
             "tcpExtRep": "tcp://localhost:3100"
+        },
+        "dht": {
+            "address": "localhost",
+            "port": 12345
         }
     },
 
@@ -92,6 +108,10 @@
         },
         "sc": {
             "tcpExtRep": "tcp://localhost:3200"
+        },
+        "dht": {
+            "address": "localhost",
+            "port": 12345
         }
     },
 
@@ -103,6 +123,10 @@
         },
         "sc": {
             "tcpExtRep": "tcp://localhost:3300"
+        },
+        "dht": {
+            "address": "localhost",
+            "port": 12345
         }
     },
 
@@ -115,6 +139,10 @@
         ,
         "sc": {
             "tcpExtRep": "tcp://localhost:3400"
+        },
+        "dht": {
+            "address": "localhost",
+            "port": 12345
         }
     },
 
@@ -126,6 +154,10 @@
         },
         "sc": {
             "tcpExtRep": "tcp://localhost:3500"
+        },
+        "dht": {
+            "address": "localhost",
+            "port": 12345
         }
     },
 
@@ -137,6 +169,10 @@
         },
         "sc": {
             "tcpExtRep": "tcp://localhost:3600"
+        },
+        "dht": {
+            "address": "localhost",
+            "port": 12345
         }
     }
 }

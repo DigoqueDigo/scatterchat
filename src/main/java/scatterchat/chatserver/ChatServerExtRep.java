@@ -55,8 +55,10 @@ public class ChatServerExtRep implements Runnable {
                 true
             );
 
-            broadcast.put(message);
+            // TODO :: FALTA FAZER BROADCAST PARA A FRENTE
+        //    broadcast.put(message);
             carrier.sendMessage(response);
+            System.out.println("[SC extRep] send: " + response);
         }
     }
 
@@ -75,6 +77,7 @@ public class ChatServerExtRep implements Runnable {
             );
 
             carrier.sendMessage(response);
+            System.out.println("[SC extRep] send: " + response);
         }
     }
 
