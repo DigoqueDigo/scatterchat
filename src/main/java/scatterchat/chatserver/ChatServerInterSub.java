@@ -57,7 +57,7 @@ public class ChatServerInterSub implements Runnable {
             System.out.println("[SC interSub] started");
             System.out.println("[SC interSub] connect: " + tcpAddress);
             System.out.println("[SC interSub] connect: " + inprocAddress);
-            System.out.println("[SC interSub] subscribe: [internal]" + internalTopic);
+            System.out.println("[SC interSub] subscribe: " + internalTopic);
 
             CausalMessage causalMessage = null;
 

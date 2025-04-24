@@ -1,15 +1,13 @@
 package scatterchat.chatserver.log;
 
 import org.json.JSONObject;
-import io.grpc.netty.NettyServerBuilder;
 import io.grpc.Server;
+import io.grpc.ServerBuilder;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Single;
 import scatterchat.LogMessageReply;
 import scatterchat.LogMessageRequest;
 import scatterchat.Rx3LogServiceGrpc;
-
-import java.net.InetSocketAddress;
 
 
 public class LogServer extends Rx3LogServiceGrpc.LogServiceImplBase implements Runnable {
@@ -31,18 +29,18 @@ public class LogServer extends Rx3LogServiceGrpc.LogServiceImplBase implements R
 
     @Override
     public void run() {
+
         try {
+            int logPort = config.getInt("logPort");
+            System.out.println("[LogServer] started");
+            System.out.println("[LogServer] bind port: " + logPort);
 
-            final int port = config.getInt("logServerPort");
-            final String address = config.getString("logServerAddress");
-
-            Server logServer = NettyServerBuilder
-                .forAddress(new InetSocketAddress(address, port))
+            Server logServer = ServerBuilder
+                .forPort(logPort)
                 .addService(new LogServer(config))
                 .build()
                 .start();
 
-            System.out.println("[gRPC] LogServer started on: " + address + ":" + port);
             logServer.awaitTermination();
         }
 

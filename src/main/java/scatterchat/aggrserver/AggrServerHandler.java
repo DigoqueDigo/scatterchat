@@ -1,13 +1,12 @@
 package scatterchat.aggrserver;
 
 import java.util.Arrays;
-//import java.util.Collection;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.stream.Collectors;
@@ -27,8 +26,8 @@ import scatterchat.protocol.message.aggr.AggrReq;
 import scatterchat.protocol.message.chat.ChatServerEntry;
 import scatterchat.protocol.message.cyclon.CyclonMessage;
 import scatterchat.protocol.message.cyclon.CyclonOk;
-//import scatterchat.protocol.message.info.ServerStateRequest;
-//import scatterchat.protocol.message.info.ServerStateResponse;
+import scatterchat.protocol.message.info.ServerStateRequest;
+import scatterchat.protocol.message.info.ServerStateResponse;
 import scatterchat.protocol.message.cyclon.CyclonEntry;
 import scatterchat.protocol.message.cyclon.CyclonError;
 import scatterchat.protocol.carrier.ZMQCarrier;
@@ -156,7 +155,6 @@ public class AggrServerHandler implements Runnable{
         synchronized (this.state) {
 
             String topic = message.getTopic();
-            AggrEntry scState = getChatServerState(carrier);
             CyclonEntry sender = this.state.getMyCyclonEntry();
 
             if (this.bestEntries.containsKey(message.getTopic())) {
@@ -167,6 +165,8 @@ public class AggrServerHandler implements Runnable{
 
             else {
                 this.startedAggrs.add(topic);
+                AggrEntry scState = getChatServerState(carrier);
+
                 this.bestEntries.put(topic, Arrays.asList(scState));
                 List<AggrEntry> entries = this.bestEntries.get(topic);
 
@@ -234,24 +234,16 @@ public class AggrServerHandler implements Runnable{
 
     private AggrEntry getChatServerState(ZMQCarrier carrier) {
 
-        // carrier.sendMessage(new ServerStateRequest());
-        // ServerStateResponse serverStateResponse = (ServerStateResponse) carrier.receiveMessage();
+        carrier.sendMessage(new ServerStateRequest());
+        ServerStateResponse serverStateResponse = (ServerStateResponse) carrier.receiveMessage();
 
-        // String scRepAddress = serverStateResponse.getSender();
-        // Map<String, Set<String>> serveState = serverStateResponse.getServerState();
-
-        // return new AggrEntry(
-        //     scRepAddress,
-        //     serveState.size(),
-        //     serveState.values().stream().mapToInt(Collection::size).sum()
-        // );
-
-        Random random = new Random();
+        String scRepAddress = serverStateResponse.getSender();
+        Map<String, Set<String>> serveState = serverStateResponse.getServerState();
 
         return new AggrEntry(
-            new ChatServerEntry(this.state.getMyCyclonEntry().pullAddress()),
-            random.nextInt(10),
-            random.nextInt(10)
+            new ChatServerEntry(scRepAddress),
+            serveState.size(),
+            serveState.values().stream().mapToInt(Collection::size).sum()
         );
     }
 
