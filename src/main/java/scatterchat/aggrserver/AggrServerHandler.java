@@ -215,7 +215,7 @@ public class AggrServerHandler implements Runnable{
             System.out.println("RECEBEU");
 
             boolean starter = this.startedAggrs.contains(topic);
-            int currentT = (starter) ? AggrServerHandler.T : AggrServerHandler.T + AggrServerHandler.T / 2; 
+            int currentT = (starter) ? AggrServerHandler.T : AggrServerHandler.T + AggrServerHandler.T / 2;
 
             if (repeatedRounds < currentT) {
                 for (CyclonEntry neighbour : state.getNeighbours()) {

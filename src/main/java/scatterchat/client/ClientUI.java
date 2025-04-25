@@ -1,9 +1,11 @@
 package scatterchat.client;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
+import java.util.Random;
 
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
@@ -15,38 +17,51 @@ import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
+import scatterchat.protocol.carrier.JSONCarrier;
 import scatterchat.protocol.carrier.ZMQCarrier;
 import scatterchat.protocol.message.Message;
 import scatterchat.protocol.message.aggr.AggrRep;
 import scatterchat.protocol.message.aggr.AggrReq;
+import scatterchat.protocol.message.chat.ChatMessage;
+import scatterchat.protocol.message.chat.ChatServerEntry;
+import scatterchat.protocol.message.chat.TopicEnterMessage;
 import scatterchat.protocol.message.chat.TopicExitMessage;
+import scatterchat.protocol.message.dht.DHTGet;
+import scatterchat.protocol.message.dht.DHTRep;
+import scatterchat.protocol.message.info.ServerStateRequest;
+import scatterchat.protocol.message.info.ServerStateResponse;
 
 
-public class ClientUI implements Runnable{
+public class ClientUI implements Runnable {
 
     private JSONObject config;
+    private ZContext context;
+
     private Terminal terminal;
     private LineReader lineReader;
 
 
-    public ClientUI(JSONObject config) throws IOException{
+    public ClientUI(JSONObject config, ZContext context) throws IOException {
         this.config = config;
+        this.context = context;
         this.terminal = TerminalBuilder.builder().dumb(true).build();
         this.lineReader = LineReaderBuilder.builder().terminal(terminal).build();
     }
 
 
-    private String readTopic(Set<String> invalidTopics){
+    private String readTopic(String prompt) {
 
         String topic = null;
+        List<String> invalidTopics = Arrays.asList(
+            "/log", "/info", "/users", "/exit", ""
+        );
 
         while (topic == null){
 
-            topic = this.lineReader.readLine("client >>> ");
+            topic = this.lineReader.readLine(prompt);
             topic = topic.strip();
 
             if (invalidTopics.contains(topic)){
-                System.out.println("Invalid topic: " + topic);
                 topic = null;
             }
         }
@@ -55,104 +70,136 @@ public class ClientUI implements Runnable{
     }
 
 
-    // private String readMessage(){
-    //     return this.lineReader.readLine().strip();
-    // }
+    private String readMessage(String prompt) {
+        String input = this.lineReader.readLine(prompt);
+        return input.strip();
+    }
+
+
+    private DHTRep getTopic(DHTGet dhtGet, JSONCarrier carrier) throws IOException {
+        System.out.println("[Client UI] sent: " + dhtGet);
+        carrier.send(dhtGet);
+        DHTRep dhtRep = carrier.receive();
+        System.out.println("[Client UI] receive: " + dhtRep);
+        return dhtRep;
+    }
+
+
+    private AggrRep reqAggregation(AggrReq request, ZMQCarrier carrier) {
+        System.out.println("[Client UI] sent: " + request);
+        carrier.sendMessage(request);
+        AggrRep response = (AggrRep) carrier.receiveMessage();
+        System.out.println("[Client UI] receive: " + response);
+        return response;
+    }
+
+
+    private ServerStateResponse handleInfo(ServerStateRequest request, ZMQCarrier carrier) {
+        System.out.println("[Client UI] sent: " + request);
+        carrier.sendMessage(request);
+        ServerStateResponse response = (ServerStateResponse) carrier.receiveMessage();
+        System.out.println("[Client UI] receive: " + response);
+        return response;
+    }
 
 
     public void run(){
 
-        ZContext context = new ZContext();
-        ZMQ.Socket pushSocket = context.createSocket(SocketType.PUSH);
-        ZMQ.Socket reqSocket = context.createSocket(SocketType.REQ);
-        ZMQ.Socket pubSocket = context.createSocket(SocketType.PUB);
+        try {
 
-     //   ZMQCarrier pushCarrier = new ZMQCarrier(pushSocket);
-        ZMQCarrier pubCarrier = new ZMQCarrier(pubSocket);
-        ZMQCarrier reqCarrier = new ZMQCarrier(reqSocket);
+            Random random = new Random();
+            Socket dhtSocket = new Socket();
 
-        String sender = config.getString("username");
-        String inprocAddress = config.getString("inprocPubSub");
-        String internalTopic = config.getString("internalTopic");
-        String saRepAddress = config.getJSONObject("sa").getString("tcpExtRep");
+            ZMQ.Socket pushSCSocket = this.context.createSocket(SocketType.PUSH);
+            ZMQ.Socket reqSCSocket = this.context.createSocket(SocketType.REQ);
+            ZMQ.Socket reqSASocket = this.context.createSocket(SocketType.REQ);
+            ZMQ.Socket pubSocket = this.context.createSocket(SocketType.PUB);
 
-        pubSocket.bind(inprocAddress);
-        reqSocket.connect(saRepAddress);
+            String sender = config.getString("username");
+            String prompt = String.format("%s >>> ", sender);
 
-        System.out.println("[Client UI] bind: " + inprocAddress);
-        System.out.println("[Client UI] connect: " + saRepAddress);
+            String inprocAddress = config.getString("inprocPubSub");
+            String internalTopic = config.getString("internalTopic");
 
-        Set<String> invalidTopic = new HashSet<>(Arrays.asList(
-            internalTopic, "/log", "/info", "/exit", ""
-        ));
+            int dhtPort = config.getJSONObject("dht").getInt("port");
+            String dhtAddress = config.getJSONObject("dht").getString("address");
+            String repSAAddress = config.getJSONObject("sa").getString("tcpExtRep");
 
-        try{
+            pubSocket.bind(inprocAddress);
+            reqSASocket.connect(repSAAddress);
+            dhtSocket.connect(new InetSocketAddress(dhtAddress, dhtPort));
 
-            while (true){
+            ZMQCarrier pushSCCarrier = new ZMQCarrier(pushSCSocket);
+            ZMQCarrier reqSCCarrier = new ZMQCarrier(reqSCSocket);
+            ZMQCarrier reqSACarrier = new ZMQCarrier(reqSASocket);
+            ZMQCarrier pubCarrier = new ZMQCarrier(pubSocket);
+            JSONCarrier dhtCarrier = new JSONCarrier(dhtSocket);
 
-             //   String message;
+            System.out.println("[Client UI] bind: " + inprocAddress);
+            System.out.println("[Client UI] connect: " + repSAAddress);
+            System.out.println("[Client UI] connnect: " + dhtAddress + ":" + dhtPort);
 
-                String topic = readTopic(invalidTopic);
+            try {
 
-                AggrReq aggrReq = new AggrReq(sender, saRepAddress, topic);
-                reqCarrier.sendMessage(aggrReq);
+                while (true) {
 
-                Message message = reqCarrier.receiveMessage();
-                System.out.println(message);
-                AggrRep aggrRep = (AggrRep) message;
-                System.out.println("[Client UI] received: " + aggrRep);
+                    String message;
+                    String topic = readTopic(prompt);
+                    String topicPrompt = String.format("[%s] %s", topic, prompt);
+                    DHTRep dhtRep = getTopic(new DHTGet(0, topic), dhtCarrier);
 
-                continue;
+                    while (dhtRep.ips().isEmpty()) {    
+                        reqAggregation(new AggrReq(sender, repSAAddress, topic), reqSACarrier);
+                        dhtRep = getTopic(new DHTGet(0, topic), dhtCarrier);
+                    }
 
-                // String chatServerExtRepAddress = "";
-                // ChatServerEntry chatServerEntry = new ChatServerEntry(chatServerExtRepAddress);
+                    int scIndex = random.nextInt(dhtRep.ips().size());
+                    ChatServerEntry chatServerEntry = new ChatServerEntry(dhtRep.ips().get(scIndex));
 
-                // reqSocket.connect(chatServerEntry.repAddress());
-                // pushSocket.connect(chatServerEntry.pullAddress());
+                    reqSCSocket.connect(chatServerEntry.repAddress());
+                    pushSCSocket.connect(chatServerEntry.pullAddress());
 
-                // Message topicEnterMessageToSub = new TopicEnterMessage(sender, "client sub", topic, chatServerEntry);
-                // Message topicEnterMessageToPull = new TopicEnterMessage(sender, chatServerEntry.pullAddress(), topic, chatServerEntry);
+                    Message topicEnterMessageToSub = new TopicEnterMessage(sender, "client sub", topic, chatServerEntry);
+                    Message topicEnterMessageToPull = new TopicEnterMessage(sender, chatServerEntry.pullAddress(), topic, chatServerEntry);
 
-                // pushCarrier.sendMessage(topicEnterMessageToPull);
-                // pubCarrier.sendMessageWithTopic(internalTopic, topicEnterMessageToSub);                
+                    pushSCCarrier.sendMessage(topicEnterMessageToPull);
+                    pubCarrier.sendMessageWithTopic(internalTopic, topicEnterMessageToSub);                
 
-                // while (!(message = readMessage()).equals("/exit")){
+                    while (!(message = readMessage(topicPrompt)).equals("/exit")){
 
-                //     if (message.startsWith("/info")){
-                //         Message serverStateRequest = new ServerStateRequest(sender, chatServerEntry.repAddress());
-                //         reqCarrier.sendMessage(serverStateRequest);
-                //         Message serverStateResponse = (ServerStateResponse) reqCarrier.receiveMessage();
-                //         System.out.println(serverStateResponse);
-                //     }
+                        if (message.startsWith("/info") || message.startsWith("/users")) {
+                            ServerStateRequest request = new ServerStateRequest(sender, chatServerEntry.repAddress());
+                            handleInfo(request, reqSCCarrier);
+                        } else {
+                            Message chatMessage = new ChatMessage(sender, chatServerEntry.pullAddress(), topic, message, sender);
+                            pushSCCarrier.sendMessage(chatMessage);
+                        }
+                    }
 
-                //     else {
-                //         Message chatMessage = new ChatMessage(sender, chatServerEntry.pullAddress(), topic, message, sender);
-                //         pushCarrier.sendMessage(chatMessage);
-                //     }
-                // }
+                    Message topicExitMessageToSub = new TopicExitMessage(sender, "client sub", topic, chatServerEntry);
+                    Message topicExitMessageToPull = new TopicExitMessage(sender, chatServerEntry.pullAddress(), topic, chatServerEntry);
 
-                // Message topicExitMessageToSub = new TopicExitMessage(sender, "client sub", topic, chatServerEntry);
-                // Message topicExitMessageToPull = new TopicExitMessage(sender, chatServerEntry.pullAddress(), topic, chatServerEntry);
+                    pushSCCarrier.sendMessage(topicExitMessageToPull);
+                    pubCarrier.sendMessageWithTopic(internalTopic, topicExitMessageToSub);
 
-                // pushCarrier.sendMessage(topicExitMessageToPull);
-                // pubCarrier.sendMessageWithTopic(internalTopic, topicExitMessageToSub);
-
-                // reqSocket.disconnect(chatServerEntry.repAddress());
-                // pushSocket.disconnect(chatServerEntry.pullAddress());
+                    reqSCSocket.disconnect(chatServerEntry.repAddress());
+                    pushSCSocket.disconnect(chatServerEntry.pullAddress());
+                }
             }
-        }
 
-        catch (EndOfFileException e){
+            catch (EndOfFileException e){
 
-            Message topicExitMessageToSub = new TopicExitMessage(sender, "client sub", null, null);
-            pubCarrier.sendMessageWithTopic(internalTopic, topicExitMessageToSub);
+                Message topicExitMessageToSub = new TopicExitMessage(sender, "client sub", null, null);
+                pubCarrier.sendMessageWithTopic(internalTopic, topicExitMessageToSub);
 
-            pushSocket.close();
-            reqSocket.close();
-            pubSocket.close();
-            context.close();
+                pushSCSocket.close();
+                reqSCSocket.close();
+                reqSASocket.close();
+                pubSocket.close();
+                dhtSocket.close();
 
-            System.out.println("Bye");
+                System.out.println("Bye");
+            }
         }
 
         catch (Exception e){

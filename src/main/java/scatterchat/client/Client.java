@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.concurrent.ThreadFactory;
 
 import org.json.JSONObject;
+import org.zeromq.ZContext;
 
 
 public class Client{
@@ -17,11 +18,12 @@ public class Client{
         final String configFilePath = args[0];
         final String nodeId = args[1];
 
+        final ZContext context = new ZContext();
         final String configFileContent = new String(Files.readAllBytes(Paths.get(configFilePath)));
         final JSONObject config = new JSONObject(configFileContent).getJSONObject(nodeId);
 
-        Runnable clientUI = new ClientUI(config);
-        Runnable clientSub = new ClientSub(config);
+        Runnable clientUI = new ClientUI(config, context);
+        Runnable clientSub = new ClientSub(config, context);
 
         List<Thread> workers = new ArrayList<>();
         ThreadFactory threadFactory = Thread.ofVirtual().factory();
@@ -36,5 +38,7 @@ public class Client{
         for (Thread worker : workers) {
             worker.join();
         }
+
+        context.close();
     }
 }

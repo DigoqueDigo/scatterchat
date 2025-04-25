@@ -16,26 +16,31 @@ import scatterchat.protocol.message.chat.TopicExitMessage;
 public class ClientSub implements Runnable{
 
     private JSONObject config;
+    private ZContext context;
 
 
-    public ClientSub(JSONObject config){
+    public ClientSub(JSONObject config, ZContext context) {
         this.config = config;
+        this.context = context;
     }
 
 
-    private void handleChatMessage(ChatMessage message){
+    private void handleChatMessage(ChatMessage message) {
         System.out.println(message.getMessage());
     }
 
 
-    private void handleTopicEnterMessage(TopicEnterMessage message, ZMQ.Socket socket){
+    private void handleTopicEnterMessage(TopicEnterMessage message, ZMQ.Socket socket) {
         ChatServerEntry chatServerEntry = message.getChatServerEntry();
         socket.connect(chatServerEntry.extPubAddress());
         socket.subscribe(message.getTopic());
+
+        System.out.println("[Client SUB] connect: " + chatServerEntry.extPubAddress());
+        System.out.println("[Client SUB] subcribe: " + message.getTopic());
     }
 
 
-    private void handleTopicExitMessage(TopicExitMessage message, ZMQ.Socket socket) throws NullPointerException{
+    private void handleTopicExitMessage(TopicExitMessage message, ZMQ.Socket socket) throws NullPointerException {
 
         if (message.getTopic() == null){
             throw new NullPointerException("client exit");
@@ -44,28 +49,30 @@ public class ClientSub implements Runnable{
         ChatServerEntry chatServerEntry = message.getChatServerEntry();
         socket.unsubscribe(message.getTopic());
         socket.disconnect(chatServerEntry.extPubAddress());
+
+        System.out.println("[Client SUB] unsubcribe: " + message.getTopic());
+        System.out.println("[Client SUB] disconnect: " + chatServerEntry.extPubAddress());
     }
 
 
     @Override
     public void run() {
 
-        ZContext context = new ZContext();
-        ZMQ.Socket socket = context.createSocket(SocketType.SUB);
+        ZMQ.Socket socket = this.context.createSocket(SocketType.SUB);
         ZMQCarrier carrier = new ZMQCarrier(socket);
 
         String inprocAddres = config.getString("inprocPubSub");
         String internalTopic = config.getString("internalTopic");
 
         socket.connect(inprocAddres);
-        socket.subscribe(internalTopic);
+        socket.subscribe(internalTopic.getBytes(ZMQ.CHARSET));
 
-        System.out.println("[Client SUB] connected: " + inprocAddres);
+        System.out.println("[Client SUB] connect: " + inprocAddres);
         System.out.println("[Client SUB] subscribe: " + internalTopic);
 
         try{
 
-            Message message = null;
+            Message message;
 
             while ((message = carrier.receiveMessageWithTopic()) != null){
 
@@ -84,6 +91,7 @@ public class ClientSub implements Runnable{
             socket.unsubscribe("[internal]");
             socket.close();
             context.close();
+            System.out.println("[Client SUB] exit");
         }
 
         catch (Exception e){
