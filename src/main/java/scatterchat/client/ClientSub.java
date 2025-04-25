@@ -26,7 +26,13 @@ public class ClientSub implements Runnable{
 
 
     private void handleChatMessage(ChatMessage message) {
-        System.out.println(message.getMessage());
+        if (!message.getClient().equals(this.config.getString("username"))) {
+            System.out.println(message.getMessage());
+        }
+
+        else {
+            System.out.println("[Client UI] ignored: " + message);
+        }
     }
 
 

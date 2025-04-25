@@ -43,7 +43,6 @@
         "tcpExtPull": "tcp://localhost:3101",
         "tcpInterPub": "tcp://localhost:3102",
         "tcpExtPub": "tcp://localhost:3103",
-        "inprocPubSub": "inproc://pubsub",
         "internalTopic": "[internal]sc1",
         "logPort": "3104"
     },
@@ -53,7 +52,6 @@
         "tcpExtPull": "tcp://localhost:3201",
         "tcpInterPub": "tcp://localhost:3202",
         "tcpExtPub": "tcp://localhost:3203",
-        "inprocPubSub": "inproc://pubsub",
         "internalTopic": "[internal]sc2",
         "logPort": "3204"
     },
@@ -63,7 +61,6 @@
         "tcpExtPull": "tcp://localhost:3301",
         "tcpInterPub": "tcp://localhost:3302",
         "tcpExtPub": "tcp://localhost:3303",
-        "inprocPubSub": "inproc://pubsub",
         "internalTopic": "[internal]sc3",
         "logPort": "3304"
     },
@@ -73,7 +70,6 @@
         "tcpExtPull": "tcp://localhost:3401",
         "tcpInterPub": "tcp://localhost:3402",
         "tcpExtPub": "tcp://localhost:3403",
-        "inprocPubSub": "inproc://pubsub",
         "internalTopic": "[internal]sc4",
         "logPort": "3404"
     },
@@ -83,7 +79,6 @@
         "tcpExtPull": "tcp://localhost:3501",
         "tcpInterPub": "tcp://localhost:3502",
         "tcpExtPub": "tcp://localhost:3503",
-        "inprocPubSub": "inproc://pubsub",
         "internalTopic": "[internal]sc5",
         "logPort": "3504"
     },

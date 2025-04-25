@@ -52,10 +52,10 @@ public class VectorClock {
         return new HashSet<>(this.vector.keySet());
     }
 
-    public String toString(){
+    public String toString() {
         StringBuilder buffer = new StringBuilder();
         buffer.append(this.owner);
         buffer.append(", ").append(this.vector);
-        return this.vector.toString();
+        return buffer.toString();
     }
 }

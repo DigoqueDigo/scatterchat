@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import com.sarojaba.prettytable4j.PrettyTable;
+
 
 public class ORSet {
 
@@ -71,5 +73,18 @@ public class ORSet {
 
     public Set<String> elements() {
         return new HashSet<>(this.store.keySet());
+    }
+
+    public String toString() {
+        StringBuilder buffer = new StringBuilder();
+        PrettyTable ptStore = PrettyTable.fieldNames("Element", "Entries");
+
+        this.store.forEach((element, entries) -> {
+            entries.forEach(entry -> ptStore.addRow(element, entry));
+        });
+
+        buffer.append(this.clock);
+        buffer.append("\n").append(ptStore.toString());
+        return buffer.toString();
     }
 }

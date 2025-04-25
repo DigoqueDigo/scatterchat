@@ -5,8 +5,9 @@ import java.util.List;
 
 import org.json.JSONObject;
 
+import com.sarojaba.prettytable4j.PrettyTable;
+
 import scatterchat.protocol.message.cyclon.CyclonEntry;
-import scatterchat.utils.PrettyPrint;
 
 
 public class State{
@@ -57,10 +58,17 @@ public class State{
 
     public String toString() {
         StringBuilder buffer = new StringBuilder();
+        PrettyTable ptNodesSent = PrettyTable.fieldNames("Node Sent Pull Address");
+        PrettyTable ptNeighbours = PrettyTable.fieldNames("Neighbour Pull Address");
+
+        this.nodesSent.forEach(x -> ptNodesSent.addRow(x.pullAddress()));
+        this.neighbours.forEach(x -> ptNeighbours.addRow(x.pullAddress()));
+
         buffer.append(this.cyclonOnGoing);
         buffer.append(", ").append(this.myCyclonEntry);
-        buffer.append("\n").append(PrettyPrint.CyclonEntriestoString(this.neighbours, "Neighbour Pull Address"));
-        buffer.append("\n").append(PrettyPrint.CyclonEntriestoString(this.nodesSent, "Node Sent Pull Address"));
+        buffer.append("\n").append(ptNeighbours.toString());
+        buffer.append("\n").append(ptNodesSent.toString());
+
         return buffer.toString();
     }
 }

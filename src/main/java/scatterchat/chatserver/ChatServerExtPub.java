@@ -41,6 +41,7 @@ public class ChatServerExtPub implements Runnable {
             ORSet orSet = state.getUsersORSetOf(message.getTopic());
             ORSetAction orSetAction = message.getORSetAction();
             orSet.effect(orSetAction);
+            System.out.println(this.state);
         }
     }
 
@@ -50,6 +51,7 @@ public class ChatServerExtPub implements Runnable {
 
         try{
 
+            Message message;
             ZMQ.Socket socket = this.context.createSocket(SocketType.PUB);
             ZMQCarrier carrier = new ZMQCarrier(socket);
 
@@ -58,8 +60,6 @@ public class ChatServerExtPub implements Runnable {
 
             System.out.println("[SC extPub] started");
             System.out.println("[SC extPub] bind: " + bindAddress);
-
-            Message message;
 
             while ((message = this.delivered.take()) != null) {
 

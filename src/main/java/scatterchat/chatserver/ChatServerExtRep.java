@@ -41,6 +41,7 @@ public class ChatServerExtRep implements Runnable {
 
         synchronized (this.state) {
 
+            System.out.println(this.state);
             String topic = message.getTopic();
             ChatServerEntry nodeId = this.state.getNodeId();
 
@@ -57,10 +58,8 @@ public class ChatServerExtRep implements Runnable {
                 true
             );
 
-            // TODO :: FALTA FAZER BROADCAST PARA A FRENTE
-        //    broadcast.put(message);
+            broadcast.put(message);
             carrier.sendMessage(response);
-            System.out.println("[SC extRep] send: " + response);
         }
     }
 
@@ -79,7 +78,6 @@ public class ChatServerExtRep implements Runnable {
             );
 
             carrier.sendMessage(response);
-            System.out.println("[SC extRep] send: " + response);
         }
     }
 
@@ -89,6 +87,7 @@ public class ChatServerExtRep implements Runnable {
 
         try {
 
+            Message message;
             ZMQ.Socket socket = this.context.createSocket(SocketType.REP);
             ZMQCarrier carrier = new ZMQCarrier(socket);
 
@@ -97,8 +96,6 @@ public class ChatServerExtRep implements Runnable {
 
             System.out.println("[SC extRep] started");            
             System.out.println("[SC extRep] bind: " + bindAddress);
-
-            Message message;
 
             while ((message = carrier.receiveMessage()) != null) {
 

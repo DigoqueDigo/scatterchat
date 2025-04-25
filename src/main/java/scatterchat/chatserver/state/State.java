@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
 
 import org.json.JSONObject;
 
+import com.sarojaba.prettytable4j.PrettyTable;
+
 
 public final class State {
 
@@ -69,5 +71,21 @@ public final class State {
             .collect(Collectors.toMap(
                 entry -> entry.getKey(),
                 entry -> entry.getValue().elements()));
+    }
+
+    public String toString() {
+        StringBuilder buffer = new StringBuilder();
+        PrettyTable ptNodes = PrettyTable.fieldNames("Topic", "Nodes");
+        PrettyTable ptClocks = PrettyTable.fieldNames("Topic", "Clock");
+
+        this.nodesPerTopic.forEach((topic, node) -> ptNodes.addRow(topic, node));
+        this.clockPerTopic.forEach((topic, clock) -> ptClocks.addRow(topic, clock));
+        this.usersORSetPerTopic.forEach((topic, orset) -> buffer.append("\n" + topic + "\n" + orset));
+
+        buffer.append("\n").append(ptClocks);
+        buffer.append("\n").append(ptNodes);
+        buffer.append("\n").append(this.nodeId);
+
+        return buffer.toString();
     }
 }

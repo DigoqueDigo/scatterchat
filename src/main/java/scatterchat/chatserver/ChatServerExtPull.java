@@ -51,7 +51,6 @@ public class ChatServerExtPull implements Runnable {
             ORSetAction orSetAction = orSet.prepare(Operation.ADD, sender);
             UserORSetMessage userORSetMessage = new UserORSetMessage(sender, receiver, topic, orSetAction);
 
-            orSet.effect(orSetAction);
             broadcast.put(userORSetMessage);
         }
     }
@@ -69,7 +68,6 @@ public class ChatServerExtPull implements Runnable {
             ORSetAction orSetAction = orSet.prepare(Operation.REMOVE, sender);
             UserORSetMessage usersORSetMessage = new UserORSetMessage(sender, receiver, topic, orSetAction);
 
-            orSet.effect(orSetAction);
             broadcast.put(usersORSetMessage);
         }
     }
@@ -80,6 +78,7 @@ public class ChatServerExtPull implements Runnable {
 
         try {
 
+            Message message;
             ZMQ.Socket socket = this.context.createSocket(SocketType.PULL);
             ZMQCarrier carrier = new ZMQCarrier(socket);
 
@@ -88,8 +87,6 @@ public class ChatServerExtPull implements Runnable {
 
             System.out.println("[SC extPull] started");
             System.out.println("[SC extPull] bind: " + address);
-
-            Message message;
 
             while ((message = carrier.receiveMessage()) != null) {
 

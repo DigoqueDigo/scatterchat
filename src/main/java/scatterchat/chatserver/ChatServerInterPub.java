@@ -44,6 +44,7 @@ public class ChatServerInterPub implements Runnable {
 
         this.state.setVectorClockOf(topic, vectorClock);
         carrier.sendCausalMessageWithTopic(topic, causalMessage);
+        System.out.println(this.state);
     }
 
 
@@ -75,20 +76,15 @@ public class ChatServerInterPub implements Runnable {
 
         try {
 
+            Message message;
             ZMQ.Socket socket = this.context.createSocket(SocketType.PUB);
             ZMQCarrier carrier = new ZMQCarrier(socket);
 
             String tcpAddress = config.getString("tcpInterPub");
-            String inprocAddress = config.getString("inprocPubSub");
-            
             socket.bind(tcpAddress);
-            socket.bind(inprocAddress);
             
             System.out.println("[SC interPub] started");
             System.out.println("[SC interPub] bind: " + tcpAddress);
-            System.out.println("[SC interPub] bind: " + inprocAddress);
-            
-            Message message;
 
             while ((message = broadcast.take()) != null) {
 

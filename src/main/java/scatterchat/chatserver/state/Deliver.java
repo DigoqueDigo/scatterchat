@@ -41,6 +41,7 @@ public class Deliver implements Runnable {
 
             int index = 0;
             List<CausalMessage> pendingTopicBuffer = pending.get(topic);
+            System.out.println(this.state);
 
             while (index < pendingTopicBuffer.size()) {
 
@@ -48,13 +49,21 @@ public class Deliver implements Runnable {
                 VectorClock localVectorClock = state.getVectorClockOf(topic);
                 VectorClock senderVectorClock = pendingMessage.getVectorClock();
 
+                System.out.println("pendingMessage " + pendingMessage);
+                System.out.println("localVectorClock " + localVectorClock);
+                System.out.println("senderVectorClock " + senderVectorClock);
+
                 ChatServerEntry localId = state.getNodeId();
                 ChatServerEntry senderId = senderVectorClock.getOwner();
+
+                System.out.println("localId " + localId);
+                System.out.println("senderId " + senderId);
 
                 boolean imSender = localId.equals(senderId);
                 boolean immediatelyPrev = localVectorClock.getTimeOf(senderId) + 1 == senderVectorClock.getTimeOf(senderId);
                 boolean allUpdate = localVectorClock.getNodes()
                     .stream()
+                    .filter(node -> !node.equals(senderId))
                     .allMatch(node -> localVectorClock.getTimeOf(node) >= senderVectorClock.getTimeOf(node));
 
                 if (imSender || (immediatelyPrev && allUpdate)) {
@@ -80,10 +89,11 @@ public class Deliver implements Runnable {
 
         try {
 
-            CausalMessage causalMessage = null;
+            CausalMessage causalMessage;
             System.out.println("[SC deviler] started");
 
             while ((causalMessage = this.received.take()) != null) {
+                System.out.println("[SC deliver] received: " + causalMessage);
                 addCausalMessage(causalMessage);
                 deliver(causalMessage.getTopic());
             }

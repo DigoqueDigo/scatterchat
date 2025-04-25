@@ -8,6 +8,7 @@ import org.zeromq.ZMQ;
 import scatterchat.protocol.carrier.ZMQCarrier;
 import scatterchat.protocol.message.CausalMessage;
 import scatterchat.protocol.message.chat.ChatMessage;
+import scatterchat.protocol.message.chat.ChatServerEntry;
 import scatterchat.protocol.message.crtd.UserORSetMessage;
 import scatterchat.protocol.message.info.ServeTopicRequest;
 
@@ -34,8 +35,14 @@ public class ChatServerInterSub implements Runnable {
 
 
     private void handleServeTopicRequest(ServeTopicRequest message, ZMQ.Socket socket) {
-        message.getNodes().forEach(entry -> socket.connect(entry.interPubAddress()));
+
+        for (ChatServerEntry entry : message.getNodes()) {
+            socket.connect(entry.interPubAddress());
+            System.out.println("[SC interSub] connect: " + entry.interPubAddress());
+        }
+
         socket.subscribe(message.getTopic());
+        System.out.println("[SC interSub] subscribe: " + message.getTopic());
     }
 
 
@@ -44,23 +51,19 @@ public class ChatServerInterSub implements Runnable {
 
         try {
 
+            CausalMessage causalMessage;
             ZMQ.Socket socket = this.context.createSocket(SocketType.SUB);
             ZMQCarrier carrier = new ZMQCarrier(socket);
 
             String tcpAddress = config.getString("tcpInterPub");
-            String inprocAddress = config.getString("inprocPubSub");
             String internalTopic = config.getString("internalTopic");
 
             socket.connect(tcpAddress);
-            socket.connect(inprocAddress);
             socket.subscribe(internalTopic);
 
             System.out.println("[SC interSub] started");
             System.out.println("[SC interSub] connect: " + tcpAddress);
-            System.out.println("[SC interSub] connect: " + inprocAddress);
             System.out.println("[SC interSub] subscribe: " + internalTopic);
-
-            CausalMessage causalMessage;
 
             while ((causalMessage = carrier.receiveCausalMessageWithTopic()) != null) {
 
