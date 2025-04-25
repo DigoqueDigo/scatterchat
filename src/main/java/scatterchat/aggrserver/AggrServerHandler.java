@@ -40,6 +40,7 @@ public class AggrServerHandler implements Runnable{
 
     private State state;
     private JSONObject config;
+    private ZContext context;
 
     private BlockingQueue<Message> received;
     private BlockingQueue<AggrRep> responded;
@@ -50,9 +51,10 @@ public class AggrServerHandler implements Runnable{
     private Map<String, List<AggrEntry>> bestEntries;
 
 
-    public AggrServerHandler(JSONObject config, State state, BlockingQueue<Message> received, BlockingQueue<AggrRep> responded, BlockingQueue<Message> outBuffer) {
+    public AggrServerHandler(JSONObject config, ZContext context, State state, BlockingQueue<Message> received, BlockingQueue<AggrRep> responded, BlockingQueue<Message> outBuffer) {
         this.state = state;
         this.config = config;
+        this.context = context;
         this.received = received;
         this.responded = responded;
         this.outBuffer = outBuffer;
@@ -257,8 +259,7 @@ public class AggrServerHandler implements Runnable{
 
         try {
 
-            ZContext context = new ZContext();
-            ZMQ.Socket socket = context.createSocket(SocketType.REQ);
+            ZMQ.Socket socket = this.context.createSocket(SocketType.REQ);
             ZMQCarrier carrier = new ZMQCarrier(socket);
 
             String scRepAddress = this.config
@@ -286,7 +287,6 @@ public class AggrServerHandler implements Runnable{
             }
 
             socket.close();
-            context.close();
         }
 
         catch (Exception e) {

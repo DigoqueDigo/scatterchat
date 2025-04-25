@@ -22,12 +22,14 @@ public class ChatServerExtPull implements Runnable {
 
     private State state;
     private JSONObject config;
+    private ZContext context;
     private BlockingQueue<Message> broadcast;
 
 
-    public ChatServerExtPull(JSONObject config, State state, BlockingQueue<Message> broadcast) {
+    public ChatServerExtPull(JSONObject config, ZContext context, State state, BlockingQueue<Message> broadcast) {
         this.state = state;
         this.config = config;
+        this.context = context;
         this.broadcast = broadcast;
     }
 
@@ -78,8 +80,7 @@ public class ChatServerExtPull implements Runnable {
 
         try {
 
-            ZContext context = new ZContext();
-            ZMQ.Socket socket = context.createSocket(SocketType.PULL);
+            ZMQ.Socket socket = this.context.createSocket(SocketType.PULL);
             ZMQCarrier carrier = new ZMQCarrier(socket);
 
             String address = config.getString("tcpExtPull");
@@ -88,7 +89,7 @@ public class ChatServerExtPull implements Runnable {
             System.out.println("[SC extPull] started");
             System.out.println("[SC extPull] bind: " + address);
 
-            Message message = null;
+            Message message;
 
             while ((message = carrier.receiveMessage()) != null) {
 
@@ -103,7 +104,6 @@ public class ChatServerExtPull implements Runnable {
             }
 
             socket.close();
-            context.close();
         }
 
         catch (Exception e) {

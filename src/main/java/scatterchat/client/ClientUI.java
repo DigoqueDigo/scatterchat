@@ -192,11 +192,11 @@ public class ClientUI implements Runnable {
                 Message topicExitMessageToSub = new TopicExitMessage(sender, "client sub", null, null);
                 pubCarrier.sendMessageWithTopic(internalTopic, topicExitMessageToSub);
 
-                pushSCSocket.close();
+                dhtSocket.close();
+                pubSocket.close();
                 reqSCSocket.close();
                 reqSASocket.close();
-                pubSocket.close();
-                dhtSocket.close();
+                pushSCSocket.close();
 
                 System.out.println("Bye");
             }

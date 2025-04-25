@@ -25,12 +25,14 @@ public class ChatServerExtRep implements Runnable {
 
     private State state;
     private JSONObject config;
+    private ZContext context;
     private BlockingQueue<Message> broadcast;
 
 
-    public ChatServerExtRep(JSONObject config, State state, BlockingQueue<Message> broadcast) {
+    public ChatServerExtRep(JSONObject config, ZContext context, State state, BlockingQueue<Message> broadcast) {
         this.state = state;
         this.config = config;
+        this.context = context;
         this.broadcast = broadcast;
     }
 
@@ -87,8 +89,7 @@ public class ChatServerExtRep implements Runnable {
 
         try {
 
-            ZContext context = new ZContext();
-            ZMQ.Socket socket = context.createSocket(SocketType.REP);
+            ZMQ.Socket socket = this.context.createSocket(SocketType.REP);
             ZMQCarrier carrier = new ZMQCarrier(socket);
 
             String bindAddress = config.getString("tcpExtRep");
@@ -97,7 +98,7 @@ public class ChatServerExtRep implements Runnable {
             System.out.println("[SC extRep] started");            
             System.out.println("[SC extRep] bind: " + bindAddress);
 
-            Message message = null;
+            Message message;
 
             while ((message = carrier.receiveMessage()) != null) {
 
@@ -111,7 +112,6 @@ public class ChatServerExtRep implements Runnable {
             }
 
             socket.close();
-            context.close();
         }
 
         catch (Exception e) {

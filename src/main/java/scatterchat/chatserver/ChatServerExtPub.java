@@ -19,12 +19,14 @@ public class ChatServerExtPub implements Runnable {
 
     private State state;
     private JSONObject config;
+    private ZContext context;
     private BlockingQueue<Message> delivered;
 
 
-    public ChatServerExtPub(JSONObject config, State state, BlockingQueue<Message> delivered) {
+    public ChatServerExtPub(JSONObject config, ZContext context, State state, BlockingQueue<Message> delivered) {
         this.state = state;
         this.config = config;
+        this.context = context;
         this.delivered = delivered;
     }
 
@@ -48,8 +50,7 @@ public class ChatServerExtPub implements Runnable {
 
         try{
 
-            ZContext context = new ZContext();
-            ZMQ.Socket socket = context.createSocket(SocketType.PUB);
+            ZMQ.Socket socket = this.context.createSocket(SocketType.PUB);
             ZMQCarrier carrier = new ZMQCarrier(socket);
 
             String bindAddress = config.getString("tcpExtPub");
@@ -58,7 +59,7 @@ public class ChatServerExtPub implements Runnable {
             System.out.println("[SC extPub] started");
             System.out.println("[SC extPub] bind: " + bindAddress);
 
-            Message message = null;
+            Message message;
 
             while ((message = this.delivered.take()) != null) {
 
@@ -72,7 +73,6 @@ public class ChatServerExtPub implements Runnable {
             }
 
             socket.close();
-            context.close();
         }
 
         catch (Exception e) {

@@ -1,6 +1,8 @@
 package scatterchat.chatserver;
 
 import org.json.JSONObject;
+import org.zeromq.ZContext;
+
 import scatterchat.chatserver.log.LogServer;
 import scatterchat.chatserver.state.State;
 import scatterchat.protocol.message.CausalMessage;
@@ -27,18 +29,21 @@ public class ChatServer {
         final String configFileContent = new String(Files.readAllBytes(Paths.get(configFilePath)));
         final JSONObject config = new JSONObject(configFileContent).getJSONObject(nodeId);
 
-        State state = new State(config);
-        BlockingQueue<Message> broadcast = new ArrayBlockingQueue<>(10);
-        BlockingQueue<Message> delivered = new ArrayBlockingQueue<>(10);
-        BlockingQueue<CausalMessage> received = new ArrayBlockingQueue<>(10);
+        final State state = new State(config);
+        final ZContext context = new ZContext();
 
-        Runnable chatServerExtRep = new ChatServerExtRep(config, state, broadcast);
-        Runnable chatServerExtPull = new ChatServerExtPull(config, state, broadcast);
-        Runnable chatServerInterPub = new ChatServerInterPub(config, state, broadcast);
-        Runnable chatServerInterSub = new ChatServerInterSub(config, received);
-        Runnable chatServerExtPub = new ChatServerExtPub(config, state, delivered);
-        Runnable deliver = new Deliver(state, received, delivered);
+        final BlockingQueue<Message> broadcast = new ArrayBlockingQueue<>(10);
+        final BlockingQueue<Message> delivered = new ArrayBlockingQueue<>(10);
+        final BlockingQueue<CausalMessage> received = new ArrayBlockingQueue<>(10);
+
         Runnable logServer = new LogServer(config); 
+        Runnable deliver = new Deliver(state, received, delivered);
+
+        Runnable chatServerExtRep = new ChatServerExtRep(config, context, state, broadcast);
+        Runnable chatServerExtPull = new ChatServerExtPull(config, context, state, broadcast);
+        Runnable chatServerInterPub = new ChatServerInterPub(config, context, state, broadcast);
+        Runnable chatServerInterSub = new ChatServerInterSub(config, context, received);
+        Runnable chatServerExtPub = new ChatServerExtPub(config, context, state, delivered);
 
         List<Thread> workers = new ArrayList<>();
         ThreadFactory threadFactory = Thread.ofVirtual().factory();
@@ -58,5 +63,7 @@ public class ChatServer {
         for (Thread worker : workers) {
             worker.join();
         }
+
+        context.close();
     }
 }

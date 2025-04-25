@@ -17,11 +17,13 @@ import java.util.concurrent.BlockingQueue;
 public class ChatServerInterSub implements Runnable {
 
     private JSONObject config;
+    private ZContext context;
     private BlockingQueue<CausalMessage> received;
 
 
-    public ChatServerInterSub(JSONObject config, BlockingQueue<CausalMessage> received) {
+    public ChatServerInterSub(JSONObject config, ZContext context, BlockingQueue<CausalMessage> received) {
         this.config = config;
+        this.context = context;
         this.received = received;
     }
 
@@ -42,8 +44,7 @@ public class ChatServerInterSub implements Runnable {
 
         try {
 
-            ZContext context = new ZContext();
-            ZMQ.Socket socket = context.createSocket(SocketType.SUB);
+            ZMQ.Socket socket = this.context.createSocket(SocketType.SUB);
             ZMQCarrier carrier = new ZMQCarrier(socket);
 
             String tcpAddress = config.getString("tcpInterPub");
@@ -59,7 +60,7 @@ public class ChatServerInterSub implements Runnable {
             System.out.println("[SC interSub] connect: " + inprocAddress);
             System.out.println("[SC interSub] subscribe: " + internalTopic);
 
-            CausalMessage causalMessage = null;
+            CausalMessage causalMessage;
 
             while ((causalMessage = carrier.receiveCausalMessageWithTopic()) != null) {
 
@@ -74,7 +75,6 @@ public class ChatServerInterSub implements Runnable {
             }
 
             socket.close();
-            context.close();
         }
 
         catch (Exception e) {

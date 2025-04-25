@@ -21,14 +21,17 @@ public class ChatServerInterPub implements Runnable {
 
     private State state;
     private JSONObject config;
+    private ZContext context;
     private BlockingQueue<Message> broadcast;
 
 
-    public ChatServerInterPub(JSONObject config, State state, BlockingQueue<Message> broadcast) {
+    public ChatServerInterPub(JSONObject config, ZContext context, State state, BlockingQueue<Message> broadcast) {
         this.state = state;
         this.config = config;
+        this.context = context;
         this.broadcast = broadcast;
     }
+
 
     private void forwardAsCausal(Message message, String topic, ZMQCarrier carrier) {
 
@@ -72,8 +75,7 @@ public class ChatServerInterPub implements Runnable {
 
         try {
 
-            ZContext context = new ZContext();
-            ZMQ.Socket socket = context.createSocket(SocketType.PUB);
+            ZMQ.Socket socket = this.context.createSocket(SocketType.PUB);
             ZMQCarrier carrier = new ZMQCarrier(socket);
 
             String tcpAddress = config.getString("tcpInterPub");
@@ -86,11 +88,11 @@ public class ChatServerInterPub implements Runnable {
             System.out.println("[SC interPub] bind: " + tcpAddress);
             System.out.println("[SC interPub] bind: " + inprocAddress);
             
-            Message message = null;
+            Message message;
 
             while ((message = broadcast.take()) != null) {
 
-                System.out.println("[SC interPub] reveived: " + message.toString());
+                System.out.println("[SC interPub] received: " + message.toString());
 
                 switch (message) {
                     case ChatMessage m -> handleChatMessage(m, carrier);
@@ -101,7 +103,6 @@ public class ChatServerInterPub implements Runnable {
             }
 
             socket.close();
-            context.close();
         }
 
         catch (Exception e) {

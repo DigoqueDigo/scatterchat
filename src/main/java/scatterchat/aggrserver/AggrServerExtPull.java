@@ -14,11 +14,13 @@ import scatterchat.protocol.message.Message;
 public class AggrServerExtPull implements Runnable {
 
     private JSONObject config;
+    private ZContext context;
     private BlockingQueue<Message> received;
 
 
-    public AggrServerExtPull(JSONObject config, BlockingQueue<Message> received) {
+    public AggrServerExtPull(JSONObject config, ZContext context, BlockingQueue<Message> received) {
         this.config = config;
+        this.context = context;
         this.received = received;
     }
 
@@ -28,17 +30,15 @@ public class AggrServerExtPull implements Runnable {
 
         try {
 
-            ZContext context = new ZContext();
-            ZMQ.Socket socket = context.createSocket(SocketType.PULL);
-
+            ZMQ.Socket socket = this.context.createSocket(SocketType.PULL);
             ZMQCarrier carrier = new ZMQCarrier(socket);
+            
+            Message message;
             String bindAddres = config.getString("tcpExtPull");
 
             socket.bind(bindAddres);
             System.out.println("[AggrServerExtPull] started");
             System.out.println("[AggrServerExtPull] bind: " + bindAddres);
-
-            Message message = null;
 
             while ((message = carrier.receiveMessage()) != null) {
                 System.out.println("[AggrServerExtPull] received: " + message);
@@ -46,7 +46,6 @@ public class AggrServerExtPull implements Runnable {
             }
 
             socket.close();
-            context.close();
         }
 
         catch (Exception e) {

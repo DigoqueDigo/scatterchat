@@ -72,10 +72,9 @@ public class ClientSub implements Runnable{
 
         try{
 
-            Message message;
+            while (true) {
 
-            while ((message = carrier.receiveMessageWithTopic()) != null){
-
+                Message message = carrier.receiveMessageWithTopic();
                 System.out.println("[Client SUB] received: " + message);
 
                 switch (message){
@@ -90,7 +89,6 @@ public class ClientSub implements Runnable{
         catch (NullPointerException e){
             socket.unsubscribe("[internal]");
             socket.close();
-            context.close();
             System.out.println("[Client SUB] exit");
         }
 

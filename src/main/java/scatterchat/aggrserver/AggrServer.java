@@ -14,6 +14,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.json.JSONObject;
+import org.zeromq.ZContext;
 
 import scatterchat.aggrserver.state.State;
 import scatterchat.protocol.message.Message;
@@ -31,7 +32,8 @@ public class AggrServer{
         final String configFileContent = new String(Files.readAllBytes(Paths.get(configFilePath)));
         final JSONObject config = new JSONObject(configFileContent).getJSONObject(nodeId);
 
-        State state = new State(config);
+        final State state = new State(config);
+        final ZContext context = new ZContext();
 
         if (config.has("entryPoint")) {
             CyclonEntry entryPoint = new CyclonEntry(
@@ -43,10 +45,10 @@ public class AggrServer{
         BlockingQueue<AggrRep> responded = new ArrayBlockingQueue<>(10);
         BlockingQueue<Message> outBuffer = new ArrayBlockingQueue<>(10);
 
-        Runnable aggrServerExtPush = new AggrServerExtPush(outBuffer);
-        Runnable aggrServerExtPull = new AggrServerExtPull(config, received);
-        Runnable aggrServerExtRep = new AggrServerExtRep(config, received, responded);
-        Runnable aggrServerHandler = new AggrServerHandler(config, state, received, responded, outBuffer);
+        Runnable aggrServerExtPush = new AggrServerExtPush(context, outBuffer);
+        Runnable aggrServerExtPull = new AggrServerExtPull(config, context, received);
+        Runnable aggrServerExtRep = new AggrServerExtRep(config, context, received, responded);
+        Runnable aggrServerHandler = new AggrServerHandler(config, context, state, received, responded, outBuffer);
         Runnable aggrServerCyclonTimer = new AggrServerCyclonTimer(state, outBuffer);
 
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
@@ -73,5 +75,7 @@ public class AggrServer{
         for (Thread worker : workers) {
             worker.join();
         }
+
+        context.close();
     }
 }

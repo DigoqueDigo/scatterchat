@@ -14,11 +14,13 @@ import scatterchat.protocol.message.Message;
 
 public class AggrServerExtPush implements Runnable {
 
+    private ZContext context;
     private BlockingQueue<Message> outBuffer;
     private Map<String, ZMQCarrier> carriers;
 
 
-    public AggrServerExtPush(BlockingQueue<Message> outBuffer) {
+    public AggrServerExtPush(ZContext contex, BlockingQueue<Message> outBuffer) {
+        this.context = contex;
         this.outBuffer = outBuffer;
         this.carriers = new HashMap<>();
     }
@@ -28,16 +30,15 @@ public class AggrServerExtPush implements Runnable {
     public void run() {
 
         try {
-            Message message = null;
-            ZContext context = new ZContext();
 
-            while ((message = this.outBuffer.take()) != null) {
+            while (true) {
 
-                System.out.println("[AggrServerExtPush] received: " + message);
+                Message message = this.outBuffer.take();
                 String connection = message.getReceiver();
+                System.out.println("[AggrServerExtPush] received: " + message);
 
                 if (!this.carriers.containsKey(connection)) {
-                    ZMQ.Socket socket = context.createSocket(SocketType.PUSH);
+                    ZMQ.Socket socket = this.context.createSocket(SocketType.PUSH);
                     socket.connect(connection);
                     this.carriers.put(connection, new ZMQCarrier(socket));
                     System.out.println("[AggrServerExtPush] connect: " + message.getReceiver());
@@ -47,8 +48,6 @@ public class AggrServerExtPush implements Runnable {
                 carrier.sendMessage(message);
                 System.out.println("[AggrServerExtPush] sent: " + message);
             }
-
-            context.close();
         }
 
         catch (Exception e) {

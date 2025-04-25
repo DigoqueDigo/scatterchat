@@ -27,12 +27,15 @@ import scatterchat.protocol.message.info.ServeTopicResponse;
 public class AggrServerExtRep implements Runnable {
 
     private JSONObject config;
+    private ZContext context;
+
     private BlockingQueue<Message> received;
     private BlockingQueue<AggrRep> responded;
 
 
-    public AggrServerExtRep(JSONObject config, BlockingQueue<Message> received, BlockingQueue<AggrRep> responded) {
+    public AggrServerExtRep(JSONObject config, ZContext context, BlockingQueue<Message> received, BlockingQueue<AggrRep> responded) {
         this.config = config;
+        this.context = context;
         this.received = received;
         this.responded = responded;
     }
@@ -55,8 +58,7 @@ public class AggrServerExtRep implements Runnable {
     private void informToServe(AggrRep message) {
 
         System.out.println("KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK");
-        ZContext context = new ZContext();
-        ZMQ.Socket socket = context.createSocket(SocketType.REQ);
+        ZMQ.Socket socket = this.context.createSocket(SocketType.REQ);
         ZMQCarrier carrier = new ZMQCarrier(socket);
 
         String topic = message.getTopic();
@@ -83,7 +85,6 @@ public class AggrServerExtRep implements Runnable {
         }
 
         socket.close();
-        context.close();
     }
 
 
@@ -93,8 +94,7 @@ public class AggrServerExtRep implements Runnable {
         try {
 
             Socket dhtSocket = new Socket();
-            ZContext context = new ZContext();
-            ZMQ.Socket repSocket = context.createSocket(SocketType.REP);
+            ZMQ.Socket repSocket = this.context.createSocket(SocketType.REP);
             
             String bindAddress = config.getString("tcpExtRep");
             String dhtAddress = config.getJSONObject("dht").getString("address");
@@ -129,8 +129,8 @@ public class AggrServerExtRep implements Runnable {
                 System.out.println("[AggrServerExtRep] sent: " + response);
             }
 
+            dhtSocket.close();
             repSocket.close();
-            context.close();
         }
 
         catch (Exception e) {
