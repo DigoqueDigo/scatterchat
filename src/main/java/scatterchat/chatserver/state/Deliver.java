@@ -75,8 +75,9 @@ public class Deliver implements Runnable {
                     if (!imSender) {
                         localVectorClock.putTimeOf(senderId, senderVectorClock.getTimeOf(senderId));
                         this.state.setVectorClockOf(topic, localVectorClock);
-                        System.out.println(this.state);
                     }
+
+                    System.out.println(this.state);
                 }
 
                 index++;

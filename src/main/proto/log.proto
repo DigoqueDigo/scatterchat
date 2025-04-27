@@ -4,6 +4,7 @@ option java_multiple_files = true;
 
 service LogService {
     rpc getLogs (LogMessageRequest) returns (stream LogMessageReply);
+    rpc getMessagesOfUser (UserMessagesRequest) returns (stream UserMessagesReply);
 }
 
 message LogMessageRequest {
@@ -11,5 +12,14 @@ message LogMessageRequest {
 }
 
 message LogMessageReply {
+    string message = 1;                     // Log line content
+}
+
+message UserMessagesRequest {
+    string username = 1;                    // username of client
+    string topi = 2;                        // topic where the user has sent messages
+}
+
+message UserMessagesReply {
     string message = 1;                     // Log line content
 }
