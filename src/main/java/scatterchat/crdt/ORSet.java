@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.sarojaba.prettytable4j.PrettyTable;
 
@@ -73,6 +74,16 @@ public class ORSet {
 
     public Set<String> elements() {
         return new HashSet<>(this.store.keySet());
+    }
+
+    public Set<String> localElements() {
+        return this.store.entrySet()
+            .stream()
+            .filter(entry -> entry.getValue()
+                .stream()
+                .anyMatch(x -> x.nodeId().equals(this.clock.nodeId())))
+            .map(entry -> entry.getKey())
+            .collect(Collectors.toSet());
     }
 
     public String toString() {

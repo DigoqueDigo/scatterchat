@@ -15,19 +15,25 @@ import java.util.Set;
 
 public class ServerStateResponse extends Message {
 
-    private Map<String, Set<String>> serverState;
+    private Map<String, Set<String>> serverTotalState;
+    private Map<String, Set<String>> serverLocalState;
 
     public ServerStateResponse() {
         super(MessageType.SERVER_STATE_RESPONSE);
     }
 
-    public ServerStateResponse(String sender, String receiver, Map<String, Set<String>> serverState) {
+    public ServerStateResponse(String sender, String receiver, Map<String, Set<String>> serverTotalState, Map<String, Set<String>> serverLocalState) {
         super(MessageType.SERVER_STATE_RESPONSE, sender, receiver);
-        this.serverState = serverState;
+        this.serverTotalState = serverTotalState;
+        this.serverLocalState = serverLocalState;
     }
 
-    public Map<String, Set<String>> getServerState() {
-        return this.serverState;
+    public Map<String, Set<String>> getServerTotalState() {
+        return new HashMap<>(this.serverTotalState);
+    }
+
+    public Map<String, Set<String>> getServerLocalState() {
+        return new HashMap<>(this.serverLocalState);
     }
 
     public byte[] serialize() {
@@ -66,7 +72,8 @@ public class ServerStateResponse extends Message {
     public String toString() {
         StringBuilder buffer = new StringBuilder();
         buffer.append(super.toString());
-        buffer.append(", ").append(this.serverState);
+        buffer.append(", ").append(this.serverTotalState);
+        buffer.append(", ").append(this.serverLocalState);
         return buffer.toString();
     }
 }

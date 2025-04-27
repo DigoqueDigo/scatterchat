@@ -69,12 +69,14 @@ public class ChatServerExtRep implements Runnable {
         synchronized (this.state) {
 
             ChatServerEntry nodeId = this.state.getNodeId();
-            Map<String, Set<String>> serverState = this.state.getState();
+            Map<String, Set<String>> totalState = this.state.getTotalState();
+            Map<String, Set<String>> localState = this.state.getLocalState();
 
             ServerStateResponse response = new ServerStateResponse(
                 nodeId.repAddress(),
                 message.getSender(),
-                serverState
+                totalState,
+                localState
             );
 
             carrier.sendMessage(response);

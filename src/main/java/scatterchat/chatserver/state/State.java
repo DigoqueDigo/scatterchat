@@ -65,12 +65,20 @@ public final class State {
         this.clockPerTopic.putIfAbsent(topic, vectorClock);
     }
 
-    public Map<String, Set<String>> getState() {
+    public Map<String, Set<String>> getTotalState() {
         return this.usersORSetPerTopic.entrySet()
             .stream()
             .collect(Collectors.toMap(
                 entry -> entry.getKey(),
                 entry -> entry.getValue().elements()));
+    }
+
+    public Map<String, Set<String>> getLocalState() {
+        return this.usersORSetPerTopic.entrySet()
+            .stream()
+            .collect(Collectors.toMap(
+                entry -> entry.getKey(),
+                entry -> entry.getValue().localElements()));
     }
 
     public String toString() {

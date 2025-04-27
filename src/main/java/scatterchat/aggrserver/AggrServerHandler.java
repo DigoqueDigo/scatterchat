@@ -240,11 +240,15 @@ public class AggrServerHandler implements Runnable{
     private AggrEntry getChatServerState(ZMQCarrier carrier) {
 
         CyclonEntry sender = this.state.getMyCyclonEntry();
-        carrier.sendMessage(new ServerStateRequest(sender.pullAddress(), "sc"));
+        ServerStateRequest serverStateRequest = new ServerStateRequest(sender.pullAddress(), "sc");
+        System.out.println("[AggrServerHandler] sent: " + serverStateRequest);
+
+        carrier.sendMessage(serverStateRequest);
         ServerStateResponse serverStateResponse = (ServerStateResponse) carrier.receiveMessage();
+        System.out.println("[AggrServerHandler] received: " + serverStateResponse);
 
         String scRepAddress = serverStateResponse.getSender();
-        Map<String, Set<String>> serveState = serverStateResponse.getServerState();
+        Map<String, Set<String>> serveState = serverStateResponse.getServerLocalState();
 
         return new AggrEntry(
             new ChatServerEntry(scRepAddress),

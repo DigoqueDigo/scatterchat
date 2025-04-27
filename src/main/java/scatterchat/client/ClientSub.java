@@ -27,7 +27,7 @@ public class ClientSub implements Runnable{
 
     private void handleChatMessage(ChatMessage message) {
         if (!message.getClient().equals(this.config.getString("username"))) {
-            System.out.println(message.getMessage());
+            System.out.println(message.getClient() + " >>>" + message.getMessage());
         }
 
         else {

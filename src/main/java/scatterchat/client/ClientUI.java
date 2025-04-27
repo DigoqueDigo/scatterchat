@@ -17,6 +17,8 @@ import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
+import com.sarojaba.prettytable4j.PrettyTable;
+
 import scatterchat.protocol.carrier.JSONCarrier;
 import scatterchat.protocol.carrier.ZMQCarrier;
 import scatterchat.protocol.message.Message;
@@ -53,7 +55,7 @@ public class ClientUI implements Runnable {
 
         String topic = null;
         List<String> invalidTopics = Arrays.asList(
-            "/log", "/info", "/users", "/exit", ""
+            "/log", "/info", "/exit", ""
         );
 
         while (topic == null){
@@ -163,14 +165,20 @@ public class ClientUI implements Runnable {
                     Message topicEnterMessageToPull = new TopicEnterMessage(sender, chatServerEntry.pullAddress(), topic, chatServerEntry);
 
                     pushSCCarrier.sendMessage(topicEnterMessageToPull);
-                    pubCarrier.sendMessageWithTopic(internalTopic, topicEnterMessageToSub);                
+                    pubCarrier.sendMessageWithTopic(internalTopic, topicEnterMessageToSub);           
 
                     while (!(message = readMessage(topicPrompt)).equals("/exit")){
 
-                        if (message.startsWith("/info") || message.startsWith("/users")) {
+                        if (message.startsWith("/info")) {
                             ServerStateRequest request = new ServerStateRequest(sender, chatServerEntry.repAddress());
-                            handleInfo(request, reqSCCarrier);
-                        } else {
+                            ServerStateResponse response = handleInfo(request, reqSCCarrier);
+
+                            PrettyTable ptServerState = PrettyTable.fieldNames("Topic", "Users");
+                            response.getServerTotalState().forEach((topics, users) -> ptServerState.addRow(topics, users));
+                            System.out.println(ptServerState.toString());
+                        }
+
+                        else {
                             Message chatMessage = new ChatMessage(sender, chatServerEntry.pullAddress(), topic, message, sender);
                             pushSCCarrier.sendMessage(chatMessage);
                         }
