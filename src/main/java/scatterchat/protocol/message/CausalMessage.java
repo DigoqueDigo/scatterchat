@@ -121,6 +121,7 @@ public class CausalMessage {
         return causalMessage;
     }
 
+    @Override
     public String toString() {
         StringBuffer buffer = new StringBuffer();
         buffer.append(this.message);

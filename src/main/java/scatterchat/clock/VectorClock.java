@@ -48,6 +48,12 @@ public class VectorClock {
         return this.vector.get(node);
     }
 
+    public boolean isBefore(VectorClock vectorClock) {
+        return this.vector.keySet()
+            .stream()
+            .allMatch(node -> getTimeOf(node) <= vectorClock.getTimeOf(node));
+    }
+
     public Set<ChatServerEntry> getNodes() {
         return new HashSet<>(this.vector.keySet());
     }

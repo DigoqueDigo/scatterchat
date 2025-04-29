@@ -16,8 +16,8 @@ message LogMessageReply {
 }
 
 message UserMessagesRequest {
-    string username = 1;                    // username of client
-    string topi = 2;                        // topic where the user has sent messages
+    string username = 1;                     // username of client
+    string topic = 2;                        // topic where the user has sent messages
 }
 
 message UserMessagesReply {

@@ -2,6 +2,7 @@ package scatterchat.chatserver.state;
 
 import scatterchat.clock.VectorClock;
 import scatterchat.protocol.message.CausalMessage;
+import scatterchat.protocol.message.LogCausalMessage;
 import scatterchat.protocol.message.Message;
 import scatterchat.protocol.message.chat.ChatServerEntry;
 
@@ -15,15 +16,17 @@ import java.util.concurrent.BlockingQueue;
 public class Deliver implements Runnable {
 
     private final State state;
+    private final List<LogCausalMessage> logBuffer;
     private final BlockingQueue<Message> delivered;
     private final BlockingQueue<CausalMessage> received;
     private final Map<String, List<CausalMessage>> pending;
 
 
-    public Deliver(State state, BlockingQueue<CausalMessage> received, BlockingQueue<Message> delivered) {
+    public Deliver(State state, BlockingQueue<CausalMessage> received, BlockingQueue<Message> delivered, List<LogCausalMessage> logBuffer) {
         this.state = state;
         this.received = received;
         this.delivered = delivered;
+        this.logBuffer = logBuffer;
         this.pending = new HashMap<>();
     }
 
@@ -71,6 +74,10 @@ public class Deliver implements Runnable {
                     pendingMessage = pendingTopicBuffer.remove(index);
                     this.delivered.put(pendingMessage.getMessage());
                     index = 0;
+
+                    synchronized (this.logBuffer) {
+                        this.logBuffer.add(new LogCausalMessage(pendingMessage));
+                    }
 
                     if (!imSender) {
                         localVectorClock.putTimeOf(senderId, senderVectorClock.getTimeOf(senderId));
