@@ -5,26 +5,46 @@ import io.grpc.ManagedChannelBuilder;
 import io.reactivex.rxjava3.core.Single;
 import scatterchat.LogMessageRequest;
 import scatterchat.Rx3LogServiceGrpc;
+import scatterchat.UserMessagesRequest;
 import scatterchat.Rx3LogServiceGrpc.RxLogServiceStub;
 
 
-public class ClientLog{
+public class ClientLog {
 
-    public static void main(String[] args) throws Exception{ 
+    private ManagedChannel channel;
+    private RxLogServiceStub stub;
 
-        ManagedChannel channel = ManagedChannelBuilder
-                .forAddress("localhost", 50051)
-                .usePlaintext()
-                .build();
 
-        RxLogServiceStub logStub = Rx3LogServiceGrpc.newRxStub(channel);
-        Single<LogMessageRequest> logRequest = Single.just(1).map(x -> LogMessageRequest.newBuilder().setHistory(x).build());
+    public ClientLog(String loggerAddress, int loggerPort) {
+        this.channel = ManagedChannelBuilder    
+            .forAddress(loggerAddress, loggerPort)
+            .usePlaintext()
+            .build();
+        this.stub = Rx3LogServiceGrpc.newRxStub(this.channel);
+    }
 
-        logStub.getLogs(logRequest)
-            .doOnComplete(() -> channel.shutdown())
+
+    public void shutdown() {
+        this.channel.shutdown();
+    }
+
+
+    public void getLogs(LogMessageRequest request) {
+        this.stub.getLogs(Single.just(request))
             .subscribe(
-                log -> System.out.println("[gRPC LOG] " + log.getMessage()),
+                item -> System.out.println(item.getMessage()),
                 error -> error.printStackTrace(),
-                () -> System.out.println("[gRPC LOG] Stream closed"));
+                () -> System.out.println("[ClientLog] log request completed")
+            );
+    }
+
+
+    public void getMessagesOfUser(UserMessagesRequest request) {
+        this.stub.getMessagesOfUser(Single.just(request))
+            .subscribe(
+                item -> System.out.println(item.getMessage()),
+                error -> error.printStackTrace(),
+                () -> System.out.println("[ClientLog] user messages request completed")
+            );
     }
 }

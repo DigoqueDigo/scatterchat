@@ -17,12 +17,12 @@ public class Logger {
     }
 
 
-    public void write(Message message) {
+    public synchronized void write(Message message) {
         this.logs.add(message);
     }
 
 
-    public Flowable<Message> read(int history) {
+    public synchronized Flowable<Message> read(int history) {
         int count = (history == -1) ? this.logs.size() : Math.min(history, this.logs.size());
         return Flowable.fromIterable(new ArrayList<>(this.logs.subList(0, count)));
     }

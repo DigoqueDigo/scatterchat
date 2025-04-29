@@ -26,28 +26,25 @@ public class LogDispatcher implements Runnable {
     @Override
     public void run() {
 
-        synchronized (this.logger) {
+        synchronized (this.logBuffer) {
 
-            synchronized (this.logBuffer) {
+            this.logBuffer.sort(null);
+            Iterator<LogCausalMessage> iterator = this.logBuffer.iterator();
 
-                this.logBuffer.sort(null);
-                Iterator<LogCausalMessage> iterator = this.logBuffer.iterator();
+            System.out.println("[LogOrganizer] start");
+            System.out.println("[LogOrganizer] logs: " + this.logBuffer);
 
-                System.out.println("[LogOrganizer] start");
-                System.out.println("[LogOrganizer] logs: " + this.logBuffer);
+            while (iterator.hasNext()) {
 
-                while (iterator.hasNext()) {
+                LogCausalMessage logCausalMessage = iterator.next();
+                long timestamp = logCausalMessage.getTimestamp();
+                long currentTimestamp = System.currentTimeMillis();
 
-                    LogCausalMessage logCausalMessage = iterator.next();
-                    long timestamp = logCausalMessage.getTimestamp();
-                    long currentTimestamp = System.currentTimeMillis();
-
-                    if (currentTimestamp - timestamp > LogDispatcher.TOLERANCE) {
-                        Message message = logCausalMessage.getCausalMessage().getMessage();
-                        this.logger.write(message);
-                        iterator.remove();
-                        System.out.println("[LogOrganizer] add log: " + message);
-                    }
+                if (currentTimestamp - timestamp > LogDispatcher.TOLERANCE) {
+                    Message message = logCausalMessage.getCausalMessage().getMessage();
+                    this.logger.write(message);
+                    iterator.remove();
+                    System.out.println("[LogOrganizer] add log: " + message);
                 }
             }
         }

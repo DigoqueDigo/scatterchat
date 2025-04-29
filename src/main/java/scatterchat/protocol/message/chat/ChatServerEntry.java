@@ -3,18 +3,28 @@ package scatterchat.protocol.message.chat;
 import java.util.Comparator;
 
 
-public record ChatServerEntry(String repAddress, String pullAddress, String interPubAddress, String extPubAddress) implements Comparable<ChatServerEntry> {
+public record ChatServerEntry(String repAddress, String pullAddress, String interPubAddress, String extPubAddress, String loggerAddress, int loggerPort) implements Comparable<ChatServerEntry> {
 
     public ChatServerEntry(String repAddress) {
         this(
-            incrementPort(repAddress, 0),
-            incrementPort(repAddress, 1),
-            incrementPort(repAddress, 2),
-            incrementPort(repAddress, 3)
+            getZMQAddress(repAddress, 0),
+            getZMQAddress(repAddress, 1),
+            getZMQAddress(repAddress, 2),
+            getZMQAddress(repAddress, 3),
+            getBaseAddress(repAddress),
+            getBasePort(repAddress) + 4
         );
     }
 
-    private static String incrementPort(String baseAddress, int increment) {
+    private static String getBaseAddress(String baseAddress) {
+        return baseAddress.split(":")[1];
+    }
+
+    private static int getBasePort(String baseAddress) {
+        return Integer.parseInt(baseAddress.split(":")[2]);
+    }
+
+    private static String getZMQAddress(String baseAddress, int increment) {
         String[] parts = baseAddress.split(":");
         int basePort = Integer.parseInt(parts[2]);
         return String.join(":", parts[0], parts[1], String.valueOf(basePort + increment));
@@ -46,6 +56,8 @@ public record ChatServerEntry(String repAddress, String pullAddress, String inte
         // buffer.append(", ").append(this.pullAddress);
         // buffer.append(", ").append(this.interPubAddress);
         // buffer.append(", ").append(this.extPubAddress);
+        buffer.append(", ").append(this.loggerAddress);
+        buffer.append(", ").append(this.loggerPort);
         return buffer.toString();
     }
 }

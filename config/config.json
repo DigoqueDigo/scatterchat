@@ -44,7 +44,7 @@
         "tcpInterPub": "tcp://localhost:3102",
         "tcpExtPub": "tcp://localhost:3103",
         "internalTopic": "[internal]sc1",
-        "logPort": "3104"
+        "logPort": 3104
     },
 
     "sc2": {
@@ -53,7 +53,7 @@
         "tcpInterPub": "tcp://localhost:3202",
         "tcpExtPub": "tcp://localhost:3203",
         "internalTopic": "[internal]sc2",
-        "logPort": "3204"
+        "logPort": 3204
     },
 
     "sc3": {
@@ -62,7 +62,7 @@
         "tcpInterPub": "tcp://localhost:3302",
         "tcpExtPub": "tcp://localhost:3303",
         "internalTopic": "[internal]sc3",
-        "logPort": "3304"
+        "logPort": 3304
     },
 
     "sc4": {
@@ -71,7 +71,7 @@
         "tcpInterPub": "tcp://localhost:3402",
         "tcpExtPub": "tcp://localhost:3403",
         "internalTopic": "[internal]sc4",
-        "logPort": "3404"
+        "logPort": 3404
     },
 
     "sc5": {
@@ -80,7 +80,7 @@
         "tcpInterPub": "tcp://localhost:3502",
         "tcpExtPub": "tcp://localhost:3503",
         "internalTopic": "[internal]sc5",
-        "logPort": "3504"
+        "logPort": 3504
     },
 
     "sa1": {

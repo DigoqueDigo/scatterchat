@@ -30,11 +30,9 @@ public class LogServer extends Rx3LogServiceGrpc.LogServiceImplBase implements R
     @Override
     public Flowable<LogMessageReply> getLogs(Single<LogMessageRequest> request) {
         return request.flatMapPublisher(req -> {
-            synchronized (this.logger) {
-                return this.logger
-                    .read(req.getHistory())
-                    .map(m -> LogMessageReply.newBuilder().setMessage(m.toString()).build());
-            }
+            return this.logger
+                .read(req.getHistory())
+                .map(m -> LogMessageReply.newBuilder().setMessage(m.toString()).build());
         });
     }
 
@@ -42,14 +40,12 @@ public class LogServer extends Rx3LogServiceGrpc.LogServiceImplBase implements R
     @Override
     public Flowable<UserMessagesReply> getMessagesOfUser(Single<UserMessagesRequest> request) {
         return request.flatMapPublisher(req -> {
-            synchronized (this.logger) {
-                return this.logger
-                    .read(-1)
-                    .filter(m -> m.getType().equals(MessageType.CHAT_MESSAGE))
-                    .map(m -> (ChatMessage) m)
-                    .filter(m -> m.getClient().equals(req.getUsername()) && m.getTopic().equals(req.getTopic()))
-                    .map(m -> UserMessagesReply.newBuilder().setMessage(m.getMessage()).build());
-            }
+            return this.logger
+                .read(-1)
+                .filter(m -> m.getType().equals(MessageType.CHAT_MESSAGE))
+                .map(m -> (ChatMessage) m)
+                .filter(m -> m.getClient().equals(req.getUsername()) && m.getTopic().equals(req.getTopic()))
+                .map(m -> UserMessagesReply.newBuilder().setMessage(m.getMessage()).build());
         });
     }
 
