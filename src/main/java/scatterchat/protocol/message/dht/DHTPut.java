@@ -10,7 +10,7 @@ public record DHTPut(int code, String room, List<String> ips) implements IJson {
 
     public DHTPut {
         if (code != 1) {
-            throw new IllegalArgumentException("Only code 2 is allowed for DHTPut");
+            throw new IllegalArgumentException("Only code 1 is allowed for DHTPut");
         }
     }
 

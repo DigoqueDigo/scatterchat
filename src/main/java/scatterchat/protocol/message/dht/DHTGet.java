@@ -7,7 +7,7 @@ public record DHTGet(int code, String room) implements IJson {
 
     public DHTGet {
         if (code != 0) {
-            throw new IllegalArgumentException("Only code 2 is allowed for DHTPut");
+            throw new IllegalArgumentException("Only code 0 is allowed for DHTGet");
         }
     }
 
