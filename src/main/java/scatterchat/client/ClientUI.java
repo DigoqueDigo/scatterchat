@@ -14,7 +14,7 @@ import scatterchat.protocol.signal.EnterTopicSignal;
 import scatterchat.protocol.signal.ExitSignal;
 import scatterchat.protocol.signal.ExitTopicSignal;
 import scatterchat.protocol.signal.LogSignal;
-import scatterchat.protocol.signal.ServeStateSignal;
+import scatterchat.protocol.signal.ServerStateSignal;
 import scatterchat.protocol.signal.Signal;
 import scatterchat.protocol.signal.UserMessagesSignal;
 
@@ -24,8 +24,8 @@ public class ClientUI implements Runnable {
     private JSONObject config;
     private BlockingQueue<Signal> signals;
 
+    private String topic;
     private String username;
-    private String currentTopic;
 
     private Terminal terminal;
     private LineReader lineReader;
@@ -40,34 +40,32 @@ public class ClientUI implements Runnable {
 
 
     public void handleEnterTopic(String input) throws InterruptedException {
-        this.currentTopic = input.strip();
-        Signal signal = new EnterTopicSignal(this.currentTopic);
+        Signal signal = new EnterTopicSignal(this.topic);
         this.signals.put(signal);
     }
 
 
     public void handleExitTopic(String input) throws InterruptedException {
-        Signal signal = new ExitTopicSignal(this.currentTopic);
+        Signal signal = new ExitTopicSignal(this.topic);
         this.signals.put(signal);
-        this.currentTopic = null;
     }
 
 
     public void handleChatMessage(String input) throws InterruptedException {
-        Signal signal = new ChatMessageSignal(this.username, this.currentTopic, input);
+        Signal signal = new ChatMessageSignal(this.username, this.topic, input);
         this.signals.put(signal);
     }
 
 
     public void handleUsers(String input) throws InterruptedException {
         String[] parts = input.split(" ");
-        Signal signal = new UserMessagesSignal(parts[parts.length - 1], this.currentTopic);
+        Signal signal = new UserMessagesSignal(parts[parts.length - 1], this.topic);
         this.signals.put(signal);
     }
 
 
     public void handleInfo(String input) throws InterruptedException{
-        Signal signal = new ServeStateSignal();
+        Signal signal = new ServerStateSignal();
         this.signals.put(signal);
     }
 
@@ -90,22 +88,21 @@ public class ClientUI implements Runnable {
 
         try {
 
-            String username = this.config.getString("username");
-            String prompt = String.format("%s >>> ", username);
+            String input;
+            this.username = this.config.getString("username");
+            String prompt = String.format("%s >>> ", this.username);
 
             while (true) {
 
-                String input;
-                String topic = this.lineReader.readLine(prompt);
-                String topicPrompt = String.format("[%s] %s >>> ", topic, username);
-
-                this.handleEnterTopic(topic);
+                this.topic = this.lineReader.readLine(prompt);
+                this.handleEnterTopic(this.topic);
+                String topicPrompt = String.format("[%s] %s >>> ", this.topic, this.username);
 
                 while ((input = this.lineReader.readLine(topicPrompt)) != null) {
                     String command = input.split(" ")[0];
                     switch (command) {
                         case "/info" -> handleInfo(input);
-                        case "/users" -> handleUsers(input);
+                        case "/user" -> handleUsers(input);
                         case "/log" -> handleLog(input);
                         case "/exit" -> handleExitTopic(input);
                         default -> handleChatMessage(input);

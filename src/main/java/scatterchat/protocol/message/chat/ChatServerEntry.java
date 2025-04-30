@@ -17,7 +17,7 @@ public record ChatServerEntry(String repAddress, String pullAddress, String inte
     }
 
     private static String getBaseAddress(String baseAddress) {
-        return baseAddress.split(":")[1];
+        return baseAddress.split(":")[1].replace("//", "");
     }
 
     private static int getBasePort(String baseAddress) {
@@ -56,8 +56,8 @@ public record ChatServerEntry(String repAddress, String pullAddress, String inte
         // buffer.append(", ").append(this.pullAddress);
         // buffer.append(", ").append(this.interPubAddress);
         // buffer.append(", ").append(this.extPubAddress);
-        buffer.append(", ").append(this.loggerAddress);
-        buffer.append(", ").append(this.loggerPort);
+        // buffer.append(", ").append(this.loggerAddress);
+        // buffer.append(", ").append(this.loggerPort);
         return buffer.toString();
     }
 }

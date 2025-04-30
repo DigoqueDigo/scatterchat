@@ -9,6 +9,7 @@ import scatterchat.crdt.ORSet;
 import scatterchat.crdt.ORSetAction;
 import scatterchat.protocol.carrier.ZMQCarrier;
 import scatterchat.protocol.message.Message;
+import scatterchat.protocol.message.Message.MessageType;
 import scatterchat.protocol.message.chat.ChatMessage;
 import scatterchat.protocol.message.chat.HeartBeatMessage;
 import scatterchat.protocol.message.crtd.UserORSetMessage;
@@ -69,7 +70,9 @@ public class ChatServerExtPub implements Runnable {
 
             while ((message = this.delivered.take()) != null) {
 
-                System.out.println("[SC extPub] received: " + message);
+                if (!message.getType().equals(MessageType.HEART_BEAT)){
+                    System.out.println("[SC extPub] received: " + message);
+                }
 
                 switch (message) {
                     case ChatMessage m -> handleChatMessage(m, carrier);

@@ -35,7 +35,7 @@ import scatterchat.protocol.signal.EnterTopicSignal;
 import scatterchat.protocol.signal.ExitSignal;
 import scatterchat.protocol.signal.ExitTopicSignal;
 import scatterchat.protocol.signal.LogSignal;
-import scatterchat.protocol.signal.ServeStateSignal;
+import scatterchat.protocol.signal.ServerStateSignal;
 import scatterchat.protocol.signal.Signal;
 import scatterchat.protocol.signal.TimeoutSignal;
 import scatterchat.protocol.signal.UserMessagesSignal;
@@ -88,6 +88,7 @@ public class ClientCon implements Runnable {
         this.reqSCSocket = this.context.createSocket(SocketType.REQ);
         this.reqSASocket = this.context.createSocket(SocketType.REQ);
         this.pubSocket = this.context.createSocket(SocketType.PUB);
+        this.dhtSocket = new Socket();
 
         this.sender = config.getString("username");
         this.inprocAddress = config.getString("inprocPubSub");
@@ -107,9 +108,9 @@ public class ClientCon implements Runnable {
         this.pubCarrier = new ZMQCarrier(pubSocket);
         this.dhtCarrier = new JSONCarrier(dhtSocket);
 
-        System.out.println("[ClientCon] bind: " + inprocAddress);
-        System.out.println("[ClientCon] connect: " + repSAAddress);
-        System.out.println("[ClientCon] connnect: " + dhtAddress + ":" + dhtPort);
+        System.out.println("[Client Con] bind: " + inprocAddress);
+        System.out.println("[Client Con] connect: " + repSAAddress);
+        System.out.println("[Client Con] connnect: " + dhtAddress + ":" + dhtPort);
     }
 
 
@@ -122,7 +123,7 @@ public class ClientCon implements Runnable {
     }
 
 
-    private void handleTopicEnterSignal(EnterTopicSignal sig) throws IOException {
+    private void handleEnterTopicSignal(EnterTopicSignal sig) throws IOException {
 
         DHTGet dhtGet = new DHTGet(0, sig.topic());
         this.dhtCarrier.send(dhtGet);
@@ -164,7 +165,7 @@ public class ClientCon implements Runnable {
     }
 
 
-    private void handleTopicExitSignal(ExitTopicSignal sig) {
+    private void handleExitTopicSignal(ExitTopicSignal sig) {
 
         Message topicExitMessageToSub =
             new TopicExitMessage(this.sender, "clientsub", sig.topic(), this.chatServerEntry);
@@ -185,12 +186,12 @@ public class ClientCon implements Runnable {
     }
 
 
-    private void handleServeStateSignal(ServeStateSignal sig) {
+    private void handleServerStateSignal(ServerStateSignal sig) {
 
         Message serverStateRequest = new ServerStateRequest(this.sender, this.chatServerEntry.repAddress());
         this.reqSCCarrier.sendMessage(serverStateRequest);
 
-        ServerStateResponse response = (ServerStateResponse) this.reqSACarrier.receiveMessage();
+        ServerStateResponse response = (ServerStateResponse) this.reqSCCarrier.receiveMessage();
         PrettyTable ptServerState = PrettyTable.fieldNames("Topic", "Users");
 
         response.getServerTotalState().forEach((topics, users) -> ptServerState.addRow(topics, users));
@@ -216,7 +217,7 @@ public class ClientCon implements Runnable {
             .subscribe(
                 item -> System.out.println(item.getMessage()),
                 error -> error.printStackTrace(),
-                () -> System.out.println("[ClientCon] log request completed")
+                () -> System.out.println("[Client Con] log request completed")
             );
     }
 
@@ -233,14 +234,14 @@ public class ClientCon implements Runnable {
             .subscribe(
                 item -> System.out.println(item.getMessage()),
                 error -> error.printStackTrace(),
-                () -> System.out.println("[ClientCon] user messages request completed")
+                () -> System.out.println("[Client Con] user messages request completed")
         );
     }
 
 
     private void handleTimeoutSignal(TimeoutSignal sig) throws IOException {
-        this.handleTopicExitSignal(new ExitTopicSignal(this.currentTopic));
-        this.handleTopicEnterSignal(new EnterTopicSignal(this.currentTopic));
+        this.handleExitTopicSignal(new ExitTopicSignal(this.currentTopic));
+        this.handleEnterTopicSignal(new EnterTopicSignal(this.currentTopic));
     }
 
 
@@ -251,7 +252,7 @@ public class ClientCon implements Runnable {
             new TopicExitMessage(this.sender, "clientsub", this.currentTopic, this.chatServerEntry));
 
         this.closeConnections();
-        throw new IOException("[ClientCon] connections closed");
+        throw new IOException("[Client Con] closed connections");
     }
 
 
@@ -265,24 +266,23 @@ public class ClientCon implements Runnable {
 
             while ((signal = this.signals.take()) != null) {
 
-                System.out.println("[ClientCon] received: " + signal);
+                System.out.println("[Client Con] received: " + signal);
 
                 switch (signal) {
                     case LogSignal log -> handleLogSignal(log);
                     case ExitSignal exit -> handleExitSignal(exit);
-                    case ExitTopicSignal exit -> handleTopicExitSignal(exit);
+                    case ExitTopicSignal exit -> handleExitTopicSignal(exit);
                     case TimeoutSignal timeout -> handleTimeoutSignal(timeout);
-                    case ServeStateSignal state -> handleServeStateSignal(state);
-                    case EnterTopicSignal enter -> handleTopicEnterSignal(enter);
+                    case ServerStateSignal state -> handleServerStateSignal(state);
+                    case EnterTopicSignal enter -> handleEnterTopicSignal(enter);
                     case ChatMessageSignal chat -> handleChatMessageSignal(chat);
                     case UserMessagesSignal userReq -> handleUserMessagesSignal(userReq);
-                    default -> throw new IllegalArgumentException("[ClientCon] unknown: " + signal);
+                    default -> throw new IllegalArgumentException("[Client Con] unknown: " + signal);
                 }
             }
         }
 
         catch (IOException e) {
-            e.printStackTrace();
             System.out.println(e.getMessage());
         }
 

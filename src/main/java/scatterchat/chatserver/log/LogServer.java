@@ -26,6 +26,8 @@ public class LogServer extends Rx3LogServiceGrpc.LogServiceImplBase implements R
         this.config = config;
     }
 
+    // TODOD :: DAR UPDATE A LOGICA DE SACAR OS LOGS
+
 
     @Override
     public Flowable<LogMessageReply> getLogs(Single<LogMessageRequest> request) {
@@ -56,7 +58,7 @@ public class LogServer extends Rx3LogServiceGrpc.LogServiceImplBase implements R
         try {
             int logPort = config.getInt("logPort");
             System.out.println("[LogServer] started");
-            System.out.println("[LogServer] bind port: " + logPort);
+            System.out.println("[LogServer] bind: localhost:" + logPort);
 
             Server logServer = ServerBuilder
                 .forPort(logPort)

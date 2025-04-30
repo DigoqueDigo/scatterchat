@@ -43,7 +43,7 @@ public class HeartBeatMessage extends Message {
         return byteArrayOutputStream.toByteArray();
     }
 
-    public static ChatMessage deserialize(byte[] data) {
+    public static HeartBeatMessage deserialize(byte[] data) {
         Kryo kryo = new Kryo();
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
         Input input = new Input(byteArrayInputStream);
@@ -51,10 +51,10 @@ public class HeartBeatMessage extends Message {
         kryo.register(MessageType.class);
         kryo.register(HeartBeatMessage.class);
 
-        ChatMessage chatMessage = kryo.readObject(input, ChatMessage.class);
+        HeartBeatMessage heartBeatMessage = kryo.readObject(input, HeartBeatMessage.class);
         input.close();
 
-        return chatMessage;
+        return heartBeatMessage;
     }
 
     @Override

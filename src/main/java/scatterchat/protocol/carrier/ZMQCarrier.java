@@ -8,6 +8,7 @@ import scatterchat.protocol.message.aggr.Aggr;
 import scatterchat.protocol.message.aggr.AggrRep;
 import scatterchat.protocol.message.aggr.AggrReq;
 import scatterchat.protocol.message.chat.ChatMessage;
+import scatterchat.protocol.message.chat.HeartBeatMessage;
 import scatterchat.protocol.message.chat.TopicEnterMessage;
 import scatterchat.protocol.message.chat.TopicExitMessage;
 import scatterchat.protocol.message.crtd.UserORSetMessage;
@@ -30,6 +31,7 @@ public final class ZMQCarrier {
 
     static {
         deserializers.put(MessageType.CHAT_MESSAGE, ChatMessage::deserialize);
+        deserializers.put(MessageType.HEART_BEAT, HeartBeatMessage::deserialize);
         deserializers.put(MessageType.SERVER_STATE_REQUEST, ServerStateRequest::deserialize);
         deserializers.put(MessageType.SERVER_STATE_RESPONSE, ServerStateResponse::deserialize);
         deserializers.put(MessageType.SERVE_TOPIC_REQUEST, ServeTopicRequest::deserialize);

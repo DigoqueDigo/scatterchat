@@ -1,5 +1,6 @@
 package scatterchat.client;
 
+import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 
 import org.json.JSONObject;
@@ -9,6 +10,7 @@ import org.zeromq.ZMQ;
 
 import scatterchat.protocol.carrier.ZMQCarrier;
 import scatterchat.protocol.message.Message;
+import scatterchat.protocol.message.Message.MessageType;
 import scatterchat.protocol.message.chat.ChatMessage;
 import scatterchat.protocol.message.chat.ChatServerEntry;
 import scatterchat.protocol.message.chat.TopicEnterMessage;
@@ -19,10 +21,11 @@ import scatterchat.protocol.signal.TimeoutSignal;
 
 public class ClientSub implements Runnable{
 
-    private static final int TIMEOUT = 1_000; 
+    private static final int TIMEOUT = 2_000; 
 
-    private JSONObject config;
     private ZContext context;
+    private JSONObject config;
+    private boolean isConnected;
     private BlockingQueue<Signal> signals;
 
 
@@ -30,6 +33,7 @@ public class ClientSub implements Runnable{
         this.config = config;
         this.context = context;
         this.signals = signals;
+        this.isConnected = false;
     }
 
 
@@ -43,27 +47,29 @@ public class ClientSub implements Runnable{
 
 
     private void handleTopicEnterMessage(TopicEnterMessage message, ZMQ.Socket socket) {
+        this.isConnected = true;
         ChatServerEntry chatServerEntry = message.getChatServerEntry();
         socket.connect(chatServerEntry.extPubAddress());
         socket.subscribe(message.getTopic());
 
-        System.out.println("[Client SUB] connect: " + chatServerEntry.extPubAddress());
-        System.out.println("[Client SUB] subcribe: " + message.getTopic());
+        System.out.println("[Client Sub] connect: " + chatServerEntry.extPubAddress());
+        System.out.println("[Client Sub] subcribe: " + message.getTopic());
     }
 
 
-    private void handleTopicExitMessage(TopicExitMessage message, ZMQ.Socket socket) throws NullPointerException {
+    private void handleTopicExitMessage(TopicExitMessage message, ZMQ.Socket socket) throws IOException {
 
         if (message.getTopic() == null){
-            throw new NullPointerException("client exit");
+            throw new IOException("[Client Sub] closed connections");
         }
 
+        this.isConnected = false;
         ChatServerEntry chatServerEntry = message.getChatServerEntry();
         socket.unsubscribe(message.getTopic());
         socket.disconnect(chatServerEntry.extPubAddress());
 
-        System.out.println("[Client SUB] unsubcribe: " + message.getTopic());
-        System.out.println("[Client SUB] disconnect: " + chatServerEntry.extPubAddress());
+        System.out.println("[Client Sub] unsubcribe: " + message.getTopic());
+        System.out.println("[Client Sub] disconnect: " + chatServerEntry.extPubAddress());
     }
 
 
@@ -80,34 +86,38 @@ public class ClientSub implements Runnable{
         socket.subscribe(internalTopic.getBytes(ZMQ.CHARSET));
         socket.setReceiveTimeOut(TIMEOUT);
 
-        System.out.println("[Client SUB] connect: " + inprocAddres);
-        System.out.println("[Client SUB] subscribe: " + internalTopic);
+        System.out.println("[Client Sub] connect: " + inprocAddres);
+        System.out.println("[Client Sub] subscribe: " + internalTopic);
 
         try{
 
             while (true) {
 
                 Message message = carrier.receiveMessageWithTopic();
-                System.out.println("[Client SUB] received: " + message);
 
-                if (message == null) {
-                    TimeoutSignal timeoutSignal = new TimeoutSignal();
-                    this.signals.put(timeoutSignal);
-                } else {
+                if (message == null && this.isConnected) {
+                    this.signals.put(new TimeoutSignal());
+                    System.out.println("[Client Sub] timeout");
+                }
+
+                else if (message != null && !message.getType().equals(MessageType.HEART_BEAT)) {
+
+                    System.out.println("[Client Sub] received: " + message);
+
                     switch (message){
                         case ChatMessage m -> handleChatMessage(m);
                         case TopicExitMessage m -> handleTopicExitMessage(m, socket);
                         case TopicEnterMessage m -> handleTopicEnterMessage(m, socket);
-                        default -> System.out.println("[Client SUB] unknown: " + message);
+                        default -> System.out.println("[Client Sub] unknown: " + message);
                     }
                 }
             }
         }
 
-        catch (NullPointerException e){
-            socket.unsubscribe("[internal]");
+        catch (IOException e){
+            socket.unsubscribe(internalTopic);
             socket.close();
-            System.out.println("[Client SUB] exit");
+            System.out.println(e.getMessage());
         }
 
         catch (Exception e){

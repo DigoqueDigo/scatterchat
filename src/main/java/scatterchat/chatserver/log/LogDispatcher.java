@@ -31,9 +31,6 @@ public class LogDispatcher implements Runnable {
             this.logBuffer.sort(null);
             Iterator<LogCausalMessage> iterator = this.logBuffer.iterator();
 
-            System.out.println("[LogOrganizer] start");
-            System.out.println("[LogOrganizer] logs: " + this.logBuffer);
-
             while (iterator.hasNext()) {
 
                 LogCausalMessage logCausalMessage = iterator.next();
@@ -44,7 +41,6 @@ public class LogDispatcher implements Runnable {
                     Message message = logCausalMessage.getCausalMessage().getMessage();
                     this.logger.write(message);
                     iterator.remove();
-                    System.out.println("[LogOrganizer] add log: " + message);
                 }
             }
         }
