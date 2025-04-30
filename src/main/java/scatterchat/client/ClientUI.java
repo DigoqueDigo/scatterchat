@@ -39,45 +39,46 @@ public class ClientUI implements Runnable {
     }
 
 
-    public void handleEnterTopic(String input) throws InterruptedException {
+    private void handleEnterTopic(String input) throws InterruptedException {
         Signal signal = new EnterTopicSignal(this.topic);
         this.signals.put(signal);
     }
 
 
-    public void handleExitTopic(String input) throws InterruptedException {
+    private void handleExitTopic(String input) throws InterruptedException {
         Signal signal = new ExitTopicSignal(this.topic);
         this.signals.put(signal);
     }
 
 
-    public void handleChatMessage(String input) throws InterruptedException {
+    private void handleChatMessage(String input) throws InterruptedException {
         Signal signal = new ChatMessageSignal(this.username, this.topic, input);
         this.signals.put(signal);
     }
 
 
-    public void handleUsers(String input) throws InterruptedException {
+    private void handleUserLog(String input) throws InterruptedException {
         String[] parts = input.split(" ");
         Signal signal = new UserLogSignal(parts[parts.length - 1], this.topic);
         this.signals.put(signal);
     }
 
 
-    public void handleInfo(String input) throws InterruptedException{
+    private void handleInfo(String input) throws InterruptedException{
         Signal signal = new ServerStateSignal();
         this.signals.put(signal);
     }
 
 
-    public void handleLog(String input) throws InterruptedException {
+    private void handleLog(String input) throws InterruptedException {
         String[] parts = input.split(" ");
-        Signal signal = new LogSignal(Integer.parseInt(parts[parts.length - 1]));
+        int history = (parts.length > 1) ? Integer.parseInt(parts[parts.length - 1]) : Integer.MAX_VALUE;
+        Signal signal = new LogSignal(this.topic, history);
         this.signals.put(signal);
     }
 
 
-    public void handleExit() throws InterruptedException {
+    private void handleExit() throws InterruptedException {
         Signal signal = new ExitSignal();
         this.signals.put(signal);
         System.out.println("Bye");
@@ -87,6 +88,8 @@ public class ClientUI implements Runnable {
     public void run(){
 
         try {
+
+            Thread.sleep(500);
 
             String input;
             this.username = this.config.getString("username");
@@ -98,20 +101,26 @@ public class ClientUI implements Runnable {
                 this.handleEnterTopic(this.topic);
                 String topicPrompt = String.format("[%s] %s >>> ", this.topic, this.username);
 
+                Thread.sleep(1000);
+
                 while ((input = this.lineReader.readLine(topicPrompt)) != null) {
                     String command = input.split(" ")[0];
                     switch (command) {
-                        case "/info" -> handleInfo(input);
-                        case "/user" -> handleUsers(input);
                         case "/log" -> handleLog(input);
+                        case "/info" -> handleInfo(input);
                         case "/exit" -> handleExitTopic(input);
+                        case "/userlog" -> handleUserLog(input);
                         default -> handleChatMessage(input);
                     }
 
                     if (command.equals("/exit")) {
                         break;
                     }
+
+                    Thread.sleep(500);
                 }
+
+                Thread.sleep(500);
             }
         }
 

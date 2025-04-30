@@ -23,9 +23,9 @@ public class ClientSub implements Runnable{
 
     private static final int TIMEOUT = 2_000; 
 
+    private String topic;
     private ZContext context;
     private JSONObject config;
-    private boolean isConnected;
     private BlockingQueue<Signal> signals;
 
 
@@ -33,7 +33,6 @@ public class ClientSub implements Runnable{
         this.config = config;
         this.context = context;
         this.signals = signals;
-        this.isConnected = false;
     }
 
 
@@ -41,13 +40,13 @@ public class ClientSub implements Runnable{
         if (!message.getClient().equals(this.config.getString("username"))) {
             System.out.println(message.getClient() + " >>> " + message.getMessage());
         } else {
-            System.out.println("[Client UI] ignored: " + message);
+            System.out.println("[Client Sub] ignored: " + message);
         }
     }
 
 
     private void handleTopicEnterMessage(TopicEnterMessage message, ZMQ.Socket socket) {
-        this.isConnected = true;
+        this.topic = message.getTopic();
         ChatServerEntry chatServerEntry = message.getChatServerEntry();
         socket.connect(chatServerEntry.extPubAddress());
         socket.subscribe(message.getTopic());
@@ -63,7 +62,7 @@ public class ClientSub implements Runnable{
             throw new IOException("[Client Sub] closed connections");
         }
 
-        this.isConnected = false;
+        this.topic = null;
         ChatServerEntry chatServerEntry = message.getChatServerEntry();
         socket.unsubscribe(message.getTopic());
         socket.disconnect(chatServerEntry.extPubAddress());
@@ -95,8 +94,8 @@ public class ClientSub implements Runnable{
 
                 Message message = carrier.receiveMessageWithTopic();
 
-                if (message == null && this.isConnected) {
-                    this.signals.put(new TimeoutSignal());
+                if (message == null && this.topic != null) {
+                    this.signals.put(new TimeoutSignal(this.topic));
                     System.out.println("[Client Sub] timeout");
                 }
 

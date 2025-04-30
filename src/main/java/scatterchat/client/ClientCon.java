@@ -3,7 +3,6 @@ package scatterchat.client;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
@@ -48,9 +47,7 @@ public class ClientCon implements Runnable {
     private BlockingQueue<Signal> signals;
     
     private Random random;
-    private String currentTopic;
     private ChatServerEntry chatServerEntry;
-    private List<ChatServerEntry> chatServerEntries;
 
     private String sender;
     private int dhtPort;
@@ -79,11 +76,10 @@ public class ClientCon implements Runnable {
         this.context = context;
         this.signals = signals;
         this.random = new Random();
-        this.chatServerEntries = new ArrayList<>();
     }
     
     
-    public void setupConnections() throws IOException {
+    private void setupConnections() throws IOException {
         this.pushSCSocket = this.context.createSocket(SocketType.PUSH);
         this.reqSCSocket = this.context.createSocket(SocketType.REQ);
         this.reqSASocket = this.context.createSocket(SocketType.REQ);
@@ -114,7 +110,7 @@ public class ClientCon implements Runnable {
     }
 
 
-    public void closeConnections() throws IOException {
+    private void closeConnections() throws IOException {
         this.dhtSocket.close();
         this.pubSocket.close();
         this.reqSCSocket.close();
@@ -137,14 +133,13 @@ public class ClientCon implements Runnable {
             dhtRep = this.dhtCarrier.receive();
         }
 
-        this.chatServerEntries = dhtRep.ips()
+        List<ChatServerEntry> chatServerEntries = dhtRep.ips()
             .stream()
             .map(ip -> new ChatServerEntry(ip))
             .collect(Collectors.toList());
 
-        int scIndex = this.random.nextInt(this.chatServerEntries.size());
-        this.chatServerEntry = this.chatServerEntries.remove(scIndex);
-        this.currentTopic = sig.topic();
+        int scIndex = this.random.nextInt(chatServerEntries.size());
+        this.chatServerEntry = chatServerEntries.get(scIndex);
 
         this.pushSCSocket.connect(this.chatServerEntry.pullAddress());
         this.reqSCSocket.connect(this.chatServerEntry.repAddress());
@@ -155,7 +150,7 @@ public class ClientCon implements Runnable {
         );
 
         Message topicEnterMessageToSub =
-            new TopicEnterMessage(this.sender, "clientsub", sig.topic(), this.chatServerEntry);
+            new TopicEnterMessage("clientcon", "clientsub", sig.topic(), this.chatServerEntry);
 
         Message topicEnterMessageToPull =
             new TopicEnterMessage(this.sender, this.chatServerEntry.pullAddress(), sig.topic(), this.chatServerEntry);  
@@ -168,20 +163,19 @@ public class ClientCon implements Runnable {
     private void handleExitTopicSignal(ExitTopicSignal sig) {
 
         Message topicExitMessageToSub =
-            new TopicExitMessage(this.sender, "clientsub", sig.topic(), this.chatServerEntry);
+            new TopicExitMessage("clientcon", "clientsub", sig.topic(), this.chatServerEntry);
 
         Message topicExitMessageToPull =
             new TopicExitMessage(this.sender, this.chatServerEntry.pullAddress(), sig.topic(), this.chatServerEntry);
 
         this.pushSCCarrier.sendMessage(topicExitMessageToPull);
-        this.pubCarrier.sendMessageWithTopic(internalTopic, topicExitMessageToSub);
+        this.pubCarrier.sendMessageWithTopic(this.internalTopic, topicExitMessageToSub);
 
         this.reqSCSocket.disconnect(chatServerEntry.repAddress());
         this.pushSCSocket.disconnect(chatServerEntry.pullAddress());
         this.clientLog.shutdown();
 
         this.clientLog = null;
-        this.currentTopic = null;
         this.chatServerEntry = null;
     }
 
@@ -199,9 +193,20 @@ public class ClientCon implements Runnable {
     }
 
 
+    private void handleTimeoutSignal(TimeoutSignal sig) throws IOException {
+        this.handleExitTopicSignal(new ExitTopicSignal(sig.topic()));
+        this.handleEnterTopicSignal(new EnterTopicSignal(sig.topic()));
+    }
+
+
     private void handleChatMessageSignal(ChatMessageSignal sig) {
         this.pushSCCarrier.sendMessage(
-            new ChatMessage(this.sender, this.chatServerEntry.pullAddress(), sig.topic(), sig.message(), sig.client()
+            new ChatMessage(
+                this.sender,
+                this.chatServerEntry.pullAddress(),
+                sig.topic(),
+                sig.message(),
+                sig.client()
         ));
     }
 
@@ -210,6 +215,7 @@ public class ClientCon implements Runnable {
 
         LogRequest request = LogRequest
             .newBuilder()
+            .setTopic(sig.topic())
             .setHistory(sig.history())
             .build();
 
@@ -217,7 +223,7 @@ public class ClientCon implements Runnable {
             .subscribe(
                 item -> System.out.println(item.getClient() + " ::: " + item.getMessage()),
                 error -> error.printStackTrace(),
-                () -> System.out.println("[Client Con] log request completed")
+                () -> System.out.println("[Client Con] log completed")
             );
     }
 
@@ -234,14 +240,8 @@ public class ClientCon implements Runnable {
             .subscribe(
                 item -> System.out.println(request.getClient() + " ::: " + item.getMessage()),
                 error -> error.printStackTrace(),
-                () -> System.out.println("[Client Con] user messages request completed")
+                () -> System.out.println("[Client Con] userlog completed")
         );
-    }
-
-
-    private void handleTimeoutSignal(TimeoutSignal sig) throws IOException {
-        this.handleExitTopicSignal(new ExitTopicSignal(this.currentTopic));
-        this.handleEnterTopicSignal(new EnterTopicSignal(this.currentTopic));
     }
 
 
@@ -249,7 +249,7 @@ public class ClientCon implements Runnable {
 
         this.pubCarrier.sendMessageWithTopic(
             this.internalTopic,
-            new TopicExitMessage(this.sender, "clientsub", this.currentTopic, this.chatServerEntry));
+            new TopicExitMessage(this.sender, "clientsub", null, this.chatServerEntry));
 
         this.closeConnections();
         throw new IOException("[Client Con] closed connections");

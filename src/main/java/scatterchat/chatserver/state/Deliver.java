@@ -103,8 +103,8 @@ public class Deliver implements Runnable {
 
             while ((causalMessage = this.received.take()) != null) {
                 System.out.println("[SC deliver] received: " + causalMessage);
-                addCausalMessage(causalMessage);
-                deliver(causalMessage.getTopic());
+                this.addCausalMessage(causalMessage);
+                this.deliver(causalMessage.getTopic());
             }
         }
 

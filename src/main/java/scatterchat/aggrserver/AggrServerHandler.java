@@ -35,7 +35,7 @@ import scatterchat.protocol.carrier.ZMQCarrier;
 
 public class AggrServerHandler implements Runnable{
 
-    private static final int C = 2;
+    private static final int C = 3;
     private static final int T = 5;
 
     private State state;
@@ -266,19 +266,15 @@ public class AggrServerHandler implements Runnable{
             ZMQ.Socket socket = this.context.createSocket(SocketType.REQ);
             ZMQCarrier carrier = new ZMQCarrier(socket);
 
-            String scRepAddress = this.config
-                .getJSONObject("sc")
-                .getString("tcpExtRep");
-
+            String scRepAddress = this.config.getJSONObject("sc").getString("tcpExtRep");
             socket.connect(scRepAddress);
+
             System.out.println("[AggrServerHandler] started");
             System.out.println("[AggrServerHandler] connected: " + scRepAddress);
 
             Message message = null;;
 
             while ((message = this.received.take()) != null) {
-
-        //        System.out.println("[AggrServerHandler] received: " + message);
 
                 switch (message) {
                     case CyclonOk m -> handleCyclonOk(m);

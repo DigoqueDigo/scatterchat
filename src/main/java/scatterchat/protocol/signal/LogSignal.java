@@ -1,3 +1,3 @@
 package scatterchat.protocol.signal;
 
-public record LogSignal(int history) implements Signal {}
+public record LogSignal(String topic, int history) implements Signal {}

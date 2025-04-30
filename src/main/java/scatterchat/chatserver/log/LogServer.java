@@ -26,8 +26,6 @@ public class LogServer extends Rx3LogServiceGrpc.LogServiceImplBase implements R
         this.config = config;
     }
 
-    // TODOD :: DAR UPDATE A LOGICA DE SACAR OS LOGS
-
 
     @Override
     public Flowable<LogReply> getLogs(Single<LogRequest> request) {
