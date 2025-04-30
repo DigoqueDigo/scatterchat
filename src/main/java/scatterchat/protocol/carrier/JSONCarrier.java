@@ -25,7 +25,6 @@ public class JSONCarrier {
 
 
     public void send(IJson request) throws IOException {
-        System.out.println("A ENVIAR " + request);
         this.outputStream.println(request.toJson().toString());
     }
 

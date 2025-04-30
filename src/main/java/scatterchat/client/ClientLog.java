@@ -2,9 +2,12 @@ package scatterchat.client;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Single;
 import scatterchat.LogMessageRequest;
+import scatterchat.LogMessageReply;
 import scatterchat.Rx3LogServiceGrpc;
+import scatterchat.UserMessagesReply;
 import scatterchat.UserMessagesRequest;
 import scatterchat.Rx3LogServiceGrpc.RxLogServiceStub;
 
@@ -29,22 +32,12 @@ public class ClientLog {
     }
 
 
-    public void getLogs(LogMessageRequest request) {
-        this.stub.getLogs(Single.just(request))
-            .subscribe(
-                item -> System.out.println(item.getMessage()),
-                error -> error.printStackTrace(),
-                () -> System.out.println("[ClientLog] log request completed")
-            );
+    public Flowable<LogMessageReply> getLogs(LogMessageRequest request) {
+        return this.stub.getLogs(Single.just(request));
     }
 
 
-    public void getMessagesOfUser(UserMessagesRequest request) {
-        this.stub.getMessagesOfUser(Single.just(request))
-            .subscribe(
-                item -> System.out.println(item.getMessage()),
-                error -> error.printStackTrace(),
-                () -> System.out.println("[ClientLog] user messages request completed")
-            );
+    public Flowable<UserMessagesReply> getMessagesOfUser(UserMessagesRequest request) {
+        return this.stub.getMessagesOfUser(Single.just(request));
     }
 }

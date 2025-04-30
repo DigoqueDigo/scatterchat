@@ -57,8 +57,15 @@ public final class ZMQCarrier {
     }
 
     public Message receiveMessage() {
-        MessageType type = MessageType.valueOf(new String(socket.recv(0)));
-        return deserializers.get(type).apply(socket.recv(0));
+        byte[] header = socket.recv(0);
+
+        if (header == null){
+            return null;
+        }
+
+        byte[] payload = socket.recv(0);
+        MessageType type = MessageType.valueOf(new String(header));
+        return deserializers.get(type).apply(payload);
     }
 
     public void sendMessageWithTopic(String topic, Message message) {
@@ -67,8 +74,8 @@ public final class ZMQCarrier {
     }
 
     public Message receiveMessageWithTopic() {
-        socket.recv(0);
-        return receiveMessage();
+        byte[] topic = socket.recv(0);
+        return (topic == null) ? null : receiveMessage();
     }
 
     public void sendCausalMessage(CausalMessage message) {
@@ -76,7 +83,8 @@ public final class ZMQCarrier {
     }
 
     public CausalMessage receiveCausalMessage() {
-        return CausalMessage.deserialize(socket.recv(0));
+        byte[] payload = socket.recv(0);
+        return (payload == null) ? null : CausalMessage.deserialize(payload);
     }
 
     public void sendCausalMessageWithTopic(String topic, CausalMessage message) {
@@ -85,7 +93,7 @@ public final class ZMQCarrier {
     }
 
     public CausalMessage receiveCausalMessageWithTopic() {
-        socket.recv(0);
-        return receiveCausalMessage();
+        byte[] topic = socket.recv(0);
+        return (topic == null) ? null : receiveCausalMessage();
     }
 }

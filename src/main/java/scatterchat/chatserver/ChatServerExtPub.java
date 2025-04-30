@@ -10,6 +10,7 @@ import scatterchat.crdt.ORSetAction;
 import scatterchat.protocol.carrier.ZMQCarrier;
 import scatterchat.protocol.message.Message;
 import scatterchat.protocol.message.chat.ChatMessage;
+import scatterchat.protocol.message.chat.HeartBeatMessage;
 import scatterchat.protocol.message.crtd.UserORSetMessage;
 
 import java.util.concurrent.BlockingQueue;
@@ -32,6 +33,11 @@ public class ChatServerExtPub implements Runnable {
 
 
     private void handleChatMessage(ChatMessage message, ZMQCarrier carrier) {
+        carrier.sendMessageWithTopic(message.getTopic(), message);
+    }
+
+
+    private void handleHeartBeatMessage(HeartBeatMessage message, ZMQCarrier carrier) {
         carrier.sendMessageWithTopic(message.getTopic(), message);
     }
 
@@ -68,6 +74,7 @@ public class ChatServerExtPub implements Runnable {
                 switch (message) {
                     case ChatMessage m -> handleChatMessage(m, carrier);
                     case UserORSetMessage m -> handleUsersORSetMessage(m);
+                    case HeartBeatMessage m -> handleHeartBeatMessage(m, carrier);
                     default -> System.out.println("[SC extPuB] unknown: " + message);
                 }
             }

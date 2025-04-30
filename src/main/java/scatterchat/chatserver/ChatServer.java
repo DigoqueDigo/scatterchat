@@ -48,17 +48,26 @@ public class ChatServer {
         Runnable logOrganizer = new LogDispatcher(logger, logBuffer);
         Runnable deliver = new Deliver(state, received, delivered, logBuffer);
 
+        Runnable chatServerHeartBeat = new ChatServerHeartBeat(state, delivered);
         Runnable chatServerExtRep = new ChatServerExtRep(config, context, state, broadcast);
         Runnable chatServerExtPull = new ChatServerExtPull(config, context, state, broadcast);
         Runnable chatServerInterPub = new ChatServerInterPub(config, context, state, broadcast);
         Runnable chatServerInterSub = new ChatServerInterSub(config, context, received);
         Runnable chatServerExtPub = new ChatServerExtPub(config, context, state, delivered);
 
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
+
         scheduler.scheduleAtFixedRate(
             logOrganizer,
             LogDispatcher.DELAY,
             LogDispatcher.PERIOD,
+            TimeUnit.MILLISECONDS
+        );
+
+        scheduler.scheduleAtFixedRate(
+            chatServerHeartBeat,
+            ChatServerHeartBeat.DELAY,
+            ChatServerHeartBeat.PERIOD,
             TimeUnit.MILLISECONDS
         );
 

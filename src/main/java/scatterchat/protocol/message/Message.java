@@ -12,6 +12,7 @@ public abstract class Message {
         TOPIC_ENTER_MESSAGE,
         TOPIC_EXIT_MESSAGE,
         USERS_ORSET_MESSAGE,
+        HEART_BEAT,
         CYCLON,
         CYCLON_OK,
         CYCLON_ERROR,

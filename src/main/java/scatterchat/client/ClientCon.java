@@ -16,6 +16,8 @@ import org.zeromq.ZMQ;
 
 import com.sarojaba.prettytable4j.PrettyTable;
 
+import scatterchat.LogMessageRequest;
+import scatterchat.UserMessagesRequest;
 import scatterchat.protocol.carrier.JSONCarrier;
 import scatterchat.protocol.carrier.ZMQCarrier;
 import scatterchat.protocol.message.Message;
@@ -29,11 +31,14 @@ import scatterchat.protocol.message.dht.DHTRep;
 import scatterchat.protocol.message.info.ServerStateRequest;
 import scatterchat.protocol.message.info.ServerStateResponse;
 import scatterchat.protocol.signal.ChatMessageSignal;
-import scatterchat.protocol.signal.ExitSginal;
-import scatterchat.protocol.signal.ServeStateRequestSignal;
+import scatterchat.protocol.signal.EnterTopicSignal;
+import scatterchat.protocol.signal.ExitSignal;
+import scatterchat.protocol.signal.ExitTopicSignal;
+import scatterchat.protocol.signal.LogSignal;
+import scatterchat.protocol.signal.ServeStateSignal;
 import scatterchat.protocol.signal.Signal;
-import scatterchat.protocol.signal.TopicEnterSignal;
-import scatterchat.protocol.signal.TopicExitSignal;
+import scatterchat.protocol.signal.TimeoutSignal;
+import scatterchat.protocol.signal.UserMessagesSignal;
 
 
 public class ClientCon implements Runnable {
@@ -65,6 +70,8 @@ public class ClientCon implements Runnable {
     private ZMQCarrier reqSCCarrier;
     private ZMQCarrier reqSACarrier;
     private ZMQCarrier pubCarrier;
+
+    private ClientLog clientLog;
 
 
     public ClientCon(JSONObject config, ZContext context, BlockingQueue<Signal> signals) {
@@ -114,34 +121,9 @@ public class ClientCon implements Runnable {
         this.pushSCSocket.close();
     }
 
-    
-    // private void handleUserMessagesRequestSignal(UserMessagesRequestSignal sig) {
-    //     // TODO Auto-generated method stub
-    //     throw new UnsupportedOperationException("Unimplemented method 'handleUserMessagesRequestSignal'");
-    // }
 
+    private void handleTopicEnterSignal(EnterTopicSignal sig) throws IOException {
 
-    private void handleTopicExitSignal(TopicExitSignal sig) {
-
-        Message topicExitMessageToSub =
-            new TopicExitMessage(this.sender, "clientsub", sig.topic(), this.chatServerEntry);
-
-        Message topicExitMessageToPull =
-            new TopicExitMessage(this.sender, this.chatServerEntry.pullAddress(), sig.topic(), this.chatServerEntry);
-
-        this.pushSCCarrier.sendMessage(topicExitMessageToPull);
-        this.pubCarrier.sendMessageWithTopic(internalTopic, topicExitMessageToSub);
-
-        this.reqSCSocket.disconnect(chatServerEntry.repAddress());
-        this.pushSCSocket.disconnect(chatServerEntry.pullAddress());
-
-        this.currentTopic = null;
-        this.chatServerEntry = null;
-    }
-
-
-    private void handleTopicEnterSignal(TopicEnterSignal sig) throws IOException {
-        
         DHTGet dhtGet = new DHTGet(0, sig.topic());
         this.dhtCarrier.send(dhtGet);
         DHTRep dhtRep = this.dhtCarrier.receive();
@@ -166,6 +148,11 @@ public class ClientCon implements Runnable {
         this.pushSCSocket.connect(this.chatServerEntry.pullAddress());
         this.reqSCSocket.connect(this.chatServerEntry.repAddress());
 
+        this.clientLog = new ClientLog(
+            this.chatServerEntry.loggerAddress(),
+            this.chatServerEntry.loggerPort()
+        );
+
         Message topicEnterMessageToSub =
             new TopicEnterMessage(this.sender, "clientsub", sig.topic(), this.chatServerEntry);
 
@@ -177,13 +164,28 @@ public class ClientCon implements Runnable {
     }
 
 
-    // private void handleTimeoutSignal(TimeoutSignal sig) {
-    //     // TODO Auto-generated method stub
-    //     throw new UnsupportedOperationException("Unimplemented method 'handleTimeoutSignal'");
-    // }
+    private void handleTopicExitSignal(ExitTopicSignal sig) {
+
+        Message topicExitMessageToSub =
+            new TopicExitMessage(this.sender, "clientsub", sig.topic(), this.chatServerEntry);
+
+        Message topicExitMessageToPull =
+            new TopicExitMessage(this.sender, this.chatServerEntry.pullAddress(), sig.topic(), this.chatServerEntry);
+
+        this.pushSCCarrier.sendMessage(topicExitMessageToPull);
+        this.pubCarrier.sendMessageWithTopic(internalTopic, topicExitMessageToSub);
+
+        this.reqSCSocket.disconnect(chatServerEntry.repAddress());
+        this.pushSCSocket.disconnect(chatServerEntry.pullAddress());
+        this.clientLog.shutdown();
+
+        this.clientLog = null;
+        this.currentTopic = null;
+        this.chatServerEntry = null;
+    }
 
 
-    private void handleServeStateSignal(ServeStateRequestSignal sig) {
+    private void handleServeStateSignal(ServeStateSignal sig) {
 
         Message serverStateRequest = new ServerStateRequest(this.sender, this.chatServerEntry.repAddress());
         this.reqSCCarrier.sendMessage(serverStateRequest);
@@ -196,13 +198,53 @@ public class ClientCon implements Runnable {
     }
 
 
-    // private void handleLogRequestSignal(LogRequestSignal sig) {
-    //     // TODO Auto-generated method stub
-    //     throw new UnsupportedOperationException("Unimplemented method 'handleLogRequestSignal'");
-    // }
+    private void handleChatMessageSignal(ChatMessageSignal sig) {
+        this.pushSCCarrier.sendMessage(
+            new ChatMessage(this.sender, this.chatServerEntry.pullAddress(), sig.topic(), sig.message(), sig.client()
+        ));
+    }
 
 
-    private void handleExitSignal(ExitSginal sig) throws IOException {
+    private void handleLogSignal(LogSignal sig) {
+
+        LogMessageRequest request = LogMessageRequest
+            .newBuilder()
+            .setHistory(sig.history())
+            .build();
+
+        this.clientLog.getLogs(request)
+            .subscribe(
+                item -> System.out.println(item.getMessage()),
+                error -> error.printStackTrace(),
+                () -> System.out.println("[ClientCon] log request completed")
+            );
+    }
+
+
+    private void handleUserMessagesSignal(UserMessagesSignal sig) {
+
+        UserMessagesRequest request = UserMessagesRequest
+            .newBuilder()
+            .setTopic(sig.topic())
+            .setUsername(sig.client())
+            .build();
+
+        this.clientLog.getMessagesOfUser(request)
+            .subscribe(
+                item -> System.out.println(item.getMessage()),
+                error -> error.printStackTrace(),
+                () -> System.out.println("[ClientCon] user messages request completed")
+        );
+    }
+
+
+    private void handleTimeoutSignal(TimeoutSignal sig) throws IOException {
+        this.handleTopicExitSignal(new ExitTopicSignal(this.currentTopic));
+        this.handleTopicEnterSignal(new EnterTopicSignal(this.currentTopic));
+    }
+
+
+    private void handleExitSignal(ExitSignal sig) throws IOException {
 
         this.pubCarrier.sendMessageWithTopic(
             this.internalTopic,
@@ -210,18 +252,6 @@ public class ClientCon implements Runnable {
 
         this.closeConnections();
         throw new IOException("[ClientCon] connections closed");
-    }
-
-
-    private void handleChatMessageSignal(ChatMessageSignal sig) {
-        this.pushSCCarrier.sendMessage(
-            new ChatMessage(
-                this.sender,
-                this.chatServerEntry.pullAddress(),
-                sig.topic(),
-                sig.message(),
-                sig.client()
-        ));
     }
 
 
@@ -234,16 +264,19 @@ public class ClientCon implements Runnable {
             this.setupConnections();
 
             while ((signal = this.signals.take()) != null) {
+
+                System.out.println("[ClientCon] received: " + signal);
+
                 switch (signal) {
-                    case ExitSginal exit -> handleExitSignal(exit);
-                //    case TimeoutSignal timeout -> handleTimeoutSignal(timeout);
-                    case TopicExitSignal exit -> handleTopicExitSignal(exit);
-                    case TopicEnterSignal enter -> handleTopicEnterSignal(enter);
-                 //   case LogRequestSignal log -> handleLogRequestSignal(log);
+                    case LogSignal log -> handleLogSignal(log);
+                    case ExitSignal exit -> handleExitSignal(exit);
+                    case ExitTopicSignal exit -> handleTopicExitSignal(exit);
+                    case TimeoutSignal timeout -> handleTimeoutSignal(timeout);
+                    case ServeStateSignal state -> handleServeStateSignal(state);
+                    case EnterTopicSignal enter -> handleTopicEnterSignal(enter);
                     case ChatMessageSignal chat -> handleChatMessageSignal(chat);
-                    case ServeStateRequestSignal state -> handleServeStateSignal(state);
-                //    case UserMessagesRequestSignal userReq -> handleUserMessagesRequestSignal(userReq);
-                    default -> throw new IllegalArgumentException("Unknown signal type: " + signal);
+                    case UserMessagesSignal userReq -> handleUserMessagesSignal(userReq);
+                    default -> throw new IllegalArgumentException("[ClientCon] unknown: " + signal);
                 }
             }
         }
