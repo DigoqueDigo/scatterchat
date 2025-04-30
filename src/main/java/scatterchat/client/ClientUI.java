@@ -16,7 +16,7 @@ import scatterchat.protocol.signal.ExitTopicSignal;
 import scatterchat.protocol.signal.LogSignal;
 import scatterchat.protocol.signal.ServerStateSignal;
 import scatterchat.protocol.signal.Signal;
-import scatterchat.protocol.signal.UserMessagesSignal;
+import scatterchat.protocol.signal.UserLogSignal;
 
 
 public class ClientUI implements Runnable {
@@ -59,7 +59,7 @@ public class ClientUI implements Runnable {
 
     public void handleUsers(String input) throws InterruptedException {
         String[] parts = input.split(" ");
-        Signal signal = new UserMessagesSignal(parts[parts.length - 1], this.topic);
+        Signal signal = new UserLogSignal(parts[parts.length - 1], this.topic);
         this.signals.put(signal);
     }
 

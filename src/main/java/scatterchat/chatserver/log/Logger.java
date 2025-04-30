@@ -22,8 +22,7 @@ public class Logger {
     }
 
 
-    public synchronized Flowable<Message> read(int history) {
-        int count = (history == -1) ? this.logs.size() : Math.min(history, this.logs.size());
-        return Flowable.fromIterable(new ArrayList<>(this.logs.subList(0, count)));
+    public synchronized Flowable<Message> read() {
+        return Flowable.fromIterable(new ArrayList<>(this.logs));
     }
 }

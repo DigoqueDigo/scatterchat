@@ -16,8 +16,8 @@ import org.zeromq.ZMQ;
 
 import com.sarojaba.prettytable4j.PrettyTable;
 
-import scatterchat.LogMessageRequest;
-import scatterchat.UserMessagesRequest;
+import scatterchat.LogRequest;
+import scatterchat.UserLogRequest;
 import scatterchat.protocol.carrier.JSONCarrier;
 import scatterchat.protocol.carrier.ZMQCarrier;
 import scatterchat.protocol.message.Message;
@@ -38,7 +38,7 @@ import scatterchat.protocol.signal.LogSignal;
 import scatterchat.protocol.signal.ServerStateSignal;
 import scatterchat.protocol.signal.Signal;
 import scatterchat.protocol.signal.TimeoutSignal;
-import scatterchat.protocol.signal.UserMessagesSignal;
+import scatterchat.protocol.signal.UserLogSignal;
 
 
 public class ClientCon implements Runnable {
@@ -208,31 +208,31 @@ public class ClientCon implements Runnable {
 
     private void handleLogSignal(LogSignal sig) {
 
-        LogMessageRequest request = LogMessageRequest
+        LogRequest request = LogRequest
             .newBuilder()
             .setHistory(sig.history())
             .build();
 
         this.clientLog.getLogs(request)
             .subscribe(
-                item -> System.out.println(item.getMessage()),
+                item -> System.out.println(item.getClient() + " ::: " + item.getMessage()),
                 error -> error.printStackTrace(),
                 () -> System.out.println("[Client Con] log request completed")
             );
     }
 
 
-    private void handleUserMessagesSignal(UserMessagesSignal sig) {
+    private void handleUserLogSignal(UserLogSignal sig) {
 
-        UserMessagesRequest request = UserMessagesRequest
+        UserLogRequest request = UserLogRequest
             .newBuilder()
             .setTopic(sig.topic())
-            .setUsername(sig.client())
+            .setClient(sig.client())
             .build();
 
         this.clientLog.getMessagesOfUser(request)
             .subscribe(
-                item -> System.out.println(item.getMessage()),
+                item -> System.out.println(request.getClient() + " ::: " + item.getMessage()),
                 error -> error.printStackTrace(),
                 () -> System.out.println("[Client Con] user messages request completed")
         );
@@ -276,7 +276,7 @@ public class ClientCon implements Runnable {
                     case ServerStateSignal state -> handleServerStateSignal(state);
                     case EnterTopicSignal enter -> handleEnterTopicSignal(enter);
                     case ChatMessageSignal chat -> handleChatMessageSignal(chat);
-                    case UserMessagesSignal userReq -> handleUserMessagesSignal(userReq);
+                    case UserLogSignal userReq -> handleUserLogSignal(userReq);
                     default -> throw new IllegalArgumentException("[Client Con] unknown: " + signal);
                 }
             }

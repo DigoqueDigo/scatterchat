@@ -6,11 +6,11 @@ import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Single;
-import scatterchat.LogMessageReply;
-import scatterchat.LogMessageRequest;
+import scatterchat.LogReply;
+import scatterchat.LogRequest;
 import scatterchat.Rx3LogServiceGrpc;
-import scatterchat.UserMessagesReply;
-import scatterchat.UserMessagesRequest;
+import scatterchat.UserLogReply;
+import scatterchat.UserLogRequest;
 import scatterchat.protocol.message.Message.MessageType;
 import scatterchat.protocol.message.chat.ChatMessage;
 
@@ -30,24 +30,28 @@ public class LogServer extends Rx3LogServiceGrpc.LogServiceImplBase implements R
 
 
     @Override
-    public Flowable<LogMessageReply> getLogs(Single<LogMessageRequest> request) {
+    public Flowable<LogReply> getLogs(Single<LogRequest> request) {
         return request.flatMapPublisher(req -> {
             return this.logger
-                .read(req.getHistory())
-                .map(m -> LogMessageReply.newBuilder().setMessage(m.toString()).build());
+                .read()
+                .filter(m -> m.getType().equals(MessageType.CHAT_MESSAGE))
+                .map(m -> (ChatMessage) m)
+                .filter(m -> m.getTopic().equals(req.getTopic()))
+                .take(req.getHistory())
+                .map(m -> LogReply.newBuilder().setMessage(m.getMessage()).setClient(m.getClient()).build());
         });
     }
 
 
     @Override
-    public Flowable<UserMessagesReply> getMessagesOfUser(Single<UserMessagesRequest> request) {
+    public Flowable<UserLogReply> getUserLog(Single<UserLogRequest> request) {
         return request.flatMapPublisher(req -> {
             return this.logger
-                .read(-1)
+                .read()
                 .filter(m -> m.getType().equals(MessageType.CHAT_MESSAGE))
                 .map(m -> (ChatMessage) m)
-                .filter(m -> m.getClient().equals(req.getUsername()) && m.getTopic().equals(req.getTopic()))
-                .map(m -> UserMessagesReply.newBuilder().setMessage(m.getMessage()).build());
+                .filter(m -> m.getClient().equals(req.getClient()) && m.getTopic().equals(req.getTopic()))
+                .map(m -> UserLogReply.newBuilder().setMessage(m.getMessage()).build());
         });
     }
 
