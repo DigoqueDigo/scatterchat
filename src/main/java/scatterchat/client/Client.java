@@ -12,6 +12,7 @@ import java.util.concurrent.ThreadFactory;
 import org.json.JSONObject;
 import org.zeromq.ZContext;
 
+import javafx.application.Application;
 import scatterchat.protocol.signal.Signal;
 
 
@@ -28,20 +29,21 @@ public class Client{
 
         final BlockingQueue<Signal> signals = new ArrayBlockingQueue<>(10);
 
-        Runnable clientUI = new ClientUI(config, signals);
         Runnable clientCon = new ClientCon(config, context, signals);
         Runnable clientSub = new ClientSub(config, context, signals);
 
         List<Thread> workers = new ArrayList<>();
         ThreadFactory threadFactory = Thread.ofVirtual().factory();
 
-        workers.add(threadFactory.newThread(clientUI));
         workers.add(threadFactory.newThread(clientCon));
         workers.add(threadFactory.newThread(clientSub));
 
         for (Thread worker : workers) {
             worker.start();
         }
+
+        ClientUI.setParameters(config, signals);
+        Application.launch(ClientUI.class, args);
 
         for (Thread worker : workers) {
             worker.join();

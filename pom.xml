@@ -20,7 +20,6 @@
         <protoc.version>3.25.3</protoc.version>
         <zeromq.version>0.6.0</zeromq.version>
         <kryo.version>5.6.2</kryo.version>
-        <jline.version>3.29.0</jline.version>
         <json.version>20250107</json.version>
         <sarojaba.version>662a2fb</sarojaba.version>
         <javafx.version>21</javafx.version>
@@ -73,11 +72,6 @@
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
             <version>${json.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jline</groupId>
-            <artifactId>jline</artifactId>
-            <version>${jline.version}</version>
         </dependency>
         <dependency>
             <groupId>com.github.sarojaba</groupId>
