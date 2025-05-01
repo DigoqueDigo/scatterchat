@@ -16,9 +16,12 @@ import scatterchat.protocol.message.info.ServeTopicResponse;
 import scatterchat.protocol.message.info.ServerStateRequest;
 import scatterchat.protocol.message.info.ServerStateResponse;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.stream.IntStream;
 
 
 public class ChatServerExtRep implements Runnable {
@@ -86,31 +89,64 @@ public class ChatServerExtRep implements Runnable {
 
     @Override
     public void run() {
-
         try {
+            ZMQ.Socket frontend = this.context.createSocket(SocketType.ROUTER);
+            ZMQ.Socket backend = this.context.createSocket(SocketType.DEALER);
 
-            Message message;
-            ZMQ.Socket socket = this.context.createSocket(SocketType.REP);
-            ZMQCarrier carrier = new ZMQCarrier(socket);
-
+            int totalWorkers = config.getInt("totalWorkers");
             String bindAddress = config.getString("tcpExtRep");
-            socket.bind(bindAddress);
+            String proxyAddress = config.getString("inprocProxy");
+
+            frontend.bind(bindAddress);
+            backend.bind(proxyAddress);
 
             System.out.println("[SC extRep] started");            
             System.out.println("[SC extRep] bind: " + bindAddress);
+            System.out.println("[SC extRep] bind: " + proxyAddress);
 
-            while ((message = carrier.receiveMessage()) != null) {
+            Runnable workerTask = () -> {
+                try {
+                    Message message;
+                    ZMQ.Socket socket = context.createSocket(SocketType.REP);
+                    ZMQCarrier carrier = new ZMQCarrier(socket);
 
-                System.out.println("[SC extRep] received: " + message);
+                    socket.connect(proxyAddress);
+                    String identity = String.format("[SC extRep worker %s]", Thread.currentThread().threadId());
 
-                switch (message) {
-                    case ServeTopicRequest m -> handleServeTopicRequest(m, carrier);
-                    case ServerStateRequest m -> handleServerStateRequest(m, carrier);
-                    default -> System.out.println("[SC extRep] unknown: " + message);
+                    System.out.println(identity + " stated");
+                    System.out.println(identity + "connect: " + proxyAddress);
+
+                    while ((message = carrier.receiveMessage()) != null) {
+                        System.out.println(identity + " received: " + message);
+                        switch (message) {
+                            case ServeTopicRequest m -> handleServeTopicRequest(m, carrier);
+                            case ServerStateRequest m -> handleServerStateRequest(m, carrier);
+                            default -> System.out.println(identity + " unknown: " + message);
+                        }
+                    }
+
+                    socket.close();
+                    System.out.println(identity + " close connection");
+
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
+            };
+
+            ThreadFactory threadFactory = Thread.ofVirtual().factory();
+            List<Thread> workers = IntStream.range(0, totalWorkers)
+                .mapToObj(x -> threadFactory.newThread(workerTask))
+                .toList();
+
+            workers.forEach(worker -> worker.start());
+            ZMQ.proxy(frontend, backend, null);
+
+            for (Thread worker : workers) {
+                worker.join();
             }
 
-            socket.close();
+            frontend.close();
+            backend.close();
         }
 
         catch (Exception e) {

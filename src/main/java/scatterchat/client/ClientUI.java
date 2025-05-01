@@ -289,7 +289,7 @@ public class ClientUI extends Application {
     @Override
     public void start(Stage primaryStage) {
 
-        primaryStage.setTitle("ScatterChat");
+        primaryStage.setTitle("ScatterChat - " + ClientUI.username);
         primaryStage.setOnCloseRequest(e -> handleExitEvent());
 
         GridPane grid = new GridPane();

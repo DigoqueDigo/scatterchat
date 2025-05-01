@@ -44,6 +44,8 @@
         "tcpInterPub": "tcp://localhost:3102",
         "tcpExtPub": "tcp://localhost:3103",
         "internalTopic": "[internal]sc1",
+        "inprocProxy": "inproc://workers",
+        "totalWorkers": 5,
         "logPort": 3104
     },
 
@@ -53,6 +55,8 @@
         "tcpInterPub": "tcp://localhost:3202",
         "tcpExtPub": "tcp://localhost:3203",
         "internalTopic": "[internal]sc2",
+        "inprocProxy": "inproc://workers",
+        "totalWorkers": 5,
         "logPort": 3204
     },
 
@@ -62,6 +66,8 @@
         "tcpInterPub": "tcp://localhost:3302",
         "tcpExtPub": "tcp://localhost:3303",
         "internalTopic": "[internal]sc3",
+        "inprocProxy": "inproc://workers",
+        "totalWorkers": 5,
         "logPort": 3304
     },
 
@@ -71,6 +77,8 @@
         "tcpInterPub": "tcp://localhost:3402",
         "tcpExtPub": "tcp://localhost:3403",
         "internalTopic": "[internal]sc4",
+        "inprocProxy": "inproc://workers",
+        "totalWorkers": 5,
         "logPort": 3404
     },
 
@@ -80,6 +88,8 @@
         "tcpInterPub": "tcp://localhost:3502",
         "tcpExtPub": "tcp://localhost:3503",
         "internalTopic": "[internal]sc5",
+        "inprocProxy": "inproc://workers",
+        "totalWorkers": 5,
         "logPort": 3504
     },
 
