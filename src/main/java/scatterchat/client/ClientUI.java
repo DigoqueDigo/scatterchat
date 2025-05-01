@@ -81,27 +81,27 @@ public class ClientUI extends Application {
     }
 
 
-    public synchronized static void appendToInBox(String message) {
+    public static void appendToInBox(String message) {
         Platform.runLater(() -> ClientUI.inboxArea.appendText(message + "\n"));
     }
 
 
-    public synchronized static void appendToLogs(String message) {
+    public static void appendToLogs(String message) {
         Platform.runLater(() -> ClientUI.logsArea.appendText(message + "\n"));
     }
 
 
-    public synchronized static void appendToInfo(String message) {
+    public static void appendToInfo(String message) {
         Platform.runLater(() -> ClientUI.infoArea.appendText(message + "\n"));
     }
 
 
-    public synchronized static void clearInBox() {
+    public static void clearInBox() {
         Platform.runLater(() -> ClientUI.inboxArea.clear());
     }
 
 
-    public synchronized static void clearInfo() {
+    public static void clearInfo() {
         Platform.runLater(() -> ClientUI.infoArea.clear());
     } 
 
