@@ -35,7 +35,7 @@ import scatterchat.protocol.carrier.ZMQCarrier;
 
 public class AggrServerHandler implements Runnable{
 
-    private static final int C = 3;
+    private static final int C = 2;
     private static final int T = 5;
 
     private State state;

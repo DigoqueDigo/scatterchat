@@ -23,6 +23,7 @@
         <jline.version>3.29.0</jline.version>
         <json.version>20250107</json.version>
         <sarojaba.version>662a2fb</sarojaba.version>
+        <javafx.version>21</javafx.version>
     </properties>
 
     <repositories>
@@ -83,9 +84,19 @@
             <artifactId>prettytable4j</artifactId>
             <version>${sarojaba.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
+        <resources>
+          <resource>
+            <directory>src/main/resources</directory>
+          </resource>
+        </resources>
         <extensions>
             <extension>
                 <groupId>kr.motd.maven</groupId>
