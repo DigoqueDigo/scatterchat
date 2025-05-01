@@ -5,18 +5,18 @@
 mvn clean compile
 ```
 
-### Run DHT Nodes
+### Run DHT Node
 ```
 cd src/main/erlang/scatterchat/dht/
 ./build.sh start
 ```
 
-### Run Aggregation Servers
+### Run Aggregation Server
 ```
 mvn exec:java -Dexec.mainClass=scatterchat.aggrserver.AggrServer -Dexec.args="config/config.json <saID>"
 ```
 
-### Run Chat Servers
+### Run Chat Server
 ```
 mvn exec:java -Dexec.mainClass=scatterchat.chatserver.ChatServer -Dexec.args="config/config.json <scID>"
 ```
@@ -25,3 +25,9 @@ mvn exec:java -Dexec.mainClass=scatterchat.chatserver.ChatServer -Dexec.args="co
 ```
 mvn exec:java -Dexec.mainClass=scatterchat.client.Client -Dexec.args="config/config.json <cliID>"
 ```
+> [!IMPORTANT]  
+> Starting too few aggregation servers can lead to problems during aggregation, so I recommend the following setup
+> - three DHT nodes
+> - three Aggregations Servers
+> - three Chat Servers (one per Aggregation Server)
+> - one client
