@@ -215,8 +215,8 @@ public class ClientCon implements Runnable {
 
         LogRequest request = LogRequest
             .newBuilder()
+            .setLines(sig.lines())
             .setTopic(sig.topic())
-            .setHistory(sig.history())
             .build();
 
         this.clientLog.getLogs(request)
@@ -232,6 +232,7 @@ public class ClientCon implements Runnable {
 
         UserLogRequest request = UserLogRequest
             .newBuilder()
+            .setLines(sig.lines())
             .setTopic(sig.topic())
             .setClient(sig.client())
             .build();

@@ -62,14 +62,14 @@ public class ClientUI extends Application {
     }
 
 
-    private void handleUserLog(String username, int historySize) throws InterruptedException {
-        Signal signal = new UserLogSignal(username, ClientUI.topic);
+    private void handleUserLog(String username, int lines) throws InterruptedException {
+        Signal signal = new UserLogSignal(username, ClientUI.topic, lines);
         ClientUI.signals.put(signal);
     }
 
 
-    private void handleLog(int historySize) throws InterruptedException {
-        Signal signal = new LogSignal(ClientUI.topic, historySize);
+    private void handleLog(int lines) throws InterruptedException {
+        Signal signal = new LogSignal(ClientUI.topic, lines);
         ClientUI.signals.put(signal);
     }
 
@@ -159,17 +159,17 @@ public class ClientUI extends Application {
     }
 
 
-    private void handleSubmitButtonClick(String history, String username, Stage popup) {
+    private void handleSubmitButtonClick(String linesText, String username, Stage popup) {
         try {
-            int historySize = Integer.MAX_VALUE;
+            int lines = Integer.MAX_VALUE;
 
-            if (!history.isEmpty())
-                historySize = Integer.parseInt(history);
+            if (!linesText.isEmpty())
+                lines = Integer.parseInt(linesText);
 
             if (username.isEmpty())
-                handleLog(historySize);
+                handleLog(lines);
             else
-                handleUserLog(username, historySize);
+                handleUserLog(username, lines);
 
             popup.close();
         } catch (Exception e) {
@@ -188,9 +188,9 @@ public class ClientUI extends Application {
             formGrid.setVgap(10);
             formGrid.setHgap(10);
 
-            TextField historyField = new TextField();
-            historyField.setPromptText("History");
-            historyField.getStyleClass().add("text-field");
+            TextField linesField = new TextField();
+            linesField.setPromptText("Lines");
+            linesField.getStyleClass().add("text-field");
 
             TextField usernameField = new TextField();
             usernameField.setPromptText("User");
@@ -201,17 +201,17 @@ public class ClientUI extends Application {
             submitButton.setMaxWidth(Double.MAX_VALUE);
             submitButton.setOnAction(event ->
                 handleSubmitButtonClick(
-                    historyField.getText(),
+                    linesField.getText(),
                     usernameField.getText(),
                     popupStage
             ));
 
-            GridPane.setHgrow(historyField, Priority.ALWAYS);
+            GridPane.setHgrow(linesField, Priority.ALWAYS);
             GridPane.setHgrow(usernameField, Priority.ALWAYS);
             GridPane.setHgrow(submitButton, Priority.ALWAYS);
 
             formGrid.setPadding(new Insets(10));
-            formGrid.add(historyField, 0, 0);
+            formGrid.add(linesField, 0, 0);
             formGrid.add(usernameField, 0, 1);
             formGrid.add(submitButton, 0, 2);
 

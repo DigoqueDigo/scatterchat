@@ -35,7 +35,7 @@ public class LogServer extends Rx3LogServiceGrpc.LogServiceImplBase implements R
                 .filter(m -> m.getType().equals(MessageType.CHAT_MESSAGE))
                 .map(m -> (ChatMessage) m)
                 .filter(m -> m.getTopic().equals(req.getTopic()))
-                .take(req.getHistory())
+                .take(req.getLines())
                 .map(m -> LogReply.newBuilder().setMessage(m.getMessage()).setClient(m.getClient()).build());
         });
     }
@@ -49,6 +49,7 @@ public class LogServer extends Rx3LogServiceGrpc.LogServiceImplBase implements R
                 .filter(m -> m.getType().equals(MessageType.CHAT_MESSAGE))
                 .map(m -> (ChatMessage) m)
                 .filter(m -> m.getClient().equals(req.getClient()) && m.getTopic().equals(req.getTopic()))
+                .take(req.getLines())
                 .map(m -> UserLogReply.newBuilder().setMessage(m.getMessage()).build());
         });
     }

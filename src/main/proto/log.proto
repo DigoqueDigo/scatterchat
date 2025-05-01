@@ -8,7 +8,7 @@ service LogService {
 }
 
 message LogRequest {
-    int32 history = 1;                      // Number of log lines
+    int32 lines = 1;                      // number of log lines
     string topic = 2;                       // topic where the log remains
 }
 
@@ -18,10 +18,11 @@ message LogReply {
 }
 
 message UserLogRequest {
-    string client = 1;                     // username of client
-    string topic = 2;                        // topic where the user has sent messages
+    int32 lines = 1;                      // number of log lines
+    string client = 2;                      // username of client
+    string topic = 3;                       // topic where the user has sent messages
 }
 
 message UserLogReply {
-    string message = 1;                     // Log line content
+    string message = 1;                     // log line content
 }
