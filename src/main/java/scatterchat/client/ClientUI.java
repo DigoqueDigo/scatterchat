@@ -103,7 +103,7 @@ public class ClientUI extends Application {
 
     public static void clearInfo() {
         Platform.runLater(() -> ClientUI.infoArea.clear());
-    } 
+    }
 
 
     private void handleEnterTopic(String topic) throws InterruptedException {
@@ -297,13 +297,6 @@ public class ClientUI extends Application {
         grid.setVgap(10);
         grid.setStyle("-fx-padding: 20;");
 
-        ColumnConstraints col1 = new ColumnConstraints();
-        ColumnConstraints col2 = new ColumnConstraints();
-
-        col1.setHgrow(Priority.ALWAYS);
-        col2.setHgrow(Priority.ALWAYS);
-        grid.getColumnConstraints().addAll(col1, col2);
-
         TextField topicField = new TextField();
         topicField.setPromptText("Enter topic");
         topicField.getStyleClass().add("text-field");
@@ -381,16 +374,18 @@ public class ClientUI extends Application {
         GridPane.setVgrow(logsArea, Priority.ALWAYS);
         GridPane.setHgrow(logsArea, Priority.ALWAYS);
 
+        RowConstraints rowSimple = new RowConstraints();
         RowConstraints rowGrow = new RowConstraints();
+
+        ColumnConstraints col1 = new ColumnConstraints();
+        ColumnConstraints col2 = new ColumnConstraints();
+
+        col1.setHgrow(Priority.ALWAYS);
+        col2.setHgrow(Priority.ALWAYS);
         rowGrow.setVgrow(Priority.ALWAYS);
-        grid.getRowConstraints().addAll(
-            new RowConstraints(),
-            new RowConstraints(),
-            new RowConstraints(),
-            rowGrow,
-            new RowConstraints(),
-            rowGrow
-        );
+
+        grid.getColumnConstraints().addAll(col1, col2);
+        grid.getRowConstraints().addAll(rowSimple, rowSimple, rowSimple, rowGrow, rowSimple, rowGrow);
 
         Scene scene = new Scene(grid, 600, 400);
         scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());

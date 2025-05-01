@@ -31,12 +31,13 @@ public class LogServer extends Rx3LogServiceGrpc.LogServiceImplBase implements R
     public Flowable<LogReply> getLogs(Single<LogRequest> request) {
         return request.flatMapPublisher(req -> {
             return this.logger
-                .read(req.getLines())
-                .doOnComplete(() -> System.out.println(req.getLines() + ", " + req.getTopic()))
+                .read()
                 .filter(m -> m.getType().equals(MessageType.CHAT_MESSAGE))
                 .map(m -> (ChatMessage) m)
                 .filter(m -> m.getTopic().equals(req.getTopic()))
-                .map(m -> LogReply.newBuilder().setMessage(m.getMessage()).setClient(m.getClient()).build());
+                .takeLast(req.getLines())
+                .map(m -> LogReply.newBuilder().setMessage(m.getMessage()).setClient(m.getClient()).build())
+                .doOnComplete(() -> System.out.println(req.getLines() + ", " + req.getTopic()));
         });
     }
 
@@ -45,13 +46,13 @@ public class LogServer extends Rx3LogServiceGrpc.LogServiceImplBase implements R
     public Flowable<UserLogReply> getUserLog(Single<UserLogRequest> request) {
         return request.flatMapPublisher(req -> {
             return this.logger
-                .read(Integer.MAX_VALUE)
-                .doOnComplete(() -> System.out.println(req.getClient() + ", " + req.getLines() + ", " + req.getTopic()))
+                .read()
                 .filter(m -> m.getType().equals(MessageType.CHAT_MESSAGE))
                 .map(m -> (ChatMessage) m)
                 .filter(m -> m.getClient().equals(req.getClient()) && m.getTopic().equals(req.getTopic()))
                 .takeLast(req.getLines())
-                .map(m -> UserLogReply.newBuilder().setMessage(m.getMessage()).build());
+                .map(m -> UserLogReply.newBuilder().setMessage(m.getMessage()).build())
+                .doOnComplete(() -> System.out.println(req.getClient() + ", " + req.getLines() + ", " + req.getTopic()));
         });
     }
 

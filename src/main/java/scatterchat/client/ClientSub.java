@@ -49,7 +49,9 @@ public class ClientSub implements Runnable{
         socket.connect(chatServerEntry.extPubAddress());
         socket.subscribe(message.getTopic());
 
+        ClientUI.clearInfo();
         ClientUI.clearInBox();
+
         ClientUI.appendToLogs("[Client Sub] connect: " + chatServerEntry.extPubAddress());
         ClientUI.appendToLogs("[Client Sub] subcribe: " + message.getTopic());
     }

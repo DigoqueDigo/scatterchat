@@ -22,9 +22,7 @@ public class Logger {
     }
 
 
-    public synchronized Flowable<Message> read(int lines) {
-        int fromIndex = Math.max(0, this.logs.size() - lines);
-        List<Message> logsCopy = new ArrayList<>(this.logs.subList(fromIndex, this.logs.size()));
-        return Flowable.fromIterable(logsCopy);
+    public synchronized Flowable<Message> read() {
+        return Flowable.fromIterable(new ArrayList<>(this.logs));
     }
 }

@@ -3,10 +3,8 @@ package scatterchat.client;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.List;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
-import java.util.stream.Collectors;
 
 import org.json.JSONObject;
 import org.zeromq.SocketType;
@@ -133,13 +131,8 @@ public class ClientCon implements Runnable {
             dhtRep = this.dhtCarrier.receive();
         }
 
-        List<ChatServerEntry> chatServerEntries = dhtRep.ips()
-            .stream()
-            .map(ip -> new ChatServerEntry(ip))
-            .collect(Collectors.toList());
-
-        int scIndex = this.random.nextInt(chatServerEntries.size());
-        this.chatServerEntry = chatServerEntries.get(scIndex);
+        int scIndex = this.random.nextInt(dhtRep.ips().size());
+        this.chatServerEntry = new ChatServerEntry(dhtRep.ips().get(scIndex));
 
         this.pushSCSocket.connect(this.chatServerEntry.pullAddress());
         this.reqSCSocket.connect(this.chatServerEntry.repAddress());
@@ -248,11 +241,8 @@ public class ClientCon implements Runnable {
 
 
     private void handleExitSignal(ExitSignal sig) throws IOException {
-
-        this.pubCarrier.sendMessageWithTopic(
-            this.internalTopic,
-            new TopicExitMessage(this.sender, "clientsub", null, this.chatServerEntry));
-
+        Message topicExitMessage = new TopicExitMessage(this.sender, "clientsub", null, this.chatServerEntry);
+        this.pubCarrier.sendMessageWithTopic(this.internalTopic, topicExitMessage);
         this.closeConnections();
         throw new IOException("[Client Con] closed connections");
     }
