@@ -1,8 +1,13 @@
 package scatterchat.client;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ThreadFactory;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -19,6 +24,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import org.json.JSONObject;
+import org.zeromq.ZContext;
 
 import scatterchat.protocol.signal.ChatMessageSignal;
 import scatterchat.protocol.signal.EnterTopicSignal;
@@ -32,16 +38,72 @@ import scatterchat.protocol.signal.UserLogSignal;
 
 public class ClientUI extends Application {
 
-    private static String topic;
-    private static String username;
+    private static ZContext context;
+    private static JSONObject config;
+    private static List<Thread> workers;
     private static BlockingQueue<Signal> signals;
 
+    private static String topic;
+    private static String username;
 
-    // Setters for static fields
-    public static void setParameters(JSONObject config, BlockingQueue<Signal> signals) {
+    private static TextArea inboxArea;
+    private static TextArea infoArea;
+    private static TextArea logsArea;
+
+
+    public static void setupParameters(JSONObject config) {
+        ClientUI.config = config;
+        ClientUI.context = new ZContext();
+        ClientUI.workers = new ArrayList<>();
+        ClientUI.signals = new ArrayBlockingQueue<>(10);
         ClientUI.username = config.getString("username");
-        ClientUI.signals = signals;
     }
+
+    private void startWorkers() {
+        Runnable clientCon = new ClientCon(config, context, signals);
+        Runnable clientSub = new ClientSub(config, context, signals);
+        ThreadFactory threadFactory = Thread.ofVirtual().factory();
+        workers.add(threadFactory.newThread(clientCon));
+        workers.add(threadFactory.newThread(clientSub));
+        workers.forEach(worker -> worker.start());
+    }
+
+
+    private void waitWorkers() {
+        try{
+            for (Thread worker : ClientUI.workers) {
+                worker.join();
+            }
+            ClientUI.context.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public synchronized static void appendToInBox(String message) {
+        Platform.runLater(() -> ClientUI.inboxArea.appendText(message + "\n"));
+    }
+
+
+    public synchronized static void appendToLogs(String message) {
+        Platform.runLater(() -> ClientUI.logsArea.appendText(message + "\n"));
+    }
+
+
+    public synchronized static void appendToInfo(String message) {
+        Platform.runLater(() -> ClientUI.infoArea.appendText(message + "\n"));
+    }
+
+
+    public synchronized static void clearInBox() {
+        Platform.runLater(() -> ClientUI.inboxArea.clear());
+    }
+
+
+    public synchronized static void clearInfo() {
+        Platform.runLater(() -> ClientUI.infoArea.clear());
+    } 
 
 
     private void handleEnterTopic(String topic) throws InterruptedException {
@@ -153,6 +215,7 @@ public class ClientUI extends Application {
                 handleExitTopic(ClientUI.topic);
             }
             handleExit();
+            waitWorkers();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -163,7 +226,7 @@ public class ClientUI extends Application {
         try {
             int lines = Integer.MAX_VALUE;
 
-            if (!linesText.isEmpty())
+            if (linesText.matches("\\d+"))
                 lines = Integer.parseInt(linesText);
 
             if (username.isEmpty())
@@ -283,7 +346,7 @@ public class ClientUI extends Application {
         inboxArea.setEditable(false);
 
         TextArea infoArea = new TextArea();
-        infoArea.setEditable(true);
+        infoArea.setEditable(false);
 
         TextArea logsArea = new TextArea();
         logsArea.setEditable(false);
@@ -320,14 +383,24 @@ public class ClientUI extends Application {
 
         RowConstraints rowGrow = new RowConstraints();
         rowGrow.setVgrow(Priority.ALWAYS);
-        grid.getRowConstraints().addAll(new RowConstraints(), new RowConstraints(), new RowConstraints(), rowGrow);
+        grid.getRowConstraints().addAll(
+            new RowConstraints(),
+            new RowConstraints(),
+            new RowConstraints(),
+            rowGrow,
+            new RowConstraints(),
+            rowGrow
+        );
 
         Scene scene = new Scene(grid, 600, 400);
         scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
         primaryStage.setScene(scene);
 
-        System.out.println(ClientUI.username);
-        System.out.println(ClientUI.topic);
+        ClientUI.inboxArea = inboxArea;
+        ClientUI.infoArea = infoArea;
+        ClientUI.logsArea = logsArea;
+
+        startWorkers();
         primaryStage.show();
     }
 }

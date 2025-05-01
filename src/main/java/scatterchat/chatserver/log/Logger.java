@@ -1,7 +1,6 @@
 package scatterchat.chatserver.log;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import io.reactivex.rxjava3.core.Flowable;
@@ -23,9 +22,9 @@ public class Logger {
     }
 
 
-    public synchronized Flowable<Message> read() {
-        List<Message> logsCopy = new ArrayList<>(this.logs);
-        Collections.reverse(logsCopy);
+    public synchronized Flowable<Message> read(int lines) {
+        int fromIndex = Math.max(0, this.logs.size() - lines);
+        List<Message> logsCopy = new ArrayList<>(this.logs.subList(fromIndex, this.logs.size()));
         return Flowable.fromIterable(logsCopy);
     }
 }

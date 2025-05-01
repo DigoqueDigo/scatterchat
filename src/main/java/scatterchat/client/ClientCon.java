@@ -104,9 +104,9 @@ public class ClientCon implements Runnable {
         this.pubCarrier = new ZMQCarrier(pubSocket);
         this.dhtCarrier = new JSONCarrier(dhtSocket);
 
-        System.out.println("[Client Con] bind: " + inprocAddress);
-        System.out.println("[Client Con] connect: " + repSAAddress);
-        System.out.println("[Client Con] connnect: " + dhtAddress + ":" + dhtPort);
+        ClientUI.appendToLogs("[Client Con] bind: " + inprocAddress);
+        ClientUI.appendToLogs("[Client Con] connect: " + repSAAddress);
+        ClientUI.appendToLogs("[Client Con] connnect: " + dhtAddress + ":" + dhtPort);
     }
 
 
@@ -187,9 +187,10 @@ public class ClientCon implements Runnable {
 
         ServerStateResponse response = (ServerStateResponse) this.reqSCCarrier.receiveMessage();
         PrettyTable ptServerState = PrettyTable.fieldNames("Topic", "Users");
-
         response.getServerTotalState().forEach((topics, users) -> ptServerState.addRow(topics, users));
-        System.out.println(ptServerState.toString());
+
+        ClientUI.clearInfo();
+        ClientUI.appendToInfo(ptServerState.toString());
     }
 
 
@@ -219,11 +220,11 @@ public class ClientCon implements Runnable {
             .setTopic(sig.topic())
             .build();
 
+        ClientUI.clearInfo();
         this.clientLog.getLogs(request)
             .subscribe(
-                item -> System.out.println(item.getClient() + " ::: " + item.getMessage()),
-                error -> error.printStackTrace(),
-                () -> System.out.println("[Client Con] log completed")
+                item -> ClientUI.appendToInfo(item.getClient() + " > " + item.getMessage()),
+                error -> error.printStackTrace()
             );
     }
 
@@ -237,11 +238,11 @@ public class ClientCon implements Runnable {
             .setClient(sig.client())
             .build();
 
+        ClientUI.clearInfo();
         this.clientLog.getMessagesOfUser(request)
             .subscribe(
-                item -> System.out.println(request.getClient() + " ::: " + item.getMessage()),
-                error -> error.printStackTrace(),
-                () -> System.out.println("[Client Con] userlog completed")
+                item -> ClientUI.appendToInfo(request.getClient() + " > " + item.getMessage()),
+                error -> error.printStackTrace()
         );
     }
 
@@ -267,7 +268,7 @@ public class ClientCon implements Runnable {
 
             while ((signal = this.signals.take()) != null) {
 
-                System.out.println("[Client Con] received: " + signal);
+                ClientUI.appendToLogs("[Client Con] received: " + signal);
 
                 switch (signal) {
                     case LogSignal log -> handleLogSignal(log);
