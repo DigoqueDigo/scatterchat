@@ -37,7 +37,7 @@ public class ClientLog {
     }
 
 
-    public Flowable<UserLogReply> getMessagesOfUser(UserLogRequest request) {
+    public Flowable<UserLogReply> getUserLog(UserLogRequest request) {
         return this.stub.getUserLog(Single.just(request));
     }
 }

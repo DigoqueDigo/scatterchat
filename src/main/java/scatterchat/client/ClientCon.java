@@ -232,7 +232,7 @@ public class ClientCon implements Runnable {
             .build();
 
         ClientUI.clearInfo();
-        this.clientLog.getMessagesOfUser(request)
+        this.clientLog.getUserLog(request)
             .subscribe(
                 item -> ClientUI.appendToInfo(request.getClient() + " > " + item.getMessage()),
                 error -> error.printStackTrace()

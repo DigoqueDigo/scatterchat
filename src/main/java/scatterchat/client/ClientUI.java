@@ -9,6 +9,7 @@ import java.util.concurrent.ThreadFactory;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
+import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -261,6 +262,7 @@ public class ClientUI extends Application {
 
             Button submitButton = new Button("Submit");
             submitButton.getStyleClass().add("button");
+            submitButton.setCursor(Cursor.HAND);
             submitButton.setMaxWidth(Double.MAX_VALUE);
             submitButton.setOnAction(event ->
                 handleSubmitButtonClick(
@@ -309,11 +311,13 @@ public class ClientUI extends Application {
 
         Button historyButton = new Button("Message history");
         historyButton.getStyleClass().add("button");
+        historyButton.setCursor(Cursor.HAND);
         historyButton.setMaxWidth(Double.MAX_VALUE);
         historyButton.setOnAction(e -> handleHistoryButtonClick());
 
         Button serverStateButton = new Button("Server State");
         serverStateButton.getStyleClass().add("button");
+        serverStateButton.setCursor(Cursor.HAND);
         serverStateButton.setMaxWidth(Double.MAX_VALUE);
         serverStateButton.setOnAction(e -> handleServerStateButtonClick());
 
