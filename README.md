@@ -28,6 +28,6 @@ mvn exec:java -Dexec.mainClass=scatterchat.client.Client -Dexec.args="config/con
 > [!IMPORTANT]  
 > Starting too few aggregation servers can lead to problems during aggregation, so I recommend the following setup
 > - three DHT nodes
-> - three Aggregations Servers
+> - three Aggregation Servers
 > - three Chat Servers (one per Aggregation Server)
 > - one client
