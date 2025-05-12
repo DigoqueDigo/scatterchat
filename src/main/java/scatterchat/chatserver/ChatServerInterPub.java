@@ -82,7 +82,7 @@ public class ChatServerInterPub implements Runnable {
 
             String tcpAddress = config.getString("tcpInterPub");
             socket.bind(tcpAddress);
-            
+
             System.out.println("[SC interPub] started");
             System.out.println("[SC interPub] bind: " + tcpAddress);
 

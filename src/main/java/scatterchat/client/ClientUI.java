@@ -257,7 +257,7 @@ public class ClientUI extends Application {
             linesField.getStyleClass().add("text-field");
 
             TextField usernameField = new TextField();
-            usernameField.setPromptText("User");
+            usernameField.setPromptText("Username");
             usernameField.getStyleClass().add("text-field");
 
             Button submitButton = new Button("Submit");
@@ -315,7 +315,7 @@ public class ClientUI extends Application {
         historyButton.setMaxWidth(Double.MAX_VALUE);
         historyButton.setOnAction(e -> handleHistoryButtonClick());
 
-        Button serverStateButton = new Button("Server State");
+        Button serverStateButton = new Button("Server state");
         serverStateButton.getStyleClass().add("button");
         serverStateButton.setCursor(Cursor.HAND);
         serverStateButton.setMaxWidth(Double.MAX_VALUE);

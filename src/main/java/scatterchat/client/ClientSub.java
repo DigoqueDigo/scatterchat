@@ -21,7 +21,7 @@ import scatterchat.protocol.signal.TimeoutSignal;
 
 public class ClientSub implements Runnable{
 
-    private static final int TIMEOUT = 2_000; 
+    private static final int TIMEOUT = 2_000;
 
     private String topic;
     private ZContext context;
@@ -88,7 +88,7 @@ public class ClientSub implements Runnable{
         socket.setReceiveTimeOut(TIMEOUT);
 
         ClientUI.appendToLogs("[Client Sub] connect: " + inprocAddres);
-        ClientUI.appendToLogs("[Client Sub] subscribe: " + internalTopic);        
+        ClientUI.appendToLogs("[Client Sub] subscribe: " + internalTopic);
 
         try{
 

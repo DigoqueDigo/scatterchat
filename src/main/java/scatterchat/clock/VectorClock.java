@@ -22,7 +22,7 @@ public class VectorClock {
         this.owner = owner;
         this.vector = nodesId.stream()
             .collect(Collectors.toMap(
-                node -> node, 
+                node -> node,
                 node -> 0
         ));
     }

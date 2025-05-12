@@ -49,5 +49,5 @@ public class CyclonError extends Message{
         input.close();
 
         return cyclonError;
-    }  
+    }
 }

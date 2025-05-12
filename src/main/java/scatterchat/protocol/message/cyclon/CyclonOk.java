@@ -70,5 +70,5 @@ public class CyclonOk extends Message {
         buffer.append(super.toString());
         buffer.append(", ").append(this.subSet);
         return buffer.toString();
-    }  
+    }
 }

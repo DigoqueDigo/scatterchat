@@ -43,7 +43,7 @@ public class ClientCon implements Runnable {
     private ZContext context;
     private JSONObject config;
     private BlockingQueue<Signal> signals;
-    
+
     private Random random;
     private ChatServerEntry chatServerEntry;
 
@@ -75,8 +75,8 @@ public class ClientCon implements Runnable {
         this.signals = signals;
         this.random = new Random();
     }
-    
-    
+
+
     private void setupConnections() throws IOException {
         this.pushSCSocket = this.context.createSocket(SocketType.PUSH);
         this.reqSCSocket = this.context.createSocket(SocketType.REQ);
@@ -94,7 +94,7 @@ public class ClientCon implements Runnable {
 
         pubSocket.bind(inprocAddress);
         reqSASocket.connect(repSAAddress);
-        dhtSocket.connect(new InetSocketAddress(dhtAddress, dhtPort));        
+        dhtSocket.connect(new InetSocketAddress(dhtAddress, dhtPort));
 
         this.pushSCCarrier = new ZMQCarrier(pushSCSocket);
         this.reqSCCarrier = new ZMQCarrier(reqSCSocket);
@@ -123,7 +123,7 @@ public class ClientCon implements Runnable {
         this.dhtCarrier.send(dhtGet);
         DHTRep dhtRep = this.dhtCarrier.receive();
 
-        while (dhtRep.ips().isEmpty()) {   
+        while (dhtRep.ips().isEmpty()) {
             AggrReq aggrReq = new AggrReq(this.sender, this.repSAAddress, sig.topic());
             this.reqSACarrier.sendMessage(aggrReq);
             this.reqSACarrier.receiveMessage();
@@ -146,10 +146,10 @@ public class ClientCon implements Runnable {
             new TopicEnterMessage("clientcon", "clientsub", sig.topic(), this.chatServerEntry);
 
         Message topicEnterMessageToPull =
-            new TopicEnterMessage(this.sender, this.chatServerEntry.pullAddress(), sig.topic(), this.chatServerEntry);  
+            new TopicEnterMessage(this.sender, this.chatServerEntry.pullAddress(), sig.topic(), this.chatServerEntry);
 
         this.pushSCCarrier.sendMessage(topicEnterMessageToPull);
-        this.pubCarrier.sendMessageWithTopic(this.internalTopic, topicEnterMessageToSub); 
+        this.pubCarrier.sendMessageWithTopic(this.internalTopic, topicEnterMessageToSub);
     }
 
 

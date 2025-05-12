@@ -44,7 +44,7 @@ public final class State {
     public ORSet getUsersORSetOf(String topic) {
         return this.usersORSetPerTopic.get(topic);
     }
-    
+
     public Set<String> getServedTopics() {
         return new HashSet<>(this.nodesPerTopic.keySet());
     }

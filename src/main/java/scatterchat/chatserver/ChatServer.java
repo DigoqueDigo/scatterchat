@@ -44,7 +44,7 @@ public class ChatServer {
         final BlockingQueue<Message> delivered = new ArrayBlockingQueue<>(10);
         final BlockingQueue<CausalMessage> received = new ArrayBlockingQueue<>(10);
 
-        Runnable logServer = new LogServer(config, logger); 
+        Runnable logServer = new LogServer(config, logger);
         Runnable logOrganizer = new LogDispatcher(logger, logBuffer);
         Runnable deliver = new Deliver(state, received, delivered, logBuffer);
 

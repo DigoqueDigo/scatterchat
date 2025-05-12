@@ -214,16 +214,13 @@ public class AggrServerHandler implements Runnable{
                 this.bestEntries.put(topic, newEntries);
             }
 
-            System.out.println("RECEBEU");
-
             boolean starter = this.startedAggrs.contains(topic);
             int currentT = (starter) ? AggrServerHandler.T : AggrServerHandler.T + AggrServerHandler.T / 2;
 
             if (repeatedRounds < currentT) {
                 for (CyclonEntry neighbour : state.getNeighbours()) {
-                    Aggr aggrMessage = new Aggr(sender.pullAddress(), neighbour.pullAddress(), topic, newEntries);                
+                    Aggr aggrMessage = new Aggr(sender.pullAddress(), neighbour.pullAddress(), topic, newEntries);
                     this.outBuffer.put(aggrMessage);
-                    System.out.println("ENVIOU");
                 }
             }
 

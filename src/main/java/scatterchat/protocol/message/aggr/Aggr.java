@@ -79,5 +79,5 @@ public class Aggr extends Message {
         buffer.append(", ").append(this.topic);
         buffer.append(", ").append(this.entries);
         return buffer.toString();
-    }   
+    }
 }

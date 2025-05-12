@@ -100,7 +100,7 @@ public class ChatServerExtRep implements Runnable {
             frontend.bind(bindAddress);
             backend.bind(proxyAddress);
 
-            System.out.println("[SC extRep] started");            
+            System.out.println("[SC extRep] started");
             System.out.println("[SC extRep] bind: " + bindAddress);
             System.out.println("[SC extRep] bind: " + proxyAddress);
 

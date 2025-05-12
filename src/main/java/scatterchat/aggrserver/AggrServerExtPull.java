@@ -32,7 +32,7 @@ public class AggrServerExtPull implements Runnable {
 
             ZMQ.Socket socket = this.context.createSocket(SocketType.PULL);
             ZMQCarrier carrier = new ZMQCarrier(socket);
-            
+
             Message message;
             String bindAddres = config.getString("tcpExtPull");
 

@@ -61,5 +61,5 @@ public class AggrReq extends Message {
         buffer.append(super.toString());
         buffer.append(", ").append(topic);
         return buffer.toString();
-    }    
+    }
 }

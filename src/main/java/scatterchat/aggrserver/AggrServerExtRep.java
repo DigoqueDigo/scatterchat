@@ -42,8 +42,6 @@ public class AggrServerExtRep implements Runnable {
 
     private void registerTopic(AggrRep message, JSONCarrier carrier) throws IOException{
 
-        System.out.println("AQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ");
-
         String topic = message.getTopic();
         List<String> ips = message.getEntries()
             .stream()
@@ -57,7 +55,6 @@ public class AggrServerExtRep implements Runnable {
 
     private void informToServe(AggrRep message) {
 
-        System.out.println("KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK");
         ZMQ.Socket socket = this.context.createSocket(SocketType.REQ);
         ZMQCarrier carrier = new ZMQCarrier(socket);
 
@@ -73,7 +70,6 @@ public class AggrServerExtRep implements Runnable {
 
             ServeTopicRequest serveTopicRequest = new ServeTopicRequest("sa", selectedNode.repAddress(), topic, selectedNodes);
             System.out.println("[AggrServerExtRep] sent: " + serveTopicRequest);
-            System.out.println("ANTES DE ENVIAR");
             carrier.sendMessage(serveTopicRequest);
 
             System.out.println("[AggrServerExtRep] sent: " + serveTopicRequest);
@@ -95,11 +91,11 @@ public class AggrServerExtRep implements Runnable {
 
             Socket dhtSocket = new Socket();
             ZMQ.Socket repSocket = this.context.createSocket(SocketType.REP);
-            
+
             String bindAddress = config.getString("tcpExtRep");
             String dhtAddress = config.getJSONObject("dht").getString("address");
             int dhtPort = config.getJSONObject("dht").getInt("port");
-            
+
             repSocket.bind(bindAddress);
             dhtSocket.connect(new InetSocketAddress(dhtAddress, dhtPort));
 

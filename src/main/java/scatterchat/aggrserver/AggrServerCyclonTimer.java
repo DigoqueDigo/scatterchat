@@ -20,18 +20,14 @@ public class AggrServerCyclonTimer implements Runnable {
     private Random random;
     private BlockingQueue<Message> outBuffer;
 
-    // TODO :: REMOVER
-    private int limit = 0;
-
 
     public AggrServerCyclonTimer(State state, BlockingQueue<Message> outBuffer){
         this.state = state;
         this.outBuffer = outBuffer;
         this.random = new Random();
-        this.limit = 0;
     }
-    
-    
+
+
     @Override
     public void run() {
 
@@ -42,15 +38,10 @@ public class AggrServerCyclonTimer implements Runnable {
                 System.out.println("[AggrServeCyclonTimer] start");
                 System.out.println(state);
 
-                // TODO :: REMOVER
-
-                if (state.getNeighbours().size() > 0 && this.limit < 4) {
-
-                    // TODO :: REMOVER
-                    this.limit++;
+                if (state.getNeighbours().size() > 0) {
 
                     List<CyclonEntry> neighbours = state.getNeighbours();
-                    Collections.shuffle(neighbours);                
+                    Collections.shuffle(neighbours);
 
                     int subSetLength = Math.min(neighbours.size(), State.CYCLON_SHUFFLE_LENGTH);
                     List<CyclonEntry> subSet = neighbours.subList(0, subSetLength);

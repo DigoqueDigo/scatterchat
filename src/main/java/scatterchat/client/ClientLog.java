@@ -19,7 +19,7 @@ public class ClientLog {
 
 
     public ClientLog(String loggerAddress, int loggerPort) {
-        this.channel = ManagedChannelBuilder    
+        this.channel = ManagedChannelBuilder
             .forAddress(loggerAddress, loggerPort)
             .usePlaintext()
             .build();
