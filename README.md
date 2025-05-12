@@ -30,4 +30,4 @@ mvn exec:java -Dexec.mainClass=scatterchat.client.Client -Dexec.args="config/con
 > - three DHT nodes
 > - three Aggregation Servers
 > - three Chat Servers (one per Aggregation Server)
-> - one client
+> - two clients
