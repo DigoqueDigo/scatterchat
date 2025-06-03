@@ -1,4 +1,4 @@
-# Scatterchat
+# ScatterChat
 
 ## Compile
 ```
