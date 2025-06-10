@@ -12,6 +12,8 @@ A fully decentralized chat system designed for resilience, scalability, and even
 
 ## 📦 Dependencies
 
+- **Rebar3**
+- **Erlang/OTP 27** 
 - **Java 21** or higher  
 - **Maven** (version 3.8+ recommended)
 
