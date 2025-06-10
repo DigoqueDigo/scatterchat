@@ -1,6 +1,6 @@
 # ScatterChat
 
-A fully decentralized, peer-to-peer chat system designed for resilience, scalability, and eventual consistency. It combines modern distributed systems concepts such as causal consistency via vector clocks, operation-based CRDTs for conflict-free state synchronization, consistent hashing to balance load across distributed nodes, and multiple communication paradigms including both direct and aggregated messaging.
+A fully decentralized chat system designed for resilience, scalability, and eventual consistency. It combines modern distributed systems concepts such as causal consistency via vector clocks, operation-based CRDTs for conflict-free state synchronization, consistent hashing to balance load across distributed nodes, and multiple communication paradigms including both direct and aggregated messaging.
 
 ![demo](https://github.com/user-attachments/assets/966e619e-bc05-40e7-b3ea-a8df93eecb23)
 
