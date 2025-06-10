@@ -10,7 +10,7 @@ A fully decentralized chat system designed for resilience, scalability, and even
 
 ---
 
-## 📦 Dependencies
+## 📦 Requirements
 
 - **Rebar3**
 - **Erlang/OTP 27** 
